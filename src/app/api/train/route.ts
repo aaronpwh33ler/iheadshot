@@ -34,11 +34,11 @@ export async function POST(request: NextRequest) {
 
     const supabase = createAdminSupabaseClient();
 
-    // Get uploaded images (stored with stripe session ID as order_id)
+    // Get uploaded images (stored with real order ID)
     const { data: uploads, error: uploadsError } = await supabase
       .from("uploads")
       .select("file_path")
-      .eq("order_id", orderId);
+      .eq("order_id", order.id);
 
     if (uploadsError || !uploads || uploads.length === 0) {
       return NextResponse.json(

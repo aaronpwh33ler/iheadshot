@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminSupabaseClient } from "@/lib/supabase";
+import { createAdminSupabaseClient, getOrderByStripeSession } from "@/lib/supabase";
 import { v4 as uuidv4 } from "uuid";
 
 export async function POST(request: NextRequest) {
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File;
-    const orderId = formData.get("orderId") as string;
+    const stripeSessionId = formData.get("orderId") as string;
 
-    if (!file || !orderId) {
+    if (!file || !stripeSessionId) {
       return NextResponse.json(
         { error: "Missing file or orderId" },
         { status: 400 }
@@ -33,12 +33,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Look up the real order by stripe session ID
+    const order = await getOrderByStripeSession(stripeSessionId);
+    if (!order) {
+      return NextResponse.json(
+        { error: "Order not found. Please ensure payment was completed." },
+        { status: 404 }
+      );
+    }
+
     const supabase = createAdminSupabaseClient();
 
-    // Generate unique file path
+    // Generate unique file path using real order ID
     const fileExtension = file.name.split(".").pop() || "jpg";
     const fileName = `${uuidv4()}.${fileExtension}`;
-    const filePath = `${orderId}/${fileName}`;
+    const filePath = `${order.id}/${fileName}`;
 
     // Convert File to ArrayBuffer then Uint8Array
     const arrayBuffer = await file.arrayBuffer();
@@ -65,13 +74,11 @@ export async function POST(request: NextRequest) {
       .from("headshots")
       .getPublicUrl(filePath);
 
-    // Save to uploads table
+    // Save to uploads table with real order ID
     const { error: dbError } = await supabase.from("uploads").insert({
-      order_id: orderId,
+      order_id: order.id,
       file_path: filePath,
       file_name: file.name,
-      file_size: file.size,
-      mime_type: file.type,
     });
 
     if (dbError) {
