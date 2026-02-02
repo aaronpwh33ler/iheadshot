@@ -47,10 +47,14 @@ export interface Upload {
 
 // Client-side Supabase client (for browser)
 export function createBrowserSupabaseClient() {
-  return createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!url || !anonKey) {
+    throw new Error("Missing Supabase environment variables");
+  }
+
+  return createBrowserClient(url, anonKey);
 }
 
 // Server-side Supabase client (for API routes and server components)
