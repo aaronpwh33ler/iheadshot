@@ -1,59 +1,43 @@
 import Stripe from "stripe";
+import { PRICING_TIERS, type PricingTier } from "./pricing-config";
 
-// Server-side Stripe client
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// Re-export for convenience
+export { PRICING_TIERS, type PricingTier } from "./pricing-config";
 
-// Pricing tiers configuration
-export const PRICING_TIERS = {
-  basic: {
-    name: "Basic",
-    price: 2900, // in cents
-    headshots: 40,
-    priceId: process.env.STRIPE_PRICE_BASIC,
-    features: [
-      "40 professional headshots",
-      "10 different styles",
-      "High-resolution downloads",
-      "30-day access",
-    ],
-  },
-  pro: {
-    name: "Pro",
-    price: 3900,
-    headshots: 80,
-    priceId: process.env.STRIPE_PRICE_PRO,
-    popular: true,
-    features: [
-      "80 professional headshots",
-      "20 different styles",
-      "High-resolution downloads",
-      "60-day access",
-      "Priority processing",
-    ],
-  },
-  premium: {
-    name: "Premium",
-    price: 5900,
-    headshots: 120,
-    priceId: process.env.STRIPE_PRICE_PREMIUM,
-    features: [
-      "120 professional headshots",
-      "30 different styles",
-      "4K resolution downloads",
-      "90-day access",
-      "Priority processing",
-      "Background removal",
-    ],
-  },
-} as const;
+// Server-side Stripe client - only initialized when actually used
+let stripeClient: Stripe | null = null;
 
-export type PricingTier = keyof typeof PRICING_TIERS;
+function getStripe(): Stripe {
+  if (!stripeClient) {
+    if (!process.env.STRIPE_SECRET_KEY) {
+      throw new Error("STRIPE_SECRET_KEY is not configured");
+    }
+    stripeClient = new Stripe(process.env.STRIPE_SECRET_KEY);
+  }
+  return stripeClient;
+}
+
+// Get the price ID for a tier (server-side only)
+function getPriceId(tier: PricingTier): string {
+  const priceIds: Record<PricingTier, string | undefined> = {
+    basic: process.env.STRIPE_PRICE_BASIC,
+    pro: process.env.STRIPE_PRICE_PRO,
+    premium: process.env.STRIPE_PRICE_PREMIUM,
+  };
+
+  const priceId = priceIds[tier];
+  if (!priceId) {
+    throw new Error(`Price ID not configured for tier: ${tier}`);
+  }
+  return priceId;
+}
 
 // Create a checkout session
 export async function createCheckoutSession(
   tier: PricingTier,
   email?: string
 ): Promise<Stripe.Checkout.Session> {
+  const stripe = getStripe();
   const tierConfig = PRICING_TIERS[tier];
 
   const session = await stripe.checkout.sessions.create({
@@ -89,6 +73,7 @@ export function constructWebhookEvent(
   payload: string | Buffer,
   signature: string
 ): Stripe.Event {
+  const stripe = getStripe();
   return stripe.webhooks.constructEvent(
     payload,
     signature,
@@ -100,5 +85,6 @@ export function constructWebhookEvent(
 export async function getCheckoutSession(
   sessionId: string
 ): Promise<Stripe.Checkout.Session> {
+  const stripe = getStripe();
   return stripe.checkout.sessions.retrieve(sessionId);
 }

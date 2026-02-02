@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PricingCard } from "@/components/PricingCard";
-import { PRICING_TIERS, type PricingTier } from "@/lib/stripe";
+import { PRICING_TIERS, type PricingTier } from "@/lib/pricing-config";
 import { Badge } from "@/components/ui/badge";
 import { Shield, Zap, Clock } from "lucide-react";
 
