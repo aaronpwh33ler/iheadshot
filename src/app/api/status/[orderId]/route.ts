@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  getOrder,
+  getOrderByStripeSession,
   getTrainingJob,
   getGeneratedImages,
 } from "@/lib/supabase";
@@ -12,8 +12,8 @@ export async function GET(
   try {
     const { orderId } = await params;
 
-    // Get order
-    const order = await getOrder(orderId);
+    // The orderId from the URL is actually the Stripe session ID
+    const order = await getOrderByStripeSession(orderId);
     if (!order) {
       return NextResponse.json(
         { error: "Order not found" },
@@ -21,11 +21,9 @@ export async function GET(
       );
     }
 
-    // Get training job
-    const trainingJob = await getTrainingJob(orderId);
-
-    // Get generated images
-    const images = await getGeneratedImages(orderId);
+    // Use the real order ID for related queries
+    const trainingJob = await getTrainingJob(order.id);
+    const images = await getGeneratedImages(order.id);
 
     // Calculate progress
     let progress = 0;

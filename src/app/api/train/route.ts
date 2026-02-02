@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createAdminSupabaseClient, getOrder, updateOrderStatus } from "@/lib/supabase";
+import { createAdminSupabaseClient, getOrderByStripeSession, updateOrderStatus } from "@/lib/supabase";
 import { createTune } from "@/lib/astria";
 import { sendTrainingStarted } from "@/lib/resend";
 
@@ -14,8 +14,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get order details
-    const order = await getOrder(orderId);
+    // The orderId from the URL is actually the Stripe session ID
+    // Look up the order by stripe_session_id
+    const order = await getOrderByStripeSession(orderId);
     if (!order) {
       return NextResponse.json(
         { error: "Order not found" },
@@ -33,7 +34,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = createAdminSupabaseClient();
 
-    // Get uploaded images
+    // Get uploaded images (stored with stripe session ID as order_id)
     const { data: uploads, error: uploadsError } = await supabase
       .from("uploads")
       .select("file_path")
@@ -68,13 +69,13 @@ export async function POST(request: NextRequest) {
     // Create fine-tuning job
     const tune = await createTune(
       imageUrls,
-      `headshot-${orderId}`,
+      `headshot-${order.id}`,
       callbackUrl
     );
 
-    // Create training job record
+    // Create training job record using the real order ID
     const { error: jobError } = await supabase.from("training_jobs").insert({
-      order_id: orderId,
+      order_id: order.id,
       astria_tune_id: tune.id.toString(),
       status: "training",
     });
@@ -83,12 +84,12 @@ export async function POST(request: NextRequest) {
       console.error("Failed to create training job record:", jobError);
     }
 
-    // Update order status
-    await updateOrderStatus(orderId, "training");
+    // Update order status using the real order ID
+    await updateOrderStatus(order.id, "training");
 
     // Send email notification
     if (order.email) {
-      await sendTrainingStarted(order.email, orderId);
+      await sendTrainingStarted(order.email, order.id);
     }
 
     return NextResponse.json({

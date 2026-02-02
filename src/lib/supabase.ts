@@ -77,6 +77,21 @@ export async function getOrder(orderId: string): Promise<Order | null> {
   return data;
 }
 
+export async function getOrderByStripeSession(stripeSessionId: string): Promise<Order | null> {
+  const supabase = createAdminSupabaseClient();
+  const { data, error } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("stripe_session_id", stripeSessionId)
+    .single();
+
+  if (error) {
+    console.error("Error fetching order by stripe session:", error);
+    return null;
+  }
+  return data;
+}
+
 export async function updateOrderStatus(
   orderId: string,
   status: Order["status"]
