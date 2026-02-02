@@ -60,7 +60,7 @@ export default function PricingPage() {
                 name={config.name}
                 price={config.price}
                 headshots={config.headshots}
-                features={config.features}
+                features={[...config.features]}
                 popular={"popular" in config && config.popular}
                 tier={tier}
                 onSelect={handleSelectTier}
