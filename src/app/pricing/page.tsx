@@ -100,10 +100,10 @@ export default function PricingPage() {
               <Clock className="h-6 w-6 text-purple-600" />
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">
-              Ready in 30 Seconds
+              Fast AI Generation
             </h3>
             <p className="text-sm text-gray-600">
-              Instant AI generation, no waiting.
+              Results delivered in minutes, not days.
             </p>
           </div>
         </div>

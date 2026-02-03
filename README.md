@@ -1,3 +1,19 @@
+## Claude AI Instructions
+
+**Project Path:** `/Users/aaron/Dropbox/Claude/Replication Framework/prospects/AI Headshot Generator/headshot-ai`
+
+When providing terminal commands, ALWAYS:
+- Give exact copy-paste commands
+- Include `cd` to the project folder at the start of every command
+- Never assume the user has already navigated to the project directory
+
+Example format:
+```bash
+cd "/Users/aaron/Dropbox/Claude/Replication Framework/prospects/AI Headshot Generator/headshot-ai" && npm run dev
+```
+
+---
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

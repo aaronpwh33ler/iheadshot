@@ -26,18 +26,18 @@ export default function HomePage() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               Professional Headshots
               <br />
-              <span className="text-blue-600">in 30 Minutes</span>
+              <span className="text-blue-600">in Seconds</span>
             </h1>
 
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-              No photographer. No studio. Just upload selfies and let AI create
+              No photographer. No studio. Just upload a selfie and let AI create
               stunning professional headshots for LinkedIn, resumes, and more.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button asChild size="xl">
                 <Link href="/pricing">
-                  Get Your Headshots — $29
+                  Get Your Headshots — $4.99
                 </Link>
               </Button>
               <Button asChild variant="outline" size="xl">

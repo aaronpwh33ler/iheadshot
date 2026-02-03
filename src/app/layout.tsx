@@ -10,9 +10,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "iHeadshot - Professional AI Headshots in 30 Minutes",
+  title: "iHeadshot - Professional AI Headshots in Seconds",
   description:
-    "Get stunning professional headshots without a photographer. Upload selfies, let AI learn your features, and download 40+ professional photos in 30 minutes.",
+    "Get stunning professional headshots without a photographer. Upload a selfie and get 10-20 professional photos instantly. Starting at just $4.99.",
   keywords: [
     "AI headshots",
     "professional headshots",
@@ -22,9 +22,9 @@ export const metadata: Metadata = {
     "iHeadshot",
   ],
   openGraph: {
-    title: "iHeadshot - Professional AI Headshots in 30 Minutes",
+    title: "iHeadshot - Professional AI Headshots in Seconds",
     description:
-      "Get stunning professional headshots without a photographer. Upload selfies and get 40+ professional photos.",
+      "Get stunning professional headshots without a photographer. Upload a selfie and get instant results.",
     type: "website",
   },
 };
