@@ -7,87 +7,97 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
-// All available headshot styles
+// IMPROVED PROMPTS: Focus on background/lighting, preserve the person's likeness
+// The key insight: prompts that work DON'T try to change clothing
 const HEADSHOT_STYLES: Record<string, { name: string; prompt: string }> = {
-  "corporate-navy": {
-    name: "Corporate Navy",
-    prompt: "Transform this into a professional corporate headshot. Clean white background, soft studio lighting, wearing a navy blue suit with white shirt, LinkedIn profile photo style, high resolution, sharp focus on face",
+  // === STUDIO BACKGROUNDS (clean, professional) ===
+  "studio-white": {
+    name: "Studio White",
+    prompt: "Professional headshot portrait of this person. Clean pure white studio background, soft diffused lighting, sharp focus on face, high resolution professional photograph, maintain exact facial features and likeness",
   },
-  "corporate-gray": {
-    name: "Corporate Gray",
-    prompt: "Transform this into a professional corporate headshot. Clean white background, soft studio lighting, wearing a charcoal gray suit, professional business portrait, high resolution, sharp focus",
+  "studio-gray": {
+    name: "Studio Gray",
+    prompt: "Professional headshot portrait of this person. Neutral gray gradient studio background, soft professional lighting, sharp focus on face, corporate portrait style, maintain exact facial features and likeness",
   },
-  "corporate-black": {
-    name: "Corporate Classic",
-    prompt: "Transform this into a professional corporate headshot. Gradient gray background, studio lighting, wearing a black suit with crisp white shirt, executive portrait style, high resolution",
+  "studio-dark": {
+    name: "Studio Dark",
+    prompt: "Professional headshot portrait of this person. Dark charcoal gradient background, dramatic studio lighting with soft shadows, executive portrait style, sharp focus on face, maintain exact facial features and likeness",
   },
-  "business-casual-blue": {
-    name: "Business Casual Blue",
-    prompt: "Transform this into a professional headshot. Soft gray background, natural lighting, wearing a light blue button-up shirt, friendly approachable expression, modern professional look",
+  "studio-warm": {
+    name: "Studio Warm",
+    prompt: "Professional headshot portrait of this person. Warm beige studio background, soft warm lighting, friendly approachable expression, sharp focus on face, maintain exact facial features and likeness",
   },
-  "business-casual-white": {
-    name: "Business Casual White",
-    prompt: "Transform this into a professional headshot. Soft neutral background, natural lighting, wearing a crisp white shirt, open collar, relaxed professional style, approachable",
-  },
-  "business-casual-polo": {
-    name: "Smart Casual",
-    prompt: "Transform this into a professional headshot. Light gray background, soft lighting, wearing a navy polo shirt, smart casual business style, friendly and professional",
-  },
-  "creative-turtleneck": {
-    name: "Creative Professional",
-    prompt: "Transform this into a stylish professional headshot. Minimalist white background, dramatic studio lighting, wearing a black turtleneck, creative industry style, designer aesthetic",
-  },
-  "creative-modern": {
-    name: "Modern Creative",
-    prompt: "Transform this into a modern professional headshot. Clean white background, soft artistic lighting, wearing a dark sweater, contemporary creative professional look",
-  },
+
+  // === OUTDOOR/NATURAL (these work best!) ===
   "outdoor-natural": {
     name: "Natural Light",
-    prompt: "Transform this into a professional outdoor headshot. Natural greenery background with soft bokeh, golden hour lighting, warm natural tones, approachable and friendly expression",
+    prompt: "Professional outdoor headshot portrait of this person. Natural greenery background with soft bokeh, golden hour warm lighting, approachable friendly expression, sharp focus on face, maintain exact facial features and likeness",
   },
   "outdoor-urban": {
     name: "Urban Professional",
-    prompt: "Transform this into a professional urban headshot. Blurred city background, natural daylight, wearing smart casual attire, modern urban professional style",
+    prompt: "Professional urban headshot portrait of this person. Blurred city background with soft bokeh, natural daylight, modern professional style, sharp focus on face, maintain exact facial features and likeness",
   },
-  "executive-classic": {
-    name: "Executive Classic",
-    prompt: "Transform this into an executive headshot. Gradient gray background, premium studio lighting, wearing a black suit with white shirt, CEO portrait style, authoritative yet approachable",
+  "outdoor-park": {
+    name: "Park Setting",
+    prompt: "Professional outdoor headshot portrait of this person. Lush green park background with soft bokeh, dappled natural sunlight, warm and approachable, sharp focus on face, maintain exact facial features and likeness",
   },
-  "executive-modern": {
-    name: "Executive Modern",
-    prompt: "Transform this into a modern executive headshot. Dark gradient background, dramatic lighting, wearing a dark suit, contemporary C-suite portrait, confident expression",
+  "outdoor-sunset": {
+    name: "Golden Hour",
+    prompt: "Professional outdoor headshot portrait of this person. Soft golden sunset background with warm bokeh, beautiful golden hour lighting, warm natural tones, sharp focus on face, maintain exact facial features and likeness",
   },
-  "tech-startup": {
-    name: "Tech Startup",
-    prompt: "Transform this into a tech startup headshot. Clean minimal background, bright modern lighting, wearing a casual hoodie or t-shirt, Silicon Valley style, innovative and approachable",
+
+  // === OFFICE/BUSINESS ENVIRONMENTS ===
+  "office-modern": {
+    name: "Modern Office",
+    prompt: "Professional headshot portrait of this person. Modern office background with soft bokeh, clean professional lighting, contemporary business setting, sharp focus on face, maintain exact facial features and likeness",
   },
-  "tech-professional": {
+  "office-executive": {
+    name: "Executive Office",
+    prompt: "Professional headshot portrait of this person. Elegant executive office background with soft bokeh, warm professional lighting, sophisticated business setting, sharp focus on face, maintain exact facial features and likeness",
+  },
+  "office-creative": {
+    name: "Creative Space",
+    prompt: "Professional headshot portrait of this person. Modern creative workspace background with soft bokeh, bright natural lighting, innovative professional setting, sharp focus on face, maintain exact facial features and likeness",
+  },
+  "office-library": {
+    name: "Library/Study",
+    prompt: "Professional headshot portrait of this person. Elegant library or study background with bookshelves in soft bokeh, warm ambient lighting, scholarly sophisticated setting, sharp focus on face, maintain exact facial features and likeness",
+  },
+
+  // === ARTISTIC/CREATIVE ===
+  "artistic-minimal": {
+    name: "Minimalist",
+    prompt: "Professional minimalist headshot portrait of this person. Clean simple white background, soft even lighting, contemporary minimalist style, artistic portrait, sharp focus on face, maintain exact facial features and likeness",
+  },
+  "artistic-dramatic": {
+    name: "Dramatic Light",
+    prompt: "Professional dramatic headshot portrait of this person. Dark moody background, dramatic side lighting creating depth, artistic portrait style, sharp focus on face, maintain exact facial features and likeness",
+  },
+  "artistic-colorful": {
+    name: "Vibrant Color",
+    prompt: "Professional headshot portrait of this person. Soft colorful gradient background in warm tones, bright cheerful lighting, creative modern style, sharp focus on face, maintain exact facial features and likeness",
+  },
+
+  // === INDUSTRY-SPECIFIC (focus on background/setting, not clothes) ===
+  "tech-modern": {
     name: "Tech Professional",
-    prompt: "Transform this into a tech professional headshot. Simple gray background, clean lighting, wearing a casual button-up shirt, modern tech industry style",
+    prompt: "Professional headshot portrait of this person. Modern tech office background with soft bokeh, clean bright lighting, innovative Silicon Valley style, sharp focus on face, maintain exact facial features and likeness",
   },
-  "healthcare-professional": {
-    name: "Healthcare Professional",
-    prompt: "Transform this into a healthcare professional headshot. Clean white background, bright even lighting, wearing professional attire, trustworthy and caring expression, medical professional style",
+  "healthcare-clean": {
+    name: "Healthcare",
+    prompt: "Professional headshot portrait of this person. Clean bright medical/healthcare setting background with soft bokeh, bright even lighting, trustworthy and caring expression, sharp focus on face, maintain exact facial features and likeness",
   },
-  "academic": {
-    name: "Academic Professional",
-    prompt: "Transform this into an academic professional headshot. Library or office background with soft bokeh, warm lighting, wearing smart casual or blazer, scholarly and approachable",
+  "finance-classic": {
+    name: "Finance",
+    prompt: "Professional headshot portrait of this person. Classic business environment background with soft bokeh, professional lighting, confident trustworthy expression, sharp focus on face, maintain exact facial features and likeness",
   },
-  "sales-professional": {
-    name: "Sales Professional",
-    prompt: "Transform this into a sales professional headshot. Clean bright background, confident lighting, wearing professional business attire, warm smile, trustworthy and personable",
-  },
-  "finance-professional": {
-    name: "Finance Professional",
-    prompt: "Transform this into a finance professional headshot. Conservative gray background, professional lighting, wearing a formal suit, confident and trustworthy expression",
-  },
-  "legal-professional": {
-    name: "Legal Professional",
-    prompt: "Transform this into a legal professional headshot. Traditional office background, formal lighting, wearing a dark suit, authoritative and professional demeanor",
-  },
-  "consultant": {
+  "consultant-pro": {
     name: "Consultant",
-    prompt: "Transform this into a consultant headshot. Modern office background, professional lighting, wearing business professional attire, confident and knowledgeable expression",
+    prompt: "Professional headshot portrait of this person. Modern business environment background with soft bokeh, professional lighting, confident knowledgeable expression, sharp focus on face, maintain exact facial features and likeness",
+  },
+  "academic-scholar": {
+    name: "Academic",
+    prompt: "Professional headshot portrait of this person. Academic setting with library or campus background in soft bokeh, warm natural lighting, scholarly approachable expression, sharp focus on face, maintain exact facial features and likeness",
   },
 };
 
@@ -96,6 +106,7 @@ async function saveImageToStorage(
   imageUrl: string,
   orderId: string,
   style: string,
+  variant: number,
   supabase: ReturnType<typeof createAdminSupabaseClient>
 ): Promise<string> {
   const response = await fetch(imageUrl);
@@ -104,7 +115,7 @@ async function saveImageToStorage(
   }
 
   const imageBuffer = await response.arrayBuffer();
-  const fileName = `${uuidv4()}-${style}.jpg`;
+  const fileName = `${uuidv4()}-${style}-v${variant}.jpg`;
   const filePath = `generated/${orderId}/${fileName}`;
 
   const { error: uploadError } = await supabase.storage
@@ -128,7 +139,7 @@ async function saveImageToStorage(
 
 export async function POST(request: NextRequest) {
   try {
-    const { orderId, imageUrl, styleId, quality = "standard" } = await request.json();
+    const { orderId, imageUrl, styleId, quality = "standard", variant = 1 } = await request.json();
 
     if (!orderId || !imageUrl || !styleId) {
       return NextResponse.json(
@@ -149,16 +160,27 @@ export async function POST(request: NextRequest) {
     const order = await getOrderByStripeSession(orderId);
     const realOrderId = order?.id || orderId;
 
-    console.log(`Generating ${styleConfig.name} for order ${realOrderId}...`);
+    console.log(`Generating ${styleConfig.name} (variant ${variant}) for order ${realOrderId}...`);
 
     // Use different models based on quality tier
     const model = quality === "premium"
       ? "black-forest-labs/flux-kontext-max" as const
       : "black-forest-labs/flux-kontext-pro" as const;
 
+    // Add slight variation to prompt for multiple variants of same style
+    let prompt = styleConfig.prompt;
+    if (variant > 1) {
+      const variations = [
+        ", slightly different angle",
+        ", subtle expression variation",
+        ", minor lighting adjustment",
+      ];
+      prompt += variations[(variant - 2) % variations.length];
+    }
+
     const output = await replicate.run(model, {
       input: {
-        prompt: styleConfig.prompt,
+        prompt,
         input_image: imageUrl,
         aspect_ratio: "3:4",
         output_format: "jpg",
@@ -181,6 +203,7 @@ export async function POST(request: NextRequest) {
       generatedUrl as string,
       realOrderId,
       styleId,
+      variant,
       supabase
     );
 
@@ -189,21 +212,22 @@ export async function POST(request: NextRequest) {
       order_id: realOrderId,
       image_url: permanentUrl,
       style: styleId,
-      style_name: styleConfig.name,
+      style_name: variant > 1 ? `${styleConfig.name} #${variant}` : styleConfig.name,
       quality,
       created_at: new Date().toISOString(),
     });
 
-    console.log(`Completed ${styleConfig.name}`);
+    console.log(`Completed ${styleConfig.name} variant ${variant}`);
 
     return NextResponse.json({
       success: true,
       image: {
-        id: `${styleId}-${Date.now()}`,
+        id: `${styleId}-${variant}-${Date.now()}`,
         style: styleId,
-        styleName: styleConfig.name,
+        styleName: variant > 1 ? `${styleConfig.name} #${variant}` : styleConfig.name,
         imageUrl: permanentUrl,
         quality,
+        variant,
       },
     });
   } catch (error) {

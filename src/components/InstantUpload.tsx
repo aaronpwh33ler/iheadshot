@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, AlertTriangle, Crown, ChevronRight, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,74 +21,63 @@ export interface GeneratedImage {
   styleName: string;
   imageUrl: string;
   quality: "standard" | "premium";
+  variant?: number;
 }
 
 interface FileWithPreview extends File {
   preview: string;
 }
 
-// Style categories for better organization
+// Style categories - focused on background/lighting, NOT clothing changes
 const STYLE_CATEGORIES = [
   {
-    name: "Corporate",
-    description: "Traditional business looks",
+    name: "Studio Backgrounds",
+    description: "Clean professional studio looks",
     styles: [
-      { id: "corporate-navy", name: "Navy Suit", desc: "Classic navy suit, white background" },
-      { id: "corporate-gray", name: "Gray Suit", desc: "Charcoal gray suit, professional" },
-      { id: "corporate-black", name: "Black Suit", desc: "Executive black suit, gradient bg" },
+      { id: "studio-white", name: "Studio White", desc: "Pure white background, soft lighting" },
+      { id: "studio-gray", name: "Studio Gray", desc: "Neutral gray gradient, professional" },
+      { id: "studio-dark", name: "Studio Dark", desc: "Dark dramatic background, executive" },
+      { id: "studio-warm", name: "Studio Warm", desc: "Warm beige tones, friendly" },
     ],
   },
   {
-    name: "Business Casual",
-    description: "Relaxed professional",
+    name: "Outdoor & Natural",
+    description: "Natural settings with beautiful light",
     styles: [
-      { id: "business-casual-blue", name: "Blue Shirt", desc: "Light blue button-up, approachable" },
-      { id: "business-casual-white", name: "White Shirt", desc: "Crisp white shirt, open collar" },
-      { id: "business-casual-polo", name: "Smart Casual", desc: "Navy polo, friendly look" },
+      { id: "outdoor-natural", name: "Natural Light", desc: "Greenery, golden hour lighting" },
+      { id: "outdoor-urban", name: "Urban Professional", desc: "City background, modern style" },
+      { id: "outdoor-park", name: "Park Setting", desc: "Green park, dappled sunlight" },
+      { id: "outdoor-sunset", name: "Golden Hour", desc: "Warm sunset glow, beautiful tones" },
     ],
   },
   {
-    name: "Creative",
-    description: "Modern & artistic",
+    name: "Office & Business",
+    description: "Professional business environments",
     styles: [
-      { id: "creative-turtleneck", name: "Turtleneck", desc: "Black turtleneck, designer aesthetic" },
-      { id: "creative-modern", name: "Modern", desc: "Dark sweater, contemporary vibe" },
+      { id: "office-modern", name: "Modern Office", desc: "Contemporary workspace, clean" },
+      { id: "office-executive", name: "Executive Office", desc: "Elegant, sophisticated setting" },
+      { id: "office-creative", name: "Creative Space", desc: "Modern creative workspace" },
+      { id: "office-library", name: "Library/Study", desc: "Bookshelves, scholarly vibe" },
     ],
   },
   {
-    name: "Outdoor",
-    description: "Natural settings",
+    name: "Artistic & Creative",
+    description: "Unique artistic styles",
     styles: [
-      { id: "outdoor-natural", name: "Natural Light", desc: "Golden hour, greenery background" },
-      { id: "outdoor-urban", name: "Urban", desc: "City background, street style" },
+      { id: "artistic-minimal", name: "Minimalist", desc: "Clean, contemporary artistic" },
+      { id: "artistic-dramatic", name: "Dramatic Light", desc: "Moody, dramatic side lighting" },
+      { id: "artistic-colorful", name: "Vibrant Color", desc: "Colorful gradient, creative" },
     ],
   },
   {
-    name: "Executive",
-    description: "C-suite presence",
+    name: "Industry Settings",
+    description: "Professional industry backgrounds",
     styles: [
-      { id: "executive-classic", name: "Classic Exec", desc: "CEO portrait style, authoritative" },
-      { id: "executive-modern", name: "Modern Exec", desc: "Contemporary C-suite look" },
-    ],
-  },
-  {
-    name: "Tech Industry",
-    description: "Silicon Valley style",
-    styles: [
-      { id: "tech-startup", name: "Startup", desc: "Casual hoodie, innovative vibe" },
-      { id: "tech-professional", name: "Tech Pro", desc: "Casual button-up, modern tech" },
-    ],
-  },
-  {
-    name: "Professional Services",
-    description: "Industry-specific",
-    styles: [
-      { id: "healthcare-professional", name: "Healthcare", desc: "Medical professional style" },
-      { id: "academic", name: "Academic", desc: "Scholarly, library background" },
-      { id: "sales-professional", name: "Sales", desc: "Warm, trustworthy presence" },
-      { id: "finance-professional", name: "Finance", desc: "Conservative, confident" },
-      { id: "legal-professional", name: "Legal", desc: "Authoritative, professional" },
-      { id: "consultant", name: "Consultant", desc: "Knowledgeable, business setting" },
+      { id: "tech-modern", name: "Tech Professional", desc: "Modern tech office vibe" },
+      { id: "healthcare-clean", name: "Healthcare", desc: "Clean medical setting" },
+      { id: "finance-classic", name: "Finance", desc: "Classic business environment" },
+      { id: "consultant-pro", name: "Consultant", desc: "Professional consulting style" },
+      { id: "academic-scholar", name: "Academic", desc: "Library or campus background" },
     ],
   },
 ];
@@ -108,6 +97,7 @@ export function InstantUpload({
   const [generating, setGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [currentGenerating, setCurrentGenerating] = useState<string | null>(null);
+  const [currentVariant, setCurrentVariant] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [overLimitWarning, setOverLimitWarning] = useState(false);
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
@@ -115,8 +105,22 @@ export function InstantUpload({
   const isPremium = tier === "premium";
   const isPro = tier === "pro";
 
-  // Calculate max styles based on tier
-  const maxStyles = isPremium ? 20 : isPro ? 20 : 10;
+  // Total images based on what they paid for
+  const totalImages = headshotCount;
+
+  // Calculate images per style based on selection
+  const getDistribution = () => {
+    if (selectedStyles.length === 0) return {};
+    const baseCount = Math.floor(totalImages / selectedStyles.length);
+    const remainder = totalImages % selectedStyles.length;
+
+    const distribution: Record<string, number> = {};
+    selectedStyles.forEach((styleId, index) => {
+      // Distribute remainder to first styles
+      distribution[styleId] = baseCount + (index < remainder ? 1 : 0);
+    });
+    return distribution;
+  };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError(null);
@@ -162,9 +166,6 @@ export function InstantUpload({
       if (prev.includes(styleId)) {
         return prev.filter((id) => id !== styleId);
       }
-      if (prev.length >= maxStyles) {
-        return prev;
-      }
       return [...prev, styleId];
     });
   };
@@ -177,8 +178,7 @@ export function InstantUpload({
       setSelectedStyles((prev) => prev.filter((id) => !styleIds.includes(id)));
     } else {
       const newStyles = styleIds.filter((id) => !selectedStyles.includes(id));
-      const available = maxStyles - selectedStyles.length;
-      setSelectedStyles((prev) => [...prev, ...newStyles.slice(0, available)]);
+      setSelectedStyles((prev) => [...prev, ...newStyles]);
     }
   };
 
@@ -209,16 +209,15 @@ export function InstantUpload({
       setUploadedUrls(urls);
       setStep("select");
 
-      // Pre-select popular styles based on tier
-      const defaultStyles = ["corporate-navy", "business-casual-blue", "creative-turtleneck", "outdoor-natural"];
-      setSelectedStyles(defaultStyles.slice(0, Math.min(defaultStyles.length, maxStyles)));
+      // Pre-select popular styles
+      setSelectedStyles(["outdoor-natural", "studio-white", "office-modern"]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Upload failed";
       setError(errorMessage);
     }
   };
 
-  // Generate headshots one at a time
+  // Generate headshots - distribute across selected styles
   const generateHeadshots = async () => {
     if (selectedStyles.length === 0) return;
 
@@ -227,9 +226,23 @@ export function InstantUpload({
     setError(null);
     setGeneratedImages([]);
 
+    const distribution = getDistribution();
+
     try {
+      // Build a queue of all generations needed
+      const generationQueue: { styleId: string; variant: number }[] = [];
+
       for (const styleId of selectedStyles) {
+        const count = distribution[styleId] || 1;
+        for (let v = 1; v <= count; v++) {
+          generationQueue.push({ styleId, variant: v });
+        }
+      }
+
+      // Process queue one at a time
+      for (const { styleId, variant } of generationQueue) {
         setCurrentGenerating(styleId);
+        setCurrentVariant(variant);
 
         const response = await fetch("/api/generate-single", {
           method: "POST",
@@ -241,12 +254,14 @@ export function InstantUpload({
             imageUrl: uploadedUrls[0],
             styleId,
             quality: isPremium ? "premium" : "standard",
+            variant,
           }),
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error(`Failed to generate ${styleId}:`, errorData.error);
+          console.error(`Failed to generate ${styleId} v${variant}:`, errorData.error);
+          // Continue with next image instead of stopping
           continue;
         }
 
@@ -278,6 +293,15 @@ export function InstantUpload({
     }
   };
 
+  // Helper to get style name
+  const getStyleName = (styleId: string) => {
+    for (const cat of STYLE_CATEGORIES) {
+      const style = cat.styles.find((s) => s.id === styleId);
+      if (style) return style.name;
+    }
+    return styleId;
+  };
+
   // Tier-specific styling
   const tierGradient = isPremium
     ? "from-amber-500 to-orange-600"
@@ -291,17 +315,17 @@ export function InstantUpload({
     ? "bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200"
     : "bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200";
 
+  const distribution = getDistribution();
+
   return (
     <div className="space-y-6">
       {/* Tier badge */}
-      {(isPremium || isPro) && (
-        <div className="text-center">
-          <Badge className={`bg-gradient-to-r ${tierGradient} text-white border-0 px-4 py-1`}>
-            {isPremium && <Crown className="h-3 w-3 mr-1" />}
-            {isPremium ? "Premium Package" : "Pro Package"} — Up to {maxStyles} Headshots
-          </Badge>
-        </div>
-      )}
+      <div className="text-center">
+        <Badge className={`bg-gradient-to-r ${tierGradient} text-white border-0 px-4 py-1`}>
+          {isPremium && <Crown className="h-3 w-3 mr-1" />}
+          {tier.charAt(0).toUpperCase() + tier.slice(1)} Package — {totalImages} Headshots
+        </Badge>
+      </div>
 
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-2 text-sm">
@@ -414,14 +438,26 @@ export function InstantUpload({
       {/* STEP 2: Select styles */}
       {step === "select" && (
         <div className="space-y-6">
-          <div className="text-center">
-            <p className="text-gray-600">
-              Select up to <span className="font-bold text-blue-600">{maxStyles}</span> styles.{" "}
-              <span className="font-medium">{selectedStyles.length}</span> selected.
+          {/* Distribution info */}
+          <div className={`p-4 rounded-xl border ${tierBg}`}>
+            <p className="text-center text-gray-700">
+              You&apos;re getting <span className="font-bold text-blue-600">{totalImages}</span> headshots.
+              {selectedStyles.length > 0 && (
+                <> Select your preferred styles — we&apos;ll create <span className="font-bold">{Math.floor(totalImages / selectedStyles.length)}{totalImages % selectedStyles.length > 0 ? '+' : ''}</span> of each!</>
+              )}
             </p>
+            {selectedStyles.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2 justify-center">
+                {selectedStyles.map((styleId) => (
+                  <Badge key={styleId} variant="secondary" className="text-xs">
+                    {getStyleName(styleId)}: {distribution[styleId]} images
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {STYLE_CATEGORIES.map((category) => (
               <div key={category.name} className="border rounded-xl p-4">
                 <div className="flex items-center justify-between mb-3">
@@ -436,22 +472,18 @@ export function InstantUpload({
                     {category.styles.every((s) => selectedStyles.includes(s.id)) ? "Deselect all" : "Select all"}
                   </button>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {category.styles.map((style) => {
                     const isSelected = selectedStyles.includes(style.id);
-                    const isDisabled = !isSelected && selectedStyles.length >= maxStyles;
 
                     return (
                       <button
                         key={style.id}
                         onClick={() => toggleStyle(style.id)}
-                        disabled={isDisabled}
                         className={`
                           p-3 rounded-lg text-left transition-all border-2
                           ${isSelected
                             ? "border-blue-500 bg-blue-50"
-                            : isDisabled
-                            ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
                             : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
                           }
                         `}
@@ -491,7 +523,7 @@ export function InstantUpload({
               className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90`}
             >
               <Sparkles className="h-5 w-5 mr-2" />
-              Generate {selectedStyles.length} Headshots
+              Generate {totalImages} Headshots
             </Button>
           </div>
         </div>
@@ -507,15 +539,15 @@ export function InstantUpload({
                 {generating ? "Creating your headshots..." : "Generation complete!"}
               </span>
               <span className="text-sm text-gray-600">
-                {generatedImages.length} / {selectedStyles.length}
+                {generatedImages.length} / {totalImages}
               </span>
             </div>
-            <Progress value={(generatedImages.length / selectedStyles.length) * 100} className="h-2" />
+            <Progress value={(generatedImages.length / totalImages) * 100} className="h-2" />
 
             {currentGenerating && (
               <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating: {STYLE_CATEGORIES.flatMap(c => c.styles).find(s => s.id === currentGenerating)?.name || currentGenerating}
+                Creating: {getStyleName(currentGenerating)} {currentVariant > 1 ? `#${currentVariant}` : ''}
               </p>
             )}
           </div>
@@ -523,7 +555,7 @@ export function InstantUpload({
           {/* Generated images grid - shows as they complete */}
           {generatedImages.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {generatedImages.map((image, index) => (
+              {generatedImages.map((image) => (
                 <div key={image.id} className="relative group animate-fade-in">
                   <div className="aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 shadow-lg">
                     <img
@@ -546,7 +578,8 @@ export function InstantUpload({
                 <div className="aspect-[3/4] rounded-xl bg-gray-100 flex flex-col items-center justify-center border-2 border-dashed border-gray-300">
                   <Loader2 className="h-8 w-8 text-gray-400 animate-spin mb-2" />
                   <p className="text-xs text-gray-500 text-center px-2">
-                    {STYLE_CATEGORIES.flatMap(c => c.styles).find(s => s.id === currentGenerating)?.name}
+                    {getStyleName(currentGenerating)}
+                    {currentVariant > 1 ? ` #${currentVariant}` : ''}
                   </p>
                 </div>
               )}
