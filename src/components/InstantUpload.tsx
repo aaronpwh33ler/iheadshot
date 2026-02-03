@@ -2,8 +2,9 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, Sparkles, AlertCircle, Loader2 } from "lucide-react";
+import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 
 interface InstantUploadProps {
   orderId: string;
@@ -19,24 +20,29 @@ export interface GeneratedImage {
   quality: "standard" | "premium";
 }
 
+interface FileWithPreview extends File {
+  preview: string;
+}
+
 export function InstantUpload({
   orderId,
   onGenerationComplete,
   onError,
 }: InstantUploadProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
+  const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [generating, setGenerating] = useState(false);
   const [status, setStatus] = useState<string>("");
+  const [progress, setProgress] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError(null);
-    if (acceptedFiles.length > 0) {
-      const selectedFile = acceptedFiles[0];
-      setFile(selectedFile);
-      setPreview(URL.createObjectURL(selectedFile));
-    }
+    const newFiles = acceptedFiles.slice(0, 5).map((file) =>
+      Object.assign(file, {
+        preview: URL.createObjectURL(file),
+      })
+    );
+    setFiles((prev) => [...prev, ...newFiles].slice(0, 5));
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -47,44 +53,53 @@ export function InstantUpload({
       "image/webp": [".webp"],
     },
     maxSize: 10 * 1024 * 1024,
-    maxFiles: 1,
+    maxFiles: 5,
     disabled: generating,
   });
 
-  const removeFile = () => {
-    if (preview) {
-      URL.revokeObjectURL(preview);
-    }
-    setFile(null);
-    setPreview(null);
+  const removeFile = (index: number) => {
+    setFiles((prev) => {
+      const newFiles = [...prev];
+      URL.revokeObjectURL(newFiles[index].preview);
+      newFiles.splice(index, 1);
+      return newFiles;
+    });
   };
 
   const generateHeadshots = async () => {
-    if (!file) return;
+    if (files.length === 0) return;
 
     setGenerating(true);
     setError(null);
-    setStatus("Uploading your photo...");
+    setStatus("Uploading your photo(s)...");
+    setProgress(5);
 
     try {
-      // Step 1: Upload the photo
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("orderId", orderId);
+      // Step 1: Upload all photos
+      const uploadedUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("orderId", orderId);
 
-      const uploadResponse = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
+        const uploadResponse = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      if (!uploadResponse.ok) {
-        throw new Error("Failed to upload photo");
+        if (!uploadResponse.ok) {
+          throw new Error("Failed to upload photo");
+        }
+
+        const { url } = await uploadResponse.json();
+        uploadedUrls.push(url);
+        setProgress(10 + (i / files.length) * 10);
       }
 
-      const { url: imageUrl } = await uploadResponse.json();
-
-      // Step 2: Generate headshots instantly
-      setStatus("AI is creating your headshots... (about 30 seconds)");
+      // Step 2: Generate headshots
+      setStatus("AI is creating your headshots... This takes 2-5 minutes for best quality.");
+      setProgress(25);
 
       const generateResponse = await fetch("/api/generate-instant", {
         method: "POST",
@@ -93,8 +108,8 @@ export function InstantUpload({
         },
         body: JSON.stringify({
           orderId,
-          imageUrl,
-          styles: ["corporate", "business-casual", "creative", "outdoor", "executive"],
+          imageUrl: uploadedUrls[0],
+          imageUrls: uploadedUrls,
           quality: "standard",
         }),
       });
@@ -104,9 +119,13 @@ export function InstantUpload({
         throw new Error(errorData.error || "Failed to generate headshots");
       }
 
+      setProgress(90);
+      setStatus("Finalizing your headshots...");
+
       const data = await generateResponse.json();
 
       if (data.success && data.images) {
+        setProgress(100);
         onGenerationComplete(data.images);
       } else {
         throw new Error("Generation failed - no images returned");
@@ -118,13 +137,14 @@ export function InstantUpload({
     } finally {
       setGenerating(false);
       setStatus("");
+      setProgress(0);
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Upload area or preview */}
-      {!file ? (
+      {/* Upload area */}
+      {files.length === 0 ? (
         <div
           {...getRootProps()}
           className={`
@@ -137,32 +157,69 @@ export function InstantUpload({
             <Upload className="h-10 w-10 text-white" />
           </div>
           <p className="text-xl font-semibold text-gray-900 mb-2">
-            {isDragActive ? "Drop your photo here" : "Upload your best selfie"}
+            {isDragActive ? "Drop your photos here" : "Upload your photos"}
           </p>
           <p className="text-gray-500 mb-4">
-            Just one photo - we'll create 5 professional styles instantly
+            1-5 photos for best results. More photos = better accuracy!
           </p>
           <p className="text-sm text-gray-400">
-            JPG, PNG, or WebP up to 10MB
+            JPG, PNG, or WebP up to 10MB each
           </p>
         </div>
       ) : (
-        <div className="relative">
-          <div className="aspect-square max-w-md mx-auto rounded-2xl overflow-hidden bg-gray-100 shadow-lg">
-            <img
-              src={preview!}
-              alt="Your photo"
-              className="w-full h-full object-cover"
-            />
+        <div className="space-y-4">
+          {/* Photo previews */}
+          <div className="flex flex-wrap gap-3 justify-center">
+            {files.map((file, index) => (
+              <div key={index} className="relative group">
+                <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 shadow-md">
+                  <img
+                    src={file.preview}
+                    alt={`Photo ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                {!generating && (
+                  <button
+                    onClick={() => removeFile(index)}
+                    className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            ))}
+
+            {/* Add more photos button */}
+            {files.length < 5 && !generating && (
+              <div
+                {...getRootProps()}
+                className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-gray-50 transition-colors"
+              >
+                <input {...getInputProps()} />
+                <ImageIcon className="h-6 w-6 text-gray-400 mb-1" />
+                <span className="text-xs text-gray-400">Add more</span>
+              </div>
+            )}
           </div>
-          {!generating && (
-            <button
-              onClick={removeFile}
-              className="absolute top-4 right-4 bg-red-500 text-white rounded-full p-2 shadow-lg hover:bg-red-600 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          )}
+
+          {/* Photo count info */}
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              <span className="font-medium">{files.length}</span> photo{files.length !== 1 ? "s" : ""} selected
+              {files.length === 1 && (
+                <span className="text-amber-600 ml-2">
+                  (Add more for better accuracy!)
+                </span>
+              )}
+              {files.length >= 3 && (
+                <span className="text-green-600 ml-2 flex items-center justify-center gap-1">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Great for accuracy!
+                </span>
+              )}
+            </p>
+          </div>
         </div>
       )}
 
@@ -174,16 +231,22 @@ export function InstantUpload({
         </div>
       )}
 
-      {/* Status message during generation */}
-      {generating && status && (
-        <div className="flex items-center justify-center gap-3 text-blue-600 bg-blue-50 p-4 rounded-xl">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <p className="font-medium">{status}</p>
+      {/* Progress during generation */}
+      {generating && (
+        <div className="space-y-4 bg-blue-50 p-6 rounded-xl">
+          <div className="flex items-center justify-center gap-3 text-blue-700">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <p className="font-medium">{status}</p>
+          </div>
+          <Progress value={progress} className="h-2" />
+          <p className="text-xs text-center text-blue-600">
+            Please don't close this page. Your headshots are being created!
+          </p>
         </div>
       )}
 
       {/* Generate button */}
-      {file && !generating && (
+      {files.length > 0 && !generating && (
         <Button
           onClick={generateHeadshots}
           size="lg"
@@ -209,7 +272,7 @@ export function InstantUpload({
             </p>
             <p className="flex items-center gap-2 text-green-700">
               <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-              Neutral expression or smile
+              Multiple photos (2-5 best)
             </p>
           </div>
           <div className="space-y-2">

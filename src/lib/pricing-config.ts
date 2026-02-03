@@ -4,10 +4,10 @@
 export const PRICING_TIERS = {
   basic: {
     name: "Basic",
-    price: 2900, // in cents
-    headshots: 40,
+    price: 1900, // in cents - $19
+    headshots: 10,
     features: [
-      "40 professional headshots",
+      "10 professional headshots",
       "10 different styles",
       "High-resolution downloads",
       "30-day access",
@@ -15,11 +15,11 @@ export const PRICING_TIERS = {
   },
   pro: {
     name: "Pro",
-    price: 3900,
-    headshots: 80,
+    price: 2900, // $29
+    headshots: 20,
     popular: true,
     features: [
-      "80 professional headshots",
+      "20 professional headshots",
       "20 different styles",
       "High-resolution downloads",
       "60-day access",
@@ -28,15 +28,15 @@ export const PRICING_TIERS = {
   },
   premium: {
     name: "Premium",
-    price: 5900,
-    headshots: 120,
+    price: 4900, // $49
+    headshots: 20,
     features: [
-      "120 professional headshots",
-      "30 different styles",
+      "20 premium headshots",
+      "20 different styles",
       "4K resolution downloads",
       "90-day access",
-      "Priority processing",
-      "Background removal",
+      "Premium AI model",
+      "Background variations",
     ],
   },
 } as const;

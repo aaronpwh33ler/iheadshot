@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { generateInstantHeadshots, getAvailableStyles } from "@/lib/replicate";
+import { generateInstantHeadshots, getStylesForTier, getAvailableStyles } from "@/lib/replicate";
 import { createAdminSupabaseClient, updateOrderStatus, getOrderByStripeSession } from "@/lib/supabase";
 import { v4 as uuidv4 } from "uuid";
 
@@ -43,26 +43,31 @@ async function saveImageToStorage(
 
 export async function POST(request: NextRequest) {
   try {
-    const { orderId, imageUrl, styles, quality = "standard" } = await request.json();
+    const { orderId, imageUrl, imageUrls, styles, quality = "standard" } = await request.json();
 
-    if (!orderId || !imageUrl) {
+    if (!orderId || (!imageUrl && (!imageUrls || imageUrls.length === 0))) {
       return NextResponse.json(
         { error: "Missing orderId or imageUrl" },
         { status: 400 }
       );
     }
 
-    // Get the real order ID from stripe session
+    // Support single image or multiple images
+    const primaryImageUrl = imageUrl || imageUrls[0];
+
+    // Get the real order ID and tier from stripe session
     const order = await getOrderByStripeSession(orderId);
     const realOrderId = order?.id || orderId;
+    const tier = order?.tier || "basic";
 
-    // Default to 5 most popular styles if none specified
-    const selectedStyles = styles || ["corporate", "business-casual", "creative", "outdoor", "executive"];
+    // Get styles based on tier
+    const tierStyles = getStylesForTier(tier);
+    const selectedStyleIds = styles || tierStyles.map(s => s.id);
 
-    console.log(`Starting instant generation for order ${realOrderId} with ${selectedStyles.length} styles`);
+    console.log(`Starting instant generation for order ${realOrderId} (${tier} tier) with ${selectedStyleIds.length} styles`);
 
-    // Generate headshots instantly (no training!)
-    const results = await generateInstantHeadshots(imageUrl, selectedStyles, quality);
+    // Generate headshots instantly
+    const results = await generateInstantHeadshots(primaryImageUrl, selectedStyleIds, quality);
 
     if (results.length === 0) {
       return NextResponse.json(
