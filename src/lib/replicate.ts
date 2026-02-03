@@ -66,8 +66,7 @@ export async function generateInstantHeadshots(
           prompt: style.prompt,
           input_image: inputImageUrl,
           aspect_ratio: "3:4",
-          output_format: "webp",
-          output_quality: 90,
+          output_format: "jpg",
           safety_tolerance: 2,
         },
       });
@@ -112,7 +111,6 @@ export async function regeneratePremium(
         input_image: inputImageUrl,
         aspect_ratio: "3:4",
         output_format: "png",
-        output_quality: 100,
         safety_tolerance: 2,
       },
     });
