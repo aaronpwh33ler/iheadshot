@@ -1,10 +1,10 @@
 // Pricing tiers configuration - safe for client-side usage
-// This file contains no server-side secrets
+// API cost: ~$0.04 per image (Replicate FLUX Kontext Pro)
 
 export const PRICING_TIERS = {
   basic: {
     name: "Basic",
-    price: 1900, // in cents - $19
+    price: 499, // $4.99 - Cost: $0.40, Profit: $4.59, Margin: 92%
     headshots: 10,
     features: [
       "10 professional headshots",
@@ -15,7 +15,7 @@ export const PRICING_TIERS = {
   },
   pro: {
     name: "Pro",
-    price: 2900, // $29
+    price: 899, // $8.99 - Cost: $0.80, Profit: $8.19, Margin: 91%
     headshots: 20,
     popular: true,
     features: [
@@ -28,7 +28,7 @@ export const PRICING_TIERS = {
   },
   premium: {
     name: "Premium",
-    price: 4900, // $49
+    price: 1499, // $14.99 - Cost: $0.80, Profit: $14.19, Margin: 95%
     headshots: 20,
     features: [
       "20 premium headshots",
