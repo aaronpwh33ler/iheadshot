@@ -4,119 +4,115 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
-// Expanded professional headshot styles - 10 base styles with variations
+// Professional headshot styles with FULL VARIETY - different poses, outfits, backgrounds
+// These prompts generate NEW images (not transform the input) while preserving identity
 const HEADSHOT_STYLES = [
-  // Corporate styles
+  // Corporate styles - different poses and compositions
   {
     id: "corporate-navy",
     name: "Corporate Navy",
-    prompt: "Transform this into a professional corporate headshot. Clean white background, soft studio lighting, wearing a navy blue suit with white shirt, LinkedIn profile photo style, high resolution, sharp focus on face",
+    prompt: "Professional corporate headshot photo of a person, wearing a tailored navy blue suit with white dress shirt, clean white studio background, soft professional lighting, slight smile, looking directly at camera, shoulders at slight angle, LinkedIn profile photo style, photorealistic, high resolution",
   },
   {
     id: "corporate-gray",
     name: "Corporate Gray",
-    prompt: "Transform this into a professional corporate headshot. Clean white background, soft studio lighting, wearing a charcoal gray suit, professional business portrait, high resolution, sharp focus",
+    prompt: "Professional business portrait of a person, wearing a charcoal gray blazer over light blue shirt, neutral gray gradient background, studio lighting from the side, confident expression, head tilted slightly, corporate executive style, photorealistic",
   },
   {
     id: "corporate-black",
     name: "Corporate Classic",
-    prompt: "Transform this into a professional corporate headshot. Gradient gray background, studio lighting, wearing a black suit with crisp white shirt, executive portrait style, high resolution",
+    prompt: "Executive headshot of a person, wearing classic black suit with crisp white shirt and subtle tie, dark gradient background, dramatic Rembrandt lighting, serious yet approachable expression, three-quarter view pose, CEO portrait style, photorealistic",
   },
-  // Business casual styles
+  // Business casual - varied poses
   {
     id: "business-casual-blue",
     name: "Business Casual Blue",
-    prompt: "Transform this into a professional headshot. Soft gray background, natural lighting, wearing a light blue button-up shirt, friendly approachable expression, modern professional look",
+    prompt: "Modern professional headshot of a person, wearing light blue oxford button-up shirt with sleeves slightly rolled, soft white background, natural window lighting, warm genuine smile, relaxed shoulders, friendly approachable vibe, photorealistic",
   },
   {
     id: "business-casual-white",
     name: "Business Casual White",
-    prompt: "Transform this into a professional headshot. Soft neutral background, natural lighting, wearing a crisp white shirt, open collar, relaxed professional style, approachable",
+    prompt: "Clean professional portrait of a person, wearing crisp white shirt with open collar no tie, light gray background, soft even lighting, subtle confident smile, slight head tilt, modern business casual style, photorealistic",
   },
   {
-    id: "business-casual-polo",
+    id: "smart-casual-sweater",
     name: "Smart Casual",
-    prompt: "Transform this into a professional headshot. Light gray background, soft lighting, wearing a navy polo shirt, smart casual business style, friendly and professional",
+    prompt: "Approachable professional headshot of a person, wearing navy blue crewneck sweater over collared shirt, warm beige background, soft natural lighting, friendly welcoming expression, shoulders squared to camera, startup professional vibe, photorealistic",
   },
-  // Creative styles
+  // Creative professional styles
   {
     id: "creative-turtleneck",
     name: "Creative Professional",
-    prompt: "Transform this into a stylish professional headshot. Minimalist white background, dramatic studio lighting, wearing a black turtleneck, creative industry style, designer aesthetic",
+    prompt: "Artistic professional headshot of a person, wearing black turtleneck sweater, pure white minimalist background, dramatic side lighting creating depth, thoughtful expression, face turned slightly with eyes to camera, designer aesthetic, photorealistic",
   },
   {
     id: "creative-modern",
     name: "Modern Creative",
-    prompt: "Transform this into a modern professional headshot. Clean white background, soft artistic lighting, wearing a dark sweater, contemporary creative professional look",
+    prompt: "Contemporary professional portrait of a person, wearing dark gray henley shirt, abstract blurred colorful background with bokeh, natural artistic lighting, genuine relaxed smile, casual confident pose, creative industry style, photorealistic",
   },
-  // Outdoor/natural styles
+  // Outdoor/Natural - environmental variety
   {
-    id: "outdoor-natural",
-    name: "Natural Light",
-    prompt: "Transform this into a professional outdoor headshot. Natural greenery background with soft bokeh, golden hour lighting, warm natural tones, approachable and friendly expression",
+    id: "outdoor-golden",
+    name: "Golden Hour",
+    prompt: "Outdoor professional headshot of a person, wearing smart casual blazer over t-shirt, natural park setting with green foliage bokeh background, warm golden hour sunlight, authentic happy expression, environmental portrait style, photorealistic",
   },
   {
     id: "outdoor-urban",
     name: "Urban Professional",
-    prompt: "Transform this into a professional urban headshot. Blurred city background, natural daylight, wearing smart casual attire, modern urban professional style",
+    prompt: "City professional portrait of a person, wearing modern business casual attire dark jacket, blurred urban architecture background, natural daylight, confident determined expression, slightly angled stance, metropolitan professional style, photorealistic",
   },
-  // Executive styles
+  {
+    id: "outdoor-natural",
+    name: "Natural Light",
+    prompt: "Natural light portrait of a person, wearing casual professional earth-tone clothing, soft blurred nature background with trees, diffused overcast lighting, warm approachable smile, relaxed natural pose, lifestyle headshot style, photorealistic",
+  },
+  // Executive variations
   {
     id: "executive-classic",
     name: "Executive Classic",
-    prompt: "Transform this into an executive headshot. Gradient gray background, premium studio lighting, wearing a black suit with white shirt, CEO portrait style, authoritative yet approachable",
+    prompt: "Distinguished executive portrait of a person, wearing premium dark suit with pocket square, rich mahogany wood panel background, professional studio lighting, dignified confident expression, powerful stance, boardroom ready style, photorealistic",
   },
   {
     id: "executive-modern",
     name: "Executive Modern",
-    prompt: "Transform this into a modern executive headshot. Dark gradient background, dramatic lighting, wearing a dark suit, contemporary C-suite portrait, confident expression",
+    prompt: "Contemporary executive headshot of a person, wearing slim fit charcoal suit modern cut, sleek dark gradient background, cinematic lighting, sharp focused expression, dynamic angle, C-suite modern style, photorealistic",
   },
-  // Tech/startup styles
+  // Tech/Startup styles
   {
     id: "tech-startup",
     name: "Tech Startup",
-    prompt: "Transform this into a tech startup headshot. Clean minimal background, bright modern lighting, wearing a casual hoodie or t-shirt, Silicon Valley style, innovative and approachable",
+    prompt: "Tech founder headshot of a person, wearing casual gray hoodie, clean minimal white background, bright even lighting, enthusiastic genuine smile, relaxed approachable pose, Silicon Valley startup style, photorealistic",
   },
   {
     id: "tech-professional",
     name: "Tech Professional",
-    prompt: "Transform this into a tech professional headshot. Simple gray background, clean lighting, wearing a casual button-up shirt, modern tech industry style",
+    prompt: "Modern tech professional portrait of a person, wearing fitted black t-shirt, simple gradient background, soft modern lighting, confident slight smile, shoulders angled, innovative tech industry style, photorealistic",
   },
-  // Healthcare/professional services
+  // Industry specific
   {
-    id: "healthcare-professional",
+    id: "healthcare",
     name: "Healthcare Professional",
-    prompt: "Transform this into a healthcare professional headshot. Clean white background, bright even lighting, wearing professional attire, trustworthy and caring expression, medical professional style",
+    prompt: "Healthcare professional headshot of a person, wearing clean white medical coat over blue scrubs, clinical white background, bright even lighting, compassionate trustworthy smile, professional medical portrait style, photorealistic",
   },
-  // Academic/education
   {
     id: "academic",
     name: "Academic Professional",
-    prompt: "Transform this into an academic professional headshot. Library or office background with soft bokeh, warm lighting, wearing smart casual or blazer, scholarly and approachable",
+    prompt: "Academic professional portrait of a person, wearing tweed blazer with elbow patches over button shirt, warm library background with blurred bookshelves, natural warm lighting, intellectual friendly expression, scholarly style, photorealistic",
   },
-  // Real estate/sales
   {
-    id: "sales-professional",
-    name: "Sales Professional",
-    prompt: "Transform this into a sales professional headshot. Clean bright background, confident lighting, wearing professional business attire, warm smile, trustworthy and personable",
+    id: "real-estate",
+    name: "Real Estate Agent",
+    prompt: "Real estate professional headshot of a person, wearing sharp business suit in navy, bright clean background, professional lighting, big confident trustworthy smile, welcoming pose, agent profile photo style, photorealistic",
   },
-  // Finance
   {
-    id: "finance-professional",
+    id: "finance",
     name: "Finance Professional",
-    prompt: "Transform this into a finance professional headshot. Conservative gray background, professional lighting, wearing a formal suit, confident and trustworthy expression",
+    prompt: "Finance professional portrait of a person, wearing conservative pinstripe suit with subtle tie, classic gray background, traditional portrait lighting, composed confident expression, trust-inspiring pose, Wall Street style, photorealistic",
   },
-  // Legal
   {
-    id: "legal-professional",
+    id: "legal",
     name: "Legal Professional",
-    prompt: "Transform this into a legal professional headshot. Traditional office background, formal lighting, wearing a dark suit, authoritative and professional demeanor",
-  },
-  // Consulting
-  {
-    id: "consultant",
-    name: "Consultant",
-    prompt: "Transform this into a consultant headshot. Modern office background, professional lighting, wearing business professional attire, confident and knowledgeable expression",
+    prompt: "Attorney professional headshot of a person, wearing formal dark suit with conservative tie, traditional law office background with books, dignified lighting, serious authoritative expression, commanding presence, legal industry style, photorealistic",
   },
 ];
 
@@ -141,7 +137,8 @@ export function getStylesForTier(tier: string): typeof HEADSHOT_STYLES {
   }
 }
 
-// Generate instant headshots using Replicate's FLUX Kontext
+// Generate instant headshots using InstantID for identity-preserving generation
+// This creates NEW images with different poses/outfits while keeping the same face
 export async function generateInstantHeadshots(
   inputImageUrl: string,
   styles: string[] = ["corporate-navy", "business-casual-blue", "creative-turtleneck"],
@@ -149,39 +146,44 @@ export async function generateInstantHeadshots(
 ): Promise<GenerationResult[]> {
   const selectedStyles = HEADSHOT_STYLES.filter((s) => styles.includes(s.id));
 
-  // Use different models based on quality tier
-  const model = quality === "premium"
-    ? "black-forest-labs/flux-kontext-max" as const
-    : "black-forest-labs/flux-kontext-pro" as const;
-
   const results: GenerationResult[] = [];
+
+  // Negative prompt to avoid common issues
+  const negativePrompt = "blurry, low quality, distorted face, extra limbs, bad anatomy, disfigured, poorly drawn face, mutation, mutated, ugly, disgusting, watermark, text, logo, cartoon, anime, illustration, painting, drawing, sketch";
 
   // Generate headshots sequentially to avoid rate limits
   for (const style of selectedStyles) {
     try {
-      console.log(`Generating ${style.name}...`);
+      console.log(`Generating ${style.name} with InstantID...`);
 
-      const output = await replicate.run(model, {
+      // Use InstantID for identity-preserving generation with full variety
+      const output = await replicate.run("zsxkib/instant-id" as `${string}/${string}`, {
         input: {
+          image: inputImageUrl,
           prompt: style.prompt,
-          input_image: inputImageUrl,
-          aspect_ratio: "3:4",
+          negative_prompt: negativePrompt,
+          num_inference_steps: quality === "premium" ? 30 : 20,
+          guidance_scale: 5,
+          ip_adapter_scale: 0.8, // Strong identity preservation
+          controlnet_conditioning_scale: 0.8,
+          num_outputs: 1,
           output_format: "jpg",
-          safety_tolerance: 2,
+          output_quality: quality === "premium" ? 95 : 85,
         },
       });
 
       const imageUrl = Array.isArray(output) ? output[0] : output;
 
-      results.push({
-        id: `${style.id}-${Date.now()}`,
-        style: style.id,
-        styleName: style.name,
-        imageUrl: imageUrl as string,
-        quality,
-      });
-
-      console.log(`Completed ${style.name}`);
+      if (imageUrl) {
+        results.push({
+          id: `${style.id}-${Date.now()}`,
+          style: style.id,
+          styleName: style.name,
+          imageUrl: imageUrl as string,
+          quality,
+        });
+        console.log(`Completed ${style.name}`);
+      }
 
       // Small delay between requests to respect rate limits
       if (selectedStyles.indexOf(style) < selectedStyles.length - 1) {
@@ -189,6 +191,34 @@ export async function generateInstantHeadshots(
       }
     } catch (error) {
       console.error(`Failed to generate ${style.name}:`, error);
+
+      // Fallback to FLUX Kontext if InstantID fails
+      try {
+        console.log(`Falling back to FLUX Kontext for ${style.name}...`);
+        const fallbackOutput = await replicate.run("black-forest-labs/flux-kontext-pro" as `${string}/${string}`, {
+          input: {
+            prompt: style.prompt,
+            input_image: inputImageUrl,
+            aspect_ratio: "3:4",
+            output_format: "jpg",
+            safety_tolerance: 2,
+          },
+        });
+
+        const fallbackUrl = Array.isArray(fallbackOutput) ? fallbackOutput[0] : fallbackOutput;
+        if (fallbackUrl) {
+          results.push({
+            id: `${style.id}-${Date.now()}`,
+            style: style.id,
+            styleName: style.name,
+            imageUrl: fallbackUrl as string,
+            quality,
+          });
+          console.log(`Completed ${style.name} (fallback)`);
+        }
+      } catch (fallbackError) {
+        console.error(`Fallback also failed for ${style.name}:`, fallbackError);
+      }
     }
   }
 
@@ -203,15 +233,22 @@ export async function regeneratePremium(
   const styleConfig = HEADSHOT_STYLES.find((s) => s.id === style);
   if (!styleConfig) return null;
 
+  const negativePrompt = "blurry, low quality, distorted face, extra limbs, bad anatomy, disfigured, poorly drawn face, mutation, mutated, ugly, disgusting, watermark, text, logo, cartoon, anime, illustration, painting, drawing, sketch";
+
   try {
-    // Use the max model for premium quality
-    const output = await replicate.run("black-forest-labs/flux-kontext-max", {
+    // Use InstantID with premium settings
+    const output = await replicate.run("zsxkib/instant-id" as `${string}/${string}`, {
       input: {
-        prompt: styleConfig.prompt + ", ultra high quality, 8K resolution, extremely detailed",
-        input_image: inputImageUrl,
-        aspect_ratio: "3:4",
+        image: inputImageUrl,
+        prompt: styleConfig.prompt + ", ultra high quality, extremely detailed, professional photography, 8K",
+        negative_prompt: negativePrompt,
+        num_inference_steps: 40, // More steps for premium
+        guidance_scale: 6,
+        ip_adapter_scale: 0.85, // Slightly higher for premium
+        controlnet_conditioning_scale: 0.8,
+        num_outputs: 1,
         output_format: "png",
-        safety_tolerance: 2,
+        output_quality: 100,
       },
     });
 
