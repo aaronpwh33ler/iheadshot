@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, Image as ImageIcon, AlertCircle } from "lucide-react";
+import { Upload, X, Image as ImageIcon, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
@@ -28,6 +28,7 @@ export function UploadDropzone({
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadComplete, setUploadComplete] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback(
@@ -98,10 +99,15 @@ export function UploadDropzone({
         setUploadProgress(((i + 1) / files.length) * 100);
       }
 
+      // Show upload complete state
+      setUploadComplete(true);
+      setUploading(false);
+
+      // Brief pause to show success, then notify parent
+      await new Promise(resolve => setTimeout(resolve, 500));
       onFilesUploaded(uploadedUrls);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
-    } finally {
       setUploading(false);
     }
   };
@@ -177,11 +183,18 @@ export function UploadDropzone({
             ))}
           </div>
 
-          {uploading && (
+          {(uploading || uploadComplete) && (
             <div className="space-y-2">
-              <Progress value={uploadProgress} />
-              <p className="text-sm text-gray-500 text-center">
-                Uploading... {Math.round(uploadProgress)}%
+              <Progress value={uploadProgress} className={uploadComplete ? "[&>div]:bg-green-600" : ""} />
+              <p className={`text-sm text-center flex items-center justify-center gap-2 ${uploadComplete ? "text-green-600 font-medium" : "text-gray-500"}`}>
+                {uploadComplete ? (
+                  <>
+                    <CheckCircle2 className="h-4 w-4" />
+                    Upload complete!
+                  </>
+                ) : (
+                  `Uploading... ${Math.round(uploadProgress)}%`
+                )}
               </p>
             </div>
           )}

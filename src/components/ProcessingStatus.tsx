@@ -149,7 +149,7 @@ export function ProcessingStatus({ orderId, initialStatus = "pending" }: Process
           <StatusStep
             step={1}
             label="Photos uploaded"
-            active={["training", "generating", "completed"].includes(status.status)}
+            active={false}
             completed={["training", "generating", "completed"].includes(status.status)}
           />
           <StatusStep
