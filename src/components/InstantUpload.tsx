@@ -28,56 +28,37 @@ interface FileWithPreview extends File {
   preview: string;
 }
 
-// Style categories - focused on background/lighting, NOT clothing changes
+// Simplified styles - ONLY ones that preserve likeness well
+// These focus purely on background/lighting with minimal complexity
 const STYLE_CATEGORIES = [
   {
-    name: "Studio Backgrounds",
+    name: "🌿 Outdoor & Natural",
+    description: "Beautiful natural lighting - Best for likeness!",
+    recommended: true,
+    styles: [
+      { id: "outdoor-natural", name: "Natural Light", desc: "Greenery + golden hour", preview: "🌳" },
+      { id: "outdoor-sunset", name: "Golden Hour", desc: "Warm sunset glow", preview: "🌅" },
+      { id: "outdoor-park", name: "Park Setting", desc: "Lush green backdrop", preview: "🌲" },
+      { id: "outdoor-urban", name: "City Background", desc: "Urban bokeh", preview: "🏙️" },
+    ],
+  },
+  {
+    name: "📸 Studio Backgrounds",
     description: "Clean professional studio looks",
     styles: [
-      { id: "studio-white", name: "Studio White", desc: "Pure white background, soft lighting" },
-      { id: "studio-gray", name: "Studio Gray", desc: "Neutral gray gradient, professional" },
-      { id: "studio-dark", name: "Studio Dark", desc: "Dark dramatic background, executive" },
-      { id: "studio-warm", name: "Studio Warm", desc: "Warm beige tones, friendly" },
+      { id: "studio-white", name: "Pure White", desc: "Classic clean look", preview: "⬜" },
+      { id: "studio-light-gray", name: "Light Gray", desc: "Soft neutral tone", preview: "🔘" },
+      { id: "studio-dark", name: "Dark Gradient", desc: "Dramatic executive", preview: "⬛" },
+      { id: "studio-warm", name: "Warm Beige", desc: "Friendly & approachable", preview: "🟨" },
     ],
   },
   {
-    name: "Outdoor & Natural",
-    description: "Natural settings with beautiful light",
+    name: "✨ Artistic",
+    description: "Creative lighting effects",
     styles: [
-      { id: "outdoor-natural", name: "Natural Light", desc: "Greenery, golden hour lighting" },
-      { id: "outdoor-urban", name: "Urban Professional", desc: "City background, modern style" },
-      { id: "outdoor-park", name: "Park Setting", desc: "Green park, dappled sunlight" },
-      { id: "outdoor-sunset", name: "Golden Hour", desc: "Warm sunset glow, beautiful tones" },
-    ],
-  },
-  {
-    name: "Office & Business",
-    description: "Professional business environments",
-    styles: [
-      { id: "office-modern", name: "Modern Office", desc: "Contemporary workspace, clean" },
-      { id: "office-executive", name: "Executive Office", desc: "Elegant, sophisticated setting" },
-      { id: "office-creative", name: "Creative Space", desc: "Modern creative workspace" },
-      { id: "office-library", name: "Library/Study", desc: "Bookshelves, scholarly vibe" },
-    ],
-  },
-  {
-    name: "Artistic & Creative",
-    description: "Unique artistic styles",
-    styles: [
-      { id: "artistic-minimal", name: "Minimalist", desc: "Clean, contemporary artistic" },
-      { id: "artistic-dramatic", name: "Dramatic Light", desc: "Moody, dramatic side lighting" },
-      { id: "artistic-colorful", name: "Vibrant Color", desc: "Colorful gradient, creative" },
-    ],
-  },
-  {
-    name: "Industry Settings",
-    description: "Professional industry backgrounds",
-    styles: [
-      { id: "tech-modern", name: "Tech Professional", desc: "Modern tech office vibe" },
-      { id: "healthcare-clean", name: "Healthcare", desc: "Clean medical setting" },
-      { id: "finance-classic", name: "Finance", desc: "Classic business environment" },
-      { id: "consultant-pro", name: "Consultant", desc: "Professional consulting style" },
-      { id: "academic-scholar", name: "Academic", desc: "Library or campus background" },
+      { id: "artistic-dramatic", name: "Dramatic Side Light", desc: "Moody & artistic", preview: "🎭" },
+      { id: "artistic-soft", name: "Soft Glow", desc: "Ethereal lighting", preview: "💫" },
+      { id: "artistic-warm", name: "Warm Tones", desc: "Rich golden colors", preview: "🔥" },
     ],
   },
 ];
@@ -95,6 +76,7 @@ export function InstantUpload({
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [currentGenerating, setCurrentGenerating] = useState<string | null>(null);
   const [currentVariant, setCurrentVariant] = useState(1);
@@ -116,7 +98,6 @@ export function InstantUpload({
 
     const distribution: Record<string, number> = {};
     selectedStyles.forEach((styleId, index) => {
-      // Distribute remainder to first styles
       distribution[styleId] = baseCount + (index < remainder ? 1 : 0);
     });
     return distribution;
@@ -148,7 +129,7 @@ export function InstantUpload({
       "image/webp": [".webp"],
     },
     maxSize: 10 * 1024 * 1024,
-    disabled: generating,
+    disabled: generating || uploading,
   });
 
   const removeFile = (index: number) => {
@@ -185,6 +166,7 @@ export function InstantUpload({
   // Upload photos and move to style selection
   const handleUploadComplete = async () => {
     setError(null);
+    setUploading(true);
 
     try {
       const urls: string[] = [];
@@ -209,15 +191,17 @@ export function InstantUpload({
       setUploadedUrls(urls);
       setStep("select");
 
-      // Pre-select popular styles
-      setSelectedStyles(["outdoor-natural", "studio-white", "office-modern"]);
+      // Pre-select the best styles (outdoor ones work best)
+      setSelectedStyles(["outdoor-natural", "outdoor-sunset", "studio-white"]);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Upload failed";
       setError(errorMessage);
+    } finally {
+      setUploading(false);
     }
   };
 
-  // Generate headshots - distribute across selected styles
+  // Generate headshots with timeout protection
   const generateHeadshots = async () => {
     if (selectedStyles.length === 0) return;
 
@@ -229,7 +213,6 @@ export function InstantUpload({
     const distribution = getDistribution();
 
     try {
-      // Build a queue of all generations needed
       const generationQueue: { styleId: string; variant: number }[] = [];
 
       for (const styleId of selectedStyles) {
@@ -239,42 +222,57 @@ export function InstantUpload({
         }
       }
 
-      // Process queue one at a time
       for (const { styleId, variant } of generationQueue) {
         setCurrentGenerating(styleId);
         setCurrentVariant(variant);
 
-        const response = await fetch("/api/generate-single", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            orderId,
-            imageUrl: uploadedUrls[0],
-            styleId,
-            quality: isPremium ? "premium" : "standard",
-            variant,
-          }),
-        });
+        try {
+          // Add timeout protection (90 seconds per image)
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 90000);
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          console.error(`Failed to generate ${styleId} v${variant}:`, errorData.error);
-          // Continue with next image instead of stopping
+          const response = await fetch("/api/generate-single", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              orderId,
+              imageUrl: uploadedUrls[0],
+              styleId,
+              quality: isPremium ? "premium" : "standard",
+              variant,
+            }),
+            signal: controller.signal,
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error(`Failed to generate ${styleId} v${variant}:`, errorData.error);
+            continue;
+          }
+
+          const data = await response.json();
+
+          if (data.success && data.image) {
+            setGeneratedImages((prev) => [...prev, data.image]);
+          }
+        } catch (fetchError) {
+          if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+            console.error(`Timeout generating ${styleId} v${variant}, skipping...`);
+          } else {
+            console.error(`Error generating ${styleId} v${variant}:`, fetchError);
+          }
+          // Continue to next image instead of stopping
           continue;
-        }
-
-        const data = await response.json();
-
-        if (data.success && data.image) {
-          setGeneratedImages((prev) => [...prev, data.image]);
         }
       }
 
       setCurrentGenerating(null);
 
-      // Get final list and complete
+      // Complete with whatever we have
       setGeneratedImages((current) => {
         if (current.length > 0) {
           setTimeout(() => onGenerationComplete(current), 500);
@@ -293,13 +291,13 @@ export function InstantUpload({
     }
   };
 
-  // Helper to get style name
-  const getStyleName = (styleId: string) => {
+  // Helper to get style info
+  const getStyleInfo = (styleId: string) => {
     for (const cat of STYLE_CATEGORIES) {
       const style = cat.styles.find((s) => s.id === styleId);
-      if (style) return style.name;
+      if (style) return style;
     }
-    return styleId;
+    return { name: styleId, desc: "", preview: "📷" };
   };
 
   // Tier-specific styling
@@ -392,16 +390,18 @@ export function InstantUpload({
                     <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 shadow-md">
                       <img src={file.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
                     </div>
-                    <button
-                      onClick={() => removeFile(index)}
-                      className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
+                    {!uploading && (
+                      <button
+                        onClick={() => removeFile(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
                   </div>
                 ))}
 
-                {files.length < 5 && (
+                {files.length < 5 && !uploading && (
                   <div
                     {...getRootProps()}
                     className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-gray-50"
@@ -424,81 +424,121 @@ export function InstantUpload({
 
               <Button
                 onClick={handleUploadComplete}
+                disabled={uploading}
                 size="lg"
-                className={`w-full py-6 text-lg bg-gradient-to-r ${tierGradient} hover:opacity-90`}
+                className={`w-full py-6 text-lg bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer disabled:cursor-wait disabled:opacity-70`}
               >
-                Continue to Style Selection
-                <ChevronRight className="h-5 w-5 ml-2" />
+                {uploading ? (
+                  <>
+                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
+                    Uploading Photos...
+                  </>
+                ) : (
+                  <>
+                    Continue to Style Selection
+                    <ChevronRight className="h-5 w-5 ml-2" />
+                  </>
+                )}
               </Button>
             </div>
           )}
         </>
       )}
 
-      {/* STEP 2: Select styles */}
+      {/* STEP 2: Select styles - IMPROVED UI */}
       {step === "select" && (
         <div className="space-y-6">
-          {/* Distribution info */}
-          <div className={`p-4 rounded-xl border ${tierBg}`}>
-            <p className="text-center text-gray-700">
-              You&apos;re getting <span className="font-bold text-blue-600">{totalImages}</span> headshots.
-              {selectedStyles.length > 0 && (
-                <> Select your preferred styles — we&apos;ll create <span className="font-bold">{Math.floor(totalImages / selectedStyles.length)}{totalImages % selectedStyles.length > 0 ? '+' : ''}</span> of each!</>
-              )}
+          {/* Clear explanation box */}
+          <div className={`p-5 rounded-xl border-2 ${tierBg}`}>
+            <h3 className="font-bold text-lg text-gray-900 mb-2 text-center">
+              How many of each style do you want?
+            </h3>
+            <p className="text-center text-gray-600 mb-4">
+              You have <span className="font-bold text-blue-600 text-lg">{totalImages}</span> headshots to create.
+              Select the backgrounds you like — we&apos;ll divide them evenly!
             </p>
-            {selectedStyles.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2 justify-center">
-                {selectedStyles.map((styleId) => (
-                  <Badge key={styleId} variant="secondary" className="text-xs">
-                    {getStyleName(styleId)}: {distribution[styleId]} images
-                  </Badge>
-                ))}
+
+            {/* Visual breakdown */}
+            {selectedStyles.length > 0 ? (
+              <div className="bg-white rounded-lg p-4 border">
+                <p className="text-sm text-gray-500 mb-3 text-center">Your headshot breakdown:</p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {selectedStyles.map((styleId) => {
+                    const style = getStyleInfo(styleId);
+                    const count = distribution[styleId] || 0;
+                    return (
+                      <div key={styleId} className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-full border border-blue-200">
+                        <span className="text-lg">{style.preview}</span>
+                        <span className="font-medium text-gray-900">{style.name}</span>
+                        <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                          ×{count}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gray-50 rounded-lg p-4 border border-dashed border-gray-300 text-center">
+                <p className="text-gray-500">👆 Select styles below to see your breakdown</p>
               </div>
             )}
           </div>
 
-          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+          {/* Style categories */}
+          <div className="space-y-4">
             {STYLE_CATEGORIES.map((category) => (
-              <div key={category.name} className="border rounded-xl p-4">
+              <div key={category.name} className={`border-2 rounded-xl p-4 ${category.recommended ? 'border-green-300 bg-green-50/50' : 'border-gray-200'}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div>
-                    <h3 className="font-semibold text-gray-900">{category.name}</h3>
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                      {category.name}
+                      {category.recommended && (
+                        <Badge className="bg-green-500 text-white text-xs">Recommended</Badge>
+                      )}
+                    </h3>
                     <p className="text-xs text-gray-500">{category.description}</p>
                   </div>
                   <button
                     onClick={() => selectAllInCategory(category.styles)}
-                    className="text-xs text-blue-600 hover:text-blue-800"
+                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
                   >
-                    {category.styles.every((s) => selectedStyles.includes(s.id)) ? "Deselect all" : "Select all"}
+                    {category.styles.every((s) => selectedStyles.includes(s.id)) ? "Remove all" : "Add all"}
                   </button>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {category.styles.map((style) => {
                     const isSelected = selectedStyles.includes(style.id);
+                    const count = distribution[style.id] || 0;
 
                     return (
                       <button
                         key={style.id}
                         onClick={() => toggleStyle(style.id)}
                         className={`
-                          p-3 rounded-lg text-left transition-all border-2
+                          relative p-4 rounded-xl text-center transition-all border-2 cursor-pointer
                           ${isSelected
-                            ? "border-blue-500 bg-blue-50"
+                            ? "border-blue-500 bg-blue-50 shadow-md"
                             : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
                           }
                         `}
                       >
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className={`font-medium text-sm ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
-                              {style.name}
-                            </p>
-                            <p className="text-xs text-gray-500 mt-0.5">{style.desc}</p>
-                          </div>
-                          {isSelected && (
-                            <CheckCircle2 className="h-5 w-5 text-blue-500 flex-shrink-0" />
-                          )}
-                        </div>
+                        <span className="text-3xl mb-2 block">{style.preview}</span>
+                        <p className={`font-medium text-sm ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
+                          {style.name}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">{style.desc}</p>
+
+                        {isSelected && (
+                          <>
+                            <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1">
+                              <CheckCircle2 className="h-4 w-4" />
+                            </div>
+                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                              ×{count}
+                            </div>
+                          </>
+                        )}
                       </button>
                     );
                   })}
@@ -511,7 +551,7 @@ export function InstantUpload({
             <Button
               variant="outline"
               onClick={() => setStep("upload")}
-              className="flex-1"
+              className="flex-1 cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4 mr-1" />
               Back
@@ -520,7 +560,7 @@ export function InstantUpload({
               onClick={generateHeadshots}
               disabled={selectedStyles.length === 0}
               size="lg"
-              className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90`}
+              className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer disabled:cursor-not-allowed`}
             >
               <Sparkles className="h-5 w-5 mr-2" />
               Generate {totalImages} Headshots
@@ -529,10 +569,9 @@ export function InstantUpload({
         </div>
       )}
 
-      {/* STEP 3: Generation progress with progressive images */}
+      {/* STEP 3: Generation progress */}
       {step === "generate" && (
         <div className="space-y-6">
-          {/* Progress header */}
           <div className={`p-4 rounded-xl border ${tierBg}`}>
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-gray-900">
@@ -547,12 +586,11 @@ export function InstantUpload({
             {currentGenerating && (
               <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating: {getStyleName(currentGenerating)} {currentVariant > 1 ? `#${currentVariant}` : ''}
+                Creating: {getStyleInfo(currentGenerating).preview} {getStyleInfo(currentGenerating).name} {currentVariant > 1 ? `#${currentVariant}` : ''}
               </p>
             )}
           </div>
 
-          {/* Generated images grid - shows as they complete */}
           {generatedImages.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {generatedImages.map((image) => (
@@ -573,12 +611,12 @@ export function InstantUpload({
                 </div>
               ))}
 
-              {/* Placeholder for currently generating */}
               {currentGenerating && (
                 <div className="aspect-[3/4] rounded-xl bg-gray-100 flex flex-col items-center justify-center border-2 border-dashed border-gray-300">
                   <Loader2 className="h-8 w-8 text-gray-400 animate-spin mb-2" />
+                  <p className="text-2xl mb-1">{getStyleInfo(currentGenerating).preview}</p>
                   <p className="text-xs text-gray-500 text-center px-2">
-                    {getStyleName(currentGenerating)}
+                    {getStyleInfo(currentGenerating).name}
                     {currentVariant > 1 ? ` #${currentVariant}` : ''}
                   </p>
                 </div>
@@ -586,7 +624,6 @@ export function InstantUpload({
             </div>
           )}
 
-          {/* Waiting message */}
           {generating && generatedImages.length === 0 && (
             <div className="text-center py-12">
               <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
@@ -605,7 +642,7 @@ export function InstantUpload({
         </div>
       )}
 
-      {/* Photo tips - only show on upload step */}
+      {/* Photo tips */}
       {step === "upload" && (
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6">
           <h3 className="font-semibold text-gray-900 mb-4">For best results:</h3>

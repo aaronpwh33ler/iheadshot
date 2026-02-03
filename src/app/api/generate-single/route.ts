@@ -7,97 +7,64 @@ const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
-// IMPROVED PROMPTS: Focus on background/lighting, preserve the person's likeness
-// The key insight: prompts that work DON'T try to change clothing
+// SIMPLIFIED PROMPTS - Focus ONLY on background/lighting
+// Key insight: simpler prompts preserve likeness better
+// Every prompt includes "maintain exact facial features and likeness"
 const HEADSHOT_STYLES: Record<string, { name: string; prompt: string }> = {
-  // === STUDIO BACKGROUNDS (clean, professional) ===
-  "studio-white": {
-    name: "Studio White",
-    prompt: "Professional headshot portrait of this person. Clean pure white studio background, soft diffused lighting, sharp focus on face, high resolution professional photograph, maintain exact facial features and likeness",
-  },
-  "studio-gray": {
-    name: "Studio Gray",
-    prompt: "Professional headshot portrait of this person. Neutral gray gradient studio background, soft professional lighting, sharp focus on face, corporate portrait style, maintain exact facial features and likeness",
-  },
-  "studio-dark": {
-    name: "Studio Dark",
-    prompt: "Professional headshot portrait of this person. Dark charcoal gradient background, dramatic studio lighting with soft shadows, executive portrait style, sharp focus on face, maintain exact facial features and likeness",
-  },
-  "studio-warm": {
-    name: "Studio Warm",
-    prompt: "Professional headshot portrait of this person. Warm beige studio background, soft warm lighting, friendly approachable expression, sharp focus on face, maintain exact facial features and likeness",
-  },
-
-  // === OUTDOOR/NATURAL (these work best!) ===
+  // === OUTDOOR (these work best for likeness!) ===
   "outdoor-natural": {
     name: "Natural Light",
-    prompt: "Professional outdoor headshot portrait of this person. Natural greenery background with soft bokeh, golden hour warm lighting, approachable friendly expression, sharp focus on face, maintain exact facial features and likeness",
-  },
-  "outdoor-urban": {
-    name: "Urban Professional",
-    prompt: "Professional urban headshot portrait of this person. Blurred city background with soft bokeh, natural daylight, modern professional style, sharp focus on face, maintain exact facial features and likeness",
-  },
-  "outdoor-park": {
-    name: "Park Setting",
-    prompt: "Professional outdoor headshot portrait of this person. Lush green park background with soft bokeh, dappled natural sunlight, warm and approachable, sharp focus on face, maintain exact facial features and likeness",
+    prompt: "Professional portrait photograph of this exact person. Outdoor setting with natural greenery background, soft bokeh, golden hour warm sunlight, sharp focus on face, maintain exact facial features and likeness, high resolution",
   },
   "outdoor-sunset": {
     name: "Golden Hour",
-    prompt: "Professional outdoor headshot portrait of this person. Soft golden sunset background with warm bokeh, beautiful golden hour lighting, warm natural tones, sharp focus on face, maintain exact facial features and likeness",
+    prompt: "Professional portrait photograph of this exact person. Beautiful golden sunset background with warm orange and pink tones, soft natural bokeh, warm glowing light on face, sharp focus, maintain exact facial features and likeness, high resolution",
+  },
+  "outdoor-park": {
+    name: "Park Setting",
+    prompt: "Professional portrait photograph of this exact person. Lush green park background with trees and foliage in soft bokeh, dappled natural sunlight, warm and inviting, sharp focus on face, maintain exact facial features and likeness, high resolution",
+  },
+  "outdoor-urban": {
+    name: "City Background",
+    prompt: "Professional portrait photograph of this exact person. Blurred urban city background with buildings in soft bokeh, natural daylight, modern professional style, sharp focus on face, maintain exact facial features and likeness, high resolution",
   },
 
-  // === OFFICE/BUSINESS ENVIRONMENTS ===
-  "office-modern": {
-    name: "Modern Office",
-    prompt: "Professional headshot portrait of this person. Modern office background with soft bokeh, clean professional lighting, contemporary business setting, sharp focus on face, maintain exact facial features and likeness",
+  // === STUDIO BACKGROUNDS ===
+  "studio-white": {
+    name: "Pure White",
+    prompt: "Professional studio portrait photograph of this exact person. Pure clean white background, soft even studio lighting, classic headshot style, sharp focus on face, maintain exact facial features and likeness, high resolution",
   },
-  "office-executive": {
-    name: "Executive Office",
-    prompt: "Professional headshot portrait of this person. Elegant executive office background with soft bokeh, warm professional lighting, sophisticated business setting, sharp focus on face, maintain exact facial features and likeness",
+  "studio-light-gray": {
+    name: "Light Gray",
+    prompt: "Professional studio portrait photograph of this exact person. Soft light gray background, gentle studio lighting, neutral professional look, sharp focus on face, maintain exact facial features and likeness, high resolution",
   },
-  "office-creative": {
-    name: "Creative Space",
-    prompt: "Professional headshot portrait of this person. Modern creative workspace background with soft bokeh, bright natural lighting, innovative professional setting, sharp focus on face, maintain exact facial features and likeness",
+  "studio-dark": {
+    name: "Dark Gradient",
+    prompt: "Professional studio portrait photograph of this exact person. Dark charcoal to black gradient background, dramatic studio lighting with soft shadows, executive portrait style, sharp focus on face, maintain exact facial features and likeness, high resolution",
   },
-  "office-library": {
-    name: "Library/Study",
-    prompt: "Professional headshot portrait of this person. Elegant library or study background with bookshelves in soft bokeh, warm ambient lighting, scholarly sophisticated setting, sharp focus on face, maintain exact facial features and likeness",
+  "studio-warm": {
+    name: "Warm Beige",
+    prompt: "Professional studio portrait photograph of this exact person. Warm beige cream background, soft warm studio lighting, friendly approachable style, sharp focus on face, maintain exact facial features and likeness, high resolution",
   },
 
-  // === ARTISTIC/CREATIVE ===
-  "artistic-minimal": {
-    name: "Minimalist",
-    prompt: "Professional minimalist headshot portrait of this person. Clean simple white background, soft even lighting, contemporary minimalist style, artistic portrait, sharp focus on face, maintain exact facial features and likeness",
-  },
+  // === ARTISTIC ===
   "artistic-dramatic": {
-    name: "Dramatic Light",
-    prompt: "Professional dramatic headshot portrait of this person. Dark moody background, dramatic side lighting creating depth, artistic portrait style, sharp focus on face, maintain exact facial features and likeness",
+    name: "Dramatic Side Light",
+    prompt: "Artistic portrait photograph of this exact person. Dark moody background, dramatic side lighting creating depth and shadows, artistic portrait style, sharp focus on face, maintain exact facial features and likeness, high resolution",
   },
-  "artistic-colorful": {
-    name: "Vibrant Color",
-    prompt: "Professional headshot portrait of this person. Soft colorful gradient background in warm tones, bright cheerful lighting, creative modern style, sharp focus on face, maintain exact facial features and likeness",
+  "artistic-soft": {
+    name: "Soft Glow",
+    prompt: "Artistic portrait photograph of this exact person. Soft ethereal background, gentle glowing light surrounding the subject, dreamy artistic quality, sharp focus on face, maintain exact facial features and likeness, high resolution",
+  },
+  "artistic-warm": {
+    name: "Warm Tones",
+    prompt: "Artistic portrait photograph of this exact person. Rich warm golden and amber tones throughout, beautiful warm lighting, cozy artistic atmosphere, sharp focus on face, maintain exact facial features and likeness, high resolution",
   },
 
-  // === INDUSTRY-SPECIFIC (focus on background/setting, not clothes) ===
-  "tech-modern": {
-    name: "Tech Professional",
-    prompt: "Professional headshot portrait of this person. Modern tech office background with soft bokeh, clean bright lighting, innovative Silicon Valley style, sharp focus on face, maintain exact facial features and likeness",
-  },
-  "healthcare-clean": {
-    name: "Healthcare",
-    prompt: "Professional headshot portrait of this person. Clean bright medical/healthcare setting background with soft bokeh, bright even lighting, trustworthy and caring expression, sharp focus on face, maintain exact facial features and likeness",
-  },
-  "finance-classic": {
-    name: "Finance",
-    prompt: "Professional headshot portrait of this person. Classic business environment background with soft bokeh, professional lighting, confident trustworthy expression, sharp focus on face, maintain exact facial features and likeness",
-  },
-  "consultant-pro": {
-    name: "Consultant",
-    prompt: "Professional headshot portrait of this person. Modern business environment background with soft bokeh, professional lighting, confident knowledgeable expression, sharp focus on face, maintain exact facial features and likeness",
-  },
-  "academic-scholar": {
-    name: "Academic",
-    prompt: "Professional headshot portrait of this person. Academic setting with library or campus background in soft bokeh, warm natural lighting, scholarly approachable expression, sharp focus on face, maintain exact facial features and likeness",
+  // === LEGACY STYLES (for backward compatibility) ===
+  "studio-gray": {
+    name: "Studio Gray",
+    prompt: "Professional studio portrait photograph of this exact person. Neutral gray gradient background, soft professional lighting, corporate style, sharp focus on face, maintain exact facial features and likeness, high resolution",
   },
 };
 
@@ -171,9 +138,10 @@ export async function POST(request: NextRequest) {
     let prompt = styleConfig.prompt;
     if (variant > 1) {
       const variations = [
-        ", slightly different angle",
-        ", subtle expression variation",
-        ", minor lighting adjustment",
+        ", with subtle expression change",
+        ", slight angle variation",
+        ", minor lighting shift",
+        ", gentle pose adjustment",
       ];
       prompt += variations[(variant - 2) % variations.length];
     }
