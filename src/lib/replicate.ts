@@ -62,7 +62,7 @@ export async function generateInstantHeadshots(
       const output = await replicate.run(model, {
         input: {
           prompt: style.prompt,
-          image: inputImageUrl,
+          input_image: inputImageUrl,
           aspect_ratio: "3:4",
           output_format: "webp",
           output_quality: 90,
@@ -110,7 +110,7 @@ export async function regeneratePremium(
     const output = await replicate.run("black-forest-labs/flux-kontext-max", {
       input: {
         prompt: styleConfig.prompt + ", ultra high quality, 8K resolution, extremely detailed",
-        image: inputImageUrl,
+        input_image: inputImageUrl,
         aspect_ratio: "3:4",
         output_format: "png",
         output_quality: 100,
