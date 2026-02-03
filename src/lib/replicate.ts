@@ -56,9 +56,11 @@ export async function generateInstantHeadshots(
 
   const results: GenerationResult[] = [];
 
-  // Generate headshots in parallel for speed
-  const promises = selectedStyles.map(async (style) => {
+  // Generate headshots sequentially to avoid rate limits
+  for (const style of selectedStyles) {
     try {
+      console.log(`Generating ${style.name}...`);
+
       const output = await replicate.run(model, {
         input: {
           prompt: style.prompt,
@@ -70,27 +72,24 @@ export async function generateInstantHeadshots(
         },
       });
 
-      // Output is typically an array with the image URL
       const imageUrl = Array.isArray(output) ? output[0] : output;
 
-      return {
+      results.push({
         id: `${style.id}-${Date.now()}`,
         style: style.id,
         styleName: style.name,
         imageUrl: imageUrl as string,
         quality,
-      };
+      });
+
+      console.log(`Completed ${style.name}`);
+
+      // Small delay between requests to respect rate limits
+      if (selectedStyles.indexOf(style) < selectedStyles.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
     } catch (error) {
       console.error(`Failed to generate ${style.name}:`, error);
-      return null;
-    }
-  });
-
-  const outputs = await Promise.all(promises);
-
-  for (const output of outputs) {
-    if (output) {
-      results.push(output);
     }
   }
 
