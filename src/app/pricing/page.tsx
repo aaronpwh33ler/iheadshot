@@ -88,10 +88,10 @@ export default function PricingPage() {
               <Zap className="h-6 w-6 text-blue-600" />
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">
-              Instant Processing
+              No Training Required
             </h3>
             <p className="text-sm text-gray-600">
-              Start immediately after payment.
+              Upload one photo, get instant results.
             </p>
           </div>
 
@@ -100,10 +100,10 @@ export default function PricingPage() {
               <Clock className="h-6 w-6 text-purple-600" />
             </div>
             <h3 className="font-semibold text-gray-900 mb-2">
-              Ready in 30 Minutes
+              Ready in 30 Seconds
             </h3>
             <p className="text-sm text-gray-600">
-              From upload to download, fast.
+              Instant AI generation, no waiting.
             </p>
           </div>
         </div>
