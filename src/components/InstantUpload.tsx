@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, AlertTriangle, Crown, ChevronRight, ChevronLeft } from "lucide-react";
+import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, AlertTriangle, Crown, ChevronRight, ChevronLeft, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
@@ -28,42 +28,58 @@ interface FileWithPreview extends File {
   preview: string;
 }
 
-// Simplified styles - ONLY ones that preserve likeness well
-// These focus purely on background/lighting with minimal complexity
+// Style categories with outfit/location/lighting variables
 const STYLE_CATEGORIES = [
   {
+    name: "👔 Corporate & Business",
+    description: "Traditional professional looks",
+    styles: [
+      { id: "corporate-navy", name: "Corporate Navy", desc: "Navy suit, modern office", preview: "🏢" },
+      { id: "corporate-gray", name: "Corporate Gray", desc: "Gray suit, studio backdrop", preview: "📸" },
+      { id: "executive-black", name: "Executive Black", desc: "Black suit, executive office", preview: "🖤" },
+    ],
+  },
+  {
+    name: "👕 Business Casual",
+    description: "Relaxed professional style",
+    styles: [
+      { id: "casual-blue-shirt", name: "Blue Oxford", desc: "Blue shirt, startup office", preview: "💙" },
+      { id: "casual-white-shirt", name: "White Linen", desc: "White shirt, minimalist studio", preview: "🤍" },
+      { id: "smart-casual-sweater", name: "Navy Sweater", desc: "Sweater over shirt, cozy office", preview: "🧥" },
+    ],
+  },
+  {
+    name: "🎨 Creative & Modern",
+    description: "Contemporary looks",
+    styles: [
+      { id: "creative-turtleneck", name: "Black Turtleneck", desc: "Sleek turtleneck, white wall", preview: "⬛" },
+      { id: "tech-startup", name: "Tech Startup", desc: "Gray hoodie, tech office", preview: "💻" },
+    ],
+  },
+  {
     name: "🌿 Outdoor & Natural",
-    description: "Beautiful natural lighting - Best for likeness!",
+    description: "Beautiful natural settings",
     recommended: true,
     styles: [
-      { id: "outdoor-natural", name: "Natural Light", desc: "Greenery + golden hour", preview: "🌳" },
-      { id: "outdoor-sunset", name: "Golden Hour", desc: "Warm sunset glow", preview: "🌅" },
-      { id: "outdoor-park", name: "Park Setting", desc: "Lush green backdrop", preview: "🌲" },
-      { id: "outdoor-urban", name: "City Background", desc: "Urban bokeh", preview: "🏙️" },
+      { id: "outdoor-natural", name: "Park Natural", desc: "Light jacket, green park", preview: "🌳" },
+      { id: "outdoor-urban", name: "Urban Rooftop", desc: "Blazer + tee, city skyline", preview: "🏙️" },
+      { id: "outdoor-sunset", name: "Golden Hour", desc: "Casual shirt, sunset backdrop", preview: "🌅" },
     ],
   },
   {
-    name: "📸 Studio Backgrounds",
-    description: "Clean professional studio looks",
+    name: "🏥 Industry Specific",
+    description: "Profession-focused looks",
     styles: [
-      { id: "studio-white", name: "Pure White", desc: "Classic clean look", preview: "⬜" },
-      { id: "studio-light-gray", name: "Light Gray", desc: "Soft neutral tone", preview: "🔘" },
-      { id: "studio-dark", name: "Dark Gradient", desc: "Dramatic executive", preview: "⬛" },
-      { id: "studio-warm", name: "Warm Beige", desc: "Friendly & approachable", preview: "🟨" },
-    ],
-  },
-  {
-    name: "✨ Artistic",
-    description: "Creative lighting effects",
-    styles: [
-      { id: "artistic-dramatic", name: "Dramatic Side Light", desc: "Moody & artistic", preview: "🎭" },
-      { id: "artistic-soft", name: "Soft Glow", desc: "Ethereal lighting", preview: "💫" },
-      { id: "artistic-warm", name: "Warm Tones", desc: "Rich golden colors", preview: "🔥" },
+      { id: "healthcare-pro", name: "Healthcare", desc: "White coat, medical facility", preview: "🩺" },
+      { id: "academic-scholar", name: "Academic", desc: "Tweed blazer, library", preview: "📚" },
+      { id: "finance-exec", name: "Finance", desc: "Pinstripe suit, upscale office", preview: "💼" },
+      { id: "legal-pro", name: "Legal", desc: "Dark suit, law office", preview: "⚖️" },
     ],
   },
 ];
 
 type Step = "upload" | "select" | "generate";
+type GenerationPhase = "idle" | "uploading" | "character-sheet" | "generating";
 
 export function InstantUpload({
   orderId,
@@ -77,25 +93,25 @@ export function InstantUpload({
   const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
   const [generating, setGenerating] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [generationPhase, setGenerationPhase] = useState<GenerationPhase>("idle");
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [currentGenerating, setCurrentGenerating] = useState<string | null>(null);
   const [currentVariant, setCurrentVariant] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [overLimitWarning, setOverLimitWarning] = useState(false);
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
+  const [characterSheetUrl, setCharacterSheetUrl] = useState<string | null>(null);
+  const [characterSheetBase64, setCharacterSheetBase64] = useState<string | null>(null);
 
   const isPremium = tier === "premium";
   const isPro = tier === "pro";
-
-  // Total images based on what they paid for
   const totalImages = headshotCount;
 
-  // Calculate images per style based on selection
+  // Calculate images per style
   const getDistribution = () => {
     if (selectedStyles.length === 0) return {};
     const baseCount = Math.floor(totalImages / selectedStyles.length);
     const remainder = totalImages % selectedStyles.length;
-
     const distribution: Record<string, number> = {};
     selectedStyles.forEach((styleId, index) => {
       distribution[styleId] = baseCount + (index < remainder ? 1 : 0);
@@ -105,18 +121,14 @@ export function InstantUpload({
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError(null);
-
     const totalFiles = files.length + acceptedFiles.length;
     if (totalFiles > 5) {
       setOverLimitWarning(true);
       const remaining = 5 - files.length;
       acceptedFiles = acceptedFiles.slice(0, remaining);
     }
-
     const newFiles = acceptedFiles.map((file) =>
-      Object.assign(file, {
-        preview: URL.createObjectURL(file),
-      })
+      Object.assign(file, { preview: URL.createObjectURL(file) })
     );
     setFiles((prev) => [...prev, ...newFiles].slice(0, 5));
   }, [files.length]);
@@ -143,18 +155,14 @@ export function InstantUpload({
   };
 
   const toggleStyle = (styleId: string) => {
-    setSelectedStyles((prev) => {
-      if (prev.includes(styleId)) {
-        return prev.filter((id) => id !== styleId);
-      }
-      return [...prev, styleId];
-    });
+    setSelectedStyles((prev) =>
+      prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]
+    );
   };
 
   const selectAllInCategory = (categoryStyles: { id: string }[]) => {
     const styleIds = categoryStyles.map((s) => s.id);
     const allSelected = styleIds.every((id) => selectedStyles.includes(id));
-
     if (allSelected) {
       setSelectedStyles((prev) => prev.filter((id) => !styleIds.includes(id)));
     } else {
@@ -163,47 +171,35 @@ export function InstantUpload({
     }
   };
 
-  // Upload photos and move to style selection
+  // Step 1: Upload photos
   const handleUploadComplete = async () => {
     setError(null);
     setUploading(true);
-
     try {
       const urls: string[] = [];
       for (const file of files) {
         const formData = new FormData();
         formData.append("file", file);
         formData.append("orderId", orderId);
-
-        const uploadResponse = await fetch("/api/upload", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error("Failed to upload photo");
-        }
-
-        const { url } = await uploadResponse.json();
+        const response = await fetch("/api/upload", { method: "POST", body: formData });
+        if (!response.ok) throw new Error("Failed to upload photo");
+        const { url } = await response.json();
         urls.push(url);
       }
-
       setUploadedUrls(urls);
       setStep("select");
-
-      // Pre-select the best styles (outdoor ones work best)
-      setSelectedStyles(["outdoor-natural", "outdoor-sunset", "studio-white"]);
+      // Pre-select popular styles
+      setSelectedStyles(["outdoor-natural", "outdoor-sunset", "corporate-navy"]);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Upload failed";
-      setError(errorMessage);
+      setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setUploading(false);
     }
   };
 
-  // Generate headshots with timeout protection
+  // Main generation workflow with character sheet
   const generateHeadshots = async () => {
-    if (selectedStyles.length === 0) return;
+    if (selectedStyles.length === 0 || uploadedUrls.length === 0) return;
 
     setGenerating(true);
     setStep("generate");
@@ -213,34 +209,57 @@ export function InstantUpload({
     const distribution = getDistribution();
 
     try {
-      const generationQueue: { styleId: string; variant: number }[] = [];
+      // PHASE 1: Generate character sheet
+      setGenerationPhase("character-sheet");
+      setCurrentGenerating(null);
 
+      const sheetResponse = await fetch("/api/generate-character-sheet", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          imageUrl: uploadedUrls[0], // Use best/first image
+        }),
+      });
+
+      if (!sheetResponse.ok) {
+        throw new Error("Failed to generate character sheet");
+      }
+
+      const sheetData = await sheetResponse.json();
+      setCharacterSheetUrl(sheetData.characterSheetUrl);
+      setCharacterSheetBase64(sheetData.characterSheetBase64);
+
+      // PHASE 2: Generate headshots with identity lock
+      setGenerationPhase("generating");
+
+      // Build generation queue
+      const queue: { styleId: string; variant: number }[] = [];
       for (const styleId of selectedStyles) {
         const count = distribution[styleId] || 1;
         for (let v = 1; v <= count; v++) {
-          generationQueue.push({ styleId, variant: v });
+          queue.push({ styleId, variant: v });
         }
       }
 
-      for (const { styleId, variant } of generationQueue) {
+      // Process queue
+      for (const { styleId, variant } of queue) {
         setCurrentGenerating(styleId);
         setCurrentVariant(variant);
 
         try {
-          // Add timeout protection (90 seconds per image)
           const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 90000);
+          const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 min timeout
 
-          const response = await fetch("/api/generate-single", {
+          const response = await fetch("/api/generate-headshot-v2", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               orderId,
               imageUrl: uploadedUrls[0],
+              characterSheetUrl: sheetData.characterSheetUrl,
+              characterSheetBase64: sheetData.characterSheetBase64,
               styleId,
-              quality: isPremium ? "premium" : "standard",
               variant,
             }),
             signal: controller.signal,
@@ -249,30 +268,24 @@ export function InstantUpload({
           clearTimeout(timeoutId);
 
           if (!response.ok) {
-            const errorData = await response.json();
-            console.error(`Failed to generate ${styleId} v${variant}:`, errorData.error);
+            console.error(`Failed to generate ${styleId} v${variant}`);
             continue;
           }
 
           const data = await response.json();
-
           if (data.success && data.image) {
             setGeneratedImages((prev) => [...prev, data.image]);
           }
         } catch (fetchError) {
-          if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-            console.error(`Timeout generating ${styleId} v${variant}, skipping...`);
-          } else {
-            console.error(`Error generating ${styleId} v${variant}:`, fetchError);
-          }
-          // Continue to next image instead of stopping
+          console.error(`Error generating ${styleId} v${variant}:`, fetchError);
           continue;
         }
       }
 
       setCurrentGenerating(null);
+      setGenerationPhase("idle");
 
-      // Complete with whatever we have
+      // Complete
       setGeneratedImages((current) => {
         if (current.length > 0) {
           setTimeout(() => onGenerationComplete(current), 500);
@@ -283,11 +296,11 @@ export function InstantUpload({
         return current;
       });
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : "Generation failed";
-      setError(errorMessage);
-      onError(errorMessage);
+      setError(err instanceof Error ? err.message : "Generation failed");
+      onError(err instanceof Error ? err.message : "Generation failed");
     } finally {
       setGenerating(false);
+      setGenerationPhase("idle");
     }
   };
 
@@ -300,7 +313,7 @@ export function InstantUpload({
     return { name: styleId, desc: "", preview: "📷" };
   };
 
-  // Tier-specific styling
+  // Tier styling
   const tierGradient = isPremium
     ? "from-amber-500 to-orange-600"
     : isPro
@@ -328,8 +341,8 @@ export function InstantUpload({
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-2 text-sm">
         <div className={`flex items-center gap-1 ${step === "upload" ? "text-blue-600 font-medium" : "text-gray-400"}`}>
-          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === "upload" ? "bg-blue-600 text-white" : step === "select" || step === "generate" ? "bg-green-500 text-white" : "bg-gray-200"}`}>
-            {step === "select" || step === "generate" ? "✓" : "1"}
+          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === "upload" ? "bg-blue-600 text-white" : step !== "upload" ? "bg-green-500 text-white" : "bg-gray-200"}`}>
+            {step !== "upload" ? "✓" : "1"}
           </span>
           Upload
         </div>
@@ -347,16 +360,13 @@ export function InstantUpload({
         </div>
       </div>
 
-      {/* STEP 1: Upload photos */}
+      {/* STEP 1: Upload */}
       {step === "upload" && (
         <>
           {files.length === 0 ? (
             <div
               {...getRootProps()}
-              className={`
-                border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all
-                ${isDragActive ? "border-blue-500 bg-blue-50 scale-[1.02]" : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"}
-              `}
+              className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${isDragActive ? "border-blue-500 bg-blue-50 scale-[1.02]" : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"}`}
             >
               <input {...getInputProps()} />
               <div className={`w-20 h-20 bg-gradient-to-br ${tierGradient} rounded-full flex items-center justify-center mx-auto mb-6`}>
@@ -365,22 +375,16 @@ export function InstantUpload({
               <p className="text-xl font-semibold text-gray-900 mb-2">
                 {isDragActive ? "Drop your photos here" : "Upload your photos"}
               </p>
-              <p className="text-gray-500 mb-4">
-                1-5 photos for best results. More photos = better accuracy!
-              </p>
-              <p className="text-sm text-gray-400">
-                JPG, PNG, or WebP up to 10MB each
-              </p>
+              <p className="text-gray-500 mb-4">1-5 photos for best results</p>
+              <p className="text-sm text-gray-400">JPG, PNG, or WebP up to 10MB each</p>
             </div>
           ) : (
             <div className="space-y-4">
               {overLimitWarning && (
                 <div className="flex items-center gap-2 text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">
-                  <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                  <AlertTriangle className="h-5 w-5" />
                   <p className="text-sm">Maximum 5 photos allowed.</p>
-                  <button onClick={() => setOverLimitWarning(false)} className="ml-auto">
-                    <X className="h-4 w-4" />
-                  </button>
+                  <button onClick={() => setOverLimitWarning(false)} className="ml-auto"><X className="h-4 w-4" /></button>
                 </div>
               )}
 
@@ -391,21 +395,14 @@ export function InstantUpload({
                       <img src={file.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
                     </div>
                     {!uploading && (
-                      <button
-                        onClick={() => removeFile(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
-                      >
+                      <button onClick={() => removeFile(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 opacity-0 group-hover:opacity-100">
                         <X className="h-3 w-3" />
                       </button>
                     )}
                   </div>
                 ))}
-
                 {files.length < 5 && !uploading && (
-                  <div
-                    {...getRootProps()}
-                    className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-gray-50"
-                  >
+                  <div {...getRootProps()} className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-gray-50">
                     <input {...getInputProps()} />
                     <ImageIcon className="h-6 w-6 text-gray-400 mb-1" />
                     <span className="text-xs text-gray-400">Add more</span>
@@ -415,128 +412,72 @@ export function InstantUpload({
 
               <div className="text-center text-sm text-gray-600">
                 <span className="font-medium">{files.length}</span> photo{files.length !== 1 ? "s" : ""} selected
-                {files.length >= 3 && (
-                  <span className="text-green-600 ml-2 inline-flex items-center gap-1">
-                    <CheckCircle2 className="h-4 w-4" /> Great!
-                  </span>
-                )}
+                {files.length >= 3 && <span className="text-green-600 ml-2 inline-flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> Great!</span>}
               </div>
 
-              <Button
-                onClick={handleUploadComplete}
-                disabled={uploading}
-                size="lg"
-                className={`w-full py-6 text-lg bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer disabled:cursor-wait disabled:opacity-70`}
-              >
-                {uploading ? (
-                  <>
-                    <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                    Uploading Photos...
-                  </>
-                ) : (
-                  <>
-                    Continue to Style Selection
-                    <ChevronRight className="h-5 w-5 ml-2" />
-                  </>
-                )}
+              <Button onClick={handleUploadComplete} disabled={uploading} size="lg" className={`w-full py-6 text-lg bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
+                {uploading ? <><Loader2 className="h-5 w-5 mr-2 animate-spin" />Uploading...</> : <>Continue to Style Selection<ChevronRight className="h-5 w-5 ml-2" /></>}
               </Button>
             </div>
           )}
         </>
       )}
 
-      {/* STEP 2: Select styles - IMPROVED UI */}
+      {/* STEP 2: Select Styles */}
       {step === "select" && (
         <div className="space-y-6">
-          {/* Clear explanation box */}
           <div className={`p-5 rounded-xl border-2 ${tierBg}`}>
-            <h3 className="font-bold text-lg text-gray-900 mb-2 text-center">
-              How many of each style do you want?
-            </h3>
+            <h3 className="font-bold text-lg text-gray-900 mb-2 text-center">Choose Your Headshot Styles</h3>
             <p className="text-center text-gray-600 mb-4">
-              You have <span className="font-bold text-blue-600 text-lg">{totalImages}</span> headshots to create.
-              Select the backgrounds you like — we&apos;ll divide them evenly!
+              Select styles with different <strong>outfits</strong>, <strong>locations</strong>, and <strong>lighting</strong>.
+              <br />We&apos;ll create <span className="font-bold text-blue-600">{totalImages}</span> headshots divided among your choices.
             </p>
-
-            {/* Visual breakdown */}
-            {selectedStyles.length > 0 ? (
+            {selectedStyles.length > 0 && (
               <div className="bg-white rounded-lg p-4 border">
-                <p className="text-sm text-gray-500 mb-3 text-center">Your headshot breakdown:</p>
+                <p className="text-sm text-gray-500 mb-3 text-center">Your breakdown:</p>
                 <div className="flex flex-wrap gap-2 justify-center">
                   {selectedStyles.map((styleId) => {
                     const style = getStyleInfo(styleId);
-                    const count = distribution[styleId] || 0;
                     return (
                       <div key={styleId} className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-full border border-blue-200">
                         <span className="text-lg">{style.preview}</span>
-                        <span className="font-medium text-gray-900">{style.name}</span>
-                        <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                          ×{count}
-                        </span>
+                        <span className="font-medium text-gray-900 text-sm">{style.name}</span>
+                        <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">×{distribution[styleId]}</span>
                       </div>
                     );
                   })}
                 </div>
               </div>
-            ) : (
-              <div className="bg-gray-50 rounded-lg p-4 border border-dashed border-gray-300 text-center">
-                <p className="text-gray-500">👆 Select styles below to see your breakdown</p>
-              </div>
             )}
           </div>
 
-          {/* Style categories */}
-          <div className="space-y-4">
+          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
             {STYLE_CATEGORIES.map((category) => (
-              <div key={category.name} className={`border-2 rounded-xl p-4 ${category.recommended ? 'border-green-300 bg-green-50/50' : 'border-gray-200'}`}>
+              <div key={category.name} className={`border-2 rounded-xl p-4 ${category.recommended ? "border-green-300 bg-green-50/50" : "border-gray-200"}`}>
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h3 className="font-semibold text-gray-900 flex items-center gap-2">
                       {category.name}
-                      {category.recommended && (
-                        <Badge className="bg-green-500 text-white text-xs">Recommended</Badge>
-                      )}
+                      {category.recommended && <Badge className="bg-green-500 text-white text-xs">Best Results</Badge>}
                     </h3>
                     <p className="text-xs text-gray-500">{category.description}</p>
                   </div>
-                  <button
-                    onClick={() => selectAllInCategory(category.styles)}
-                    className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                  >
+                  <button onClick={() => selectAllInCategory(category.styles)} className="text-xs text-blue-600 hover:text-blue-800 font-medium">
                     {category.styles.every((s) => selectedStyles.includes(s.id)) ? "Remove all" : "Add all"}
                   </button>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                   {category.styles.map((style) => {
                     const isSelected = selectedStyles.includes(style.id);
-                    const count = distribution[style.id] || 0;
-
                     return (
-                      <button
-                        key={style.id}
-                        onClick={() => toggleStyle(style.id)}
-                        className={`
-                          relative p-4 rounded-xl text-center transition-all border-2 cursor-pointer
-                          ${isSelected
-                            ? "border-blue-500 bg-blue-50 shadow-md"
-                            : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
-                          }
-                        `}
-                      >
+                      <button key={style.id} onClick={() => toggleStyle(style.id)} className={`relative p-4 rounded-xl text-center transition-all border-2 cursor-pointer ${isSelected ? "border-blue-500 bg-blue-50 shadow-md" : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"}`}>
                         <span className="text-3xl mb-2 block">{style.preview}</span>
-                        <p className={`font-medium text-sm ${isSelected ? "text-blue-700" : "text-gray-900"}`}>
-                          {style.name}
-                        </p>
+                        <p className={`font-medium text-sm ${isSelected ? "text-blue-700" : "text-gray-900"}`}>{style.name}</p>
                         <p className="text-xs text-gray-500 mt-1">{style.desc}</p>
-
                         {isSelected && (
                           <>
-                            <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1">
-                              <CheckCircle2 className="h-4 w-4" />
-                            </div>
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                              ×{count}
-                            </div>
+                            <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1"><CheckCircle2 className="h-4 w-4" /></div>
+                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">×{distribution[style.id]}</div>
                           </>
                         )}
                       </button>
@@ -548,59 +489,65 @@ export function InstantUpload({
           </div>
 
           <div className="flex gap-3">
-            <Button
-              variant="outline"
-              onClick={() => setStep("upload")}
-              className="flex-1 cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4 mr-1" />
-              Back
+            <Button variant="outline" onClick={() => setStep("upload")} className="flex-1 cursor-pointer">
+              <ChevronLeft className="h-4 w-4 mr-1" />Back
             </Button>
-            <Button
-              onClick={generateHeadshots}
-              disabled={selectedStyles.length === 0}
-              size="lg"
-              className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer disabled:cursor-not-allowed`}
-            >
-              <Sparkles className="h-5 w-5 mr-2" />
-              Generate {totalImages} Headshots
+            <Button onClick={generateHeadshots} disabled={selectedStyles.length === 0} size="lg" className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
+              <Sparkles className="h-5 w-5 mr-2" />Generate {totalImages} Headshots
             </Button>
           </div>
         </div>
       )}
 
-      {/* STEP 3: Generation progress */}
+      {/* STEP 3: Generation */}
       {step === "generate" && (
         <div className="space-y-6">
+          {/* Phase indicator */}
           <div className={`p-4 rounded-xl border ${tierBg}`}>
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-gray-900">
-                {generating ? "Creating your headshots..." : "Generation complete!"}
+                {generationPhase === "character-sheet" ? "🔍 Analyzing your face..." : generationPhase === "generating" ? "✨ Creating headshots..." : generating ? "Processing..." : "Generation complete!"}
               </span>
-              <span className="text-sm text-gray-600">
-                {generatedImages.length} / {totalImages}
-              </span>
+              <span className="text-sm text-gray-600">{generatedImages.length} / {totalImages}</span>
             </div>
-            <Progress value={(generatedImages.length / totalImages) * 100} className="h-2" />
+            <Progress value={generationPhase === "character-sheet" ? 5 : (generatedImages.length / totalImages) * 100} className="h-2" />
 
-            {currentGenerating && (
+            {generationPhase === "character-sheet" && (
+              <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <p className="text-sm text-purple-800 flex items-center gap-2">
+                  <Wand2 className="h-4 w-4 animate-pulse" />
+                  <strong>Creating identity profile...</strong> This captures your face from multiple angles for perfect consistency.
+                </p>
+              </div>
+            )}
+
+            {currentGenerating && generationPhase === "generating" && (
               <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Creating: {getStyleInfo(currentGenerating).preview} {getStyleInfo(currentGenerating).name} {currentVariant > 1 ? `#${currentVariant}` : ''}
+                Creating: {getStyleInfo(currentGenerating).preview} {getStyleInfo(currentGenerating).name} {currentVariant > 1 ? `#${currentVariant}` : ""}
               </p>
             )}
           </div>
 
+          {/* Character sheet preview */}
+          {characterSheetUrl && (
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-200">
+              <p className="text-sm font-medium text-purple-800 mb-2 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" /> Identity profile created
+              </p>
+              <div className="w-32 h-32 rounded-lg overflow-hidden bg-white shadow-md mx-auto">
+                <img src={characterSheetUrl} alt="Character sheet" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          )}
+
+          {/* Generated images grid */}
           {generatedImages.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {generatedImages.map((image) => (
                 <div key={image.id} className="relative group animate-fade-in">
                   <div className="aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 shadow-lg">
-                    <img
-                      src={image.imageUrl}
-                      alt={image.styleName}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={image.imageUrl} alt={image.styleName} className="w-full h-full object-cover" />
                   </div>
                   <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 rounded-b-xl">
                     <p className="text-white text-sm font-medium">{image.styleName}</p>
@@ -610,70 +557,47 @@ export function InstantUpload({
                   </div>
                 </div>
               ))}
-
               {currentGenerating && (
                 <div className="aspect-[3/4] rounded-xl bg-gray-100 flex flex-col items-center justify-center border-2 border-dashed border-gray-300">
                   <Loader2 className="h-8 w-8 text-gray-400 animate-spin mb-2" />
                   <p className="text-2xl mb-1">{getStyleInfo(currentGenerating).preview}</p>
-                  <p className="text-xs text-gray-500 text-center px-2">
-                    {getStyleInfo(currentGenerating).name}
-                    {currentVariant > 1 ? ` #${currentVariant}` : ''}
-                  </p>
+                  <p className="text-xs text-gray-500 text-center px-2">{getStyleInfo(currentGenerating).name}{currentVariant > 1 ? ` #${currentVariant}` : ""}</p>
                 </div>
               )}
             </div>
           )}
 
-          {generating && generatedImages.length === 0 && (
+          {generating && generatedImages.length === 0 && generationPhase !== "character-sheet" && (
             <div className="text-center py-12">
               <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
               <p className="text-gray-600">Starting generation...</p>
-              <p className="text-sm text-gray-400 mt-1">Images will appear as they&apos;re created</p>
             </div>
           )}
         </div>
       )}
 
-      {/* Error message */}
+      {/* Error */}
       {error && (
         <div className="flex items-center gap-2 text-red-600 bg-red-50 p-4 rounded-xl">
-          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+          <AlertCircle className="h-5 w-5" />
           <p className="text-sm">{error}</p>
         </div>
       )}
 
-      {/* Photo tips */}
+      {/* Tips */}
       {step === "upload" && (
         <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6">
           <h3 className="font-semibold text-gray-900 mb-4">For best results:</h3>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="space-y-2">
-              <p className="flex items-center gap-2 text-green-700">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                Clear, well-lit face
-              </p>
-              <p className="flex items-center gap-2 text-green-700">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                Front-facing or slight angle
-              </p>
-              <p className="flex items-center gap-2 text-green-700">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
-                Multiple photos (2-5 best)
-              </p>
+              <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Clear, well-lit face</p>
+              <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Front-facing or slight angle</p>
+              <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Multiple photos (2-5 best)</p>
             </div>
             <div className="space-y-2">
-              <p className="flex items-center gap-2 text-red-600">
-                <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
-                No sunglasses
-              </p>
-              <p className="flex items-center gap-2 text-red-600">
-                <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
-                No heavy filters
-              </p>
-              <p className="flex items-center gap-2 text-red-600">
-                <span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>
-                No group photos
-              </p>
+              <p className="flex items-center gap-2 text-red-600"><span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>No sunglasses</p>
+              <p className="flex items-center gap-2 text-red-600"><span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>No heavy filters</p>
+              <p className="flex items-center gap-2 text-red-600"><span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>No group photos</p>
             </div>
           </div>
         </div>
