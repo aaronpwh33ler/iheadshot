@@ -341,8 +341,8 @@ export function InstantUpload({
       {/* Step indicator */}
       <div className="flex items-center justify-center gap-2 text-sm">
         <div className={`flex items-center gap-1 ${step === "upload" ? "text-blue-600 font-medium" : "text-gray-400"}`}>
-          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === "upload" ? "bg-blue-600 text-white" : step !== "upload" ? "bg-green-500 text-white" : "bg-gray-200"}`}>
-            {step !== "upload" ? "✓" : "1"}
+          <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step === "upload" ? "bg-blue-600 text-white" : "bg-green-500 text-white"}`}>
+            {step === "upload" ? "1" : "✓"}
           </span>
           Upload
         </div>
