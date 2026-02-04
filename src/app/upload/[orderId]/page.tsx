@@ -15,7 +15,6 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
   const [order, setOrder] = useState<{ tier: string; headshot_count: number } | null>(null);
   const [loading, setLoading] = useState(true);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[] | null>(null);
-  const [originalImageUrl, setOriginalImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -92,7 +91,6 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
           <ResultsGallery
             images={generatedImages}
             orderId={orderId}
-            originalImageUrl={originalImageUrl || undefined}
           />
 
           <p className="text-center text-sm text-gray-500 mt-8">
