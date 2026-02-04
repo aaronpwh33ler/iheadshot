@@ -192,9 +192,10 @@ export async function generateCharacterSheet(
   });
 
   // Extract the generated image from response
-  const imagePart = response.candidates?.[0]?.content?.parts?.find(
-    (part: { inlineData?: { data: string } }) => part.inlineData
-  );
+  const parts = response.candidates?.[0]?.content?.parts || [];
+  const imagePart = parts.find((part) =>
+    part && typeof part === 'object' && 'inlineData' in part
+  ) as { inlineData?: { data: string } } | undefined;
 
   if (!imagePart?.inlineData?.data) {
     throw new Error("Failed to generate character sheet");
@@ -257,9 +258,10 @@ Ultra-photorealistic, high-fidelity identity preservation, sharp facial details,
   });
 
   // Extract the generated image
-  const imagePart = response.candidates?.[0]?.content?.parts?.find(
-    (part: { inlineData?: { data: string } }) => part.inlineData
-  );
+  const parts = response.candidates?.[0]?.content?.parts || [];
+  const imagePart = parts.find((part) =>
+    part && typeof part === 'object' && 'inlineData' in part
+  ) as { inlineData?: { data: string } } | undefined;
 
   if (!imagePart?.inlineData?.data) {
     throw new Error("Failed to generate headshot");
