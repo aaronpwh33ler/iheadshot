@@ -104,13 +104,13 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
   // Tier-specific styling
   const tierGradient = isPremium
     ? "from-amber-500 to-orange-600"
-    : isPro
+    : isStandard
     ? "from-purple-500 to-blue-600"
     : "from-blue-500 to-purple-600";
 
   const tierBgGradient = isPremium
     ? "from-amber-50 to-orange-50"
-    : isPro
+    : isStandard
     ? "from-purple-50 to-blue-50"
     : "from-gray-50 to-white";
 
