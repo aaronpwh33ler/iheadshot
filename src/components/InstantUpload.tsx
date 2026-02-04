@@ -356,13 +356,13 @@ export function InstantUpload({
   // Tier styling
   const tierGradient = isPremium
     ? "from-amber-500 to-orange-600"
-    : isPro
+    : isStandard
     ? "from-purple-500 to-blue-600"
     : "from-blue-500 to-purple-600";
 
   const tierBg = isPremium
     ? "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200"
-    : isPro
+    : isStandard
     ? "bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200"
     : "bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200";
 
