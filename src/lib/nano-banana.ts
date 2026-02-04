@@ -170,26 +170,34 @@ export async function generateCharacterSheet(
 
   const prompt = `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image, ultra-detailed facial features, consistent identity.`;
 
-  const response = await model.generateContent({
-    model: "gemini-3-pro-image-preview",
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            inlineData: {
-              mimeType,
-              data: referenceImageBase64,
+  let response;
+  try {
+    response = await model.generateContent({
+      model: "gemini-2.0-flash-exp-image-generation",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              inlineData: {
+                mimeType,
+                data: referenceImageBase64,
+              },
             },
-          },
-          { text: prompt },
-        ],
+            { text: prompt },
+          ],
+        },
+      ],
+      config: {
+        responseModalities: ["image", "text"],
       },
-    ],
-    config: {
-      responseModalities: ["image", "text"],
-    },
-  });
+    });
+  } catch (apiError) {
+    console.error("Google GenAI API error:", apiError);
+    throw new Error(`Google GenAI API failed: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
+  }
+
+  console.log("Response structure:", JSON.stringify(response, null, 2).substring(0, 1000));
 
   // Extract the generated image from response
   const parts = response.candidates?.[0]?.content?.parts || [];
@@ -198,7 +206,8 @@ export async function generateCharacterSheet(
   ) as { inlineData?: { data: string } } | undefined;
 
   if (!imagePart?.inlineData?.data) {
-    throw new Error("Failed to generate character sheet");
+    console.error("No image data found in response. Parts:", JSON.stringify(parts, null, 2).substring(0, 500));
+    throw new Error("Failed to generate character sheet - no image in response");
   }
 
   return imagePart.inlineData.data; // Returns base64
@@ -228,34 +237,40 @@ Only modify: Professional headshot, for business profiles, profile pictures, and
 
 Ultra-photorealistic, high-fidelity identity preservation, sharp facial details, consistent lighting on face matching references where possible.`;
 
-  const response = await model.generateContent({
-    model: "gemini-3-pro-image-preview",
-    contents: [
-      {
-        role: "user",
-        parts: [
-          // Main reference image first
-          {
-            inlineData: {
-              mimeType,
-              data: referenceImageBase64,
+  let response;
+  try {
+    response = await model.generateContent({
+      model: "gemini-2.0-flash-exp-image-generation",
+      contents: [
+        {
+          role: "user",
+          parts: [
+            // Main reference image first
+            {
+              inlineData: {
+                mimeType,
+                data: referenceImageBase64,
+              },
             },
-          },
-          // Character sheet second
-          {
-            inlineData: {
-              mimeType,
-              data: characterSheetBase64,
+            // Character sheet second
+            {
+              inlineData: {
+                mimeType,
+                data: characterSheetBase64,
+              },
             },
-          },
-          { text: identityLockPrompt },
-        ],
+            { text: identityLockPrompt },
+          ],
+        },
+      ],
+      config: {
+        responseModalities: ["image", "text"],
       },
-    ],
-    config: {
-      responseModalities: ["image", "text"],
-    },
-  });
+    });
+  } catch (apiError) {
+    console.error("Google GenAI API error:", apiError);
+    throw new Error(`Google GenAI API failed: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
+  }
 
   // Extract the generated image
   const parts = response.candidates?.[0]?.content?.parts || [];
@@ -264,7 +279,8 @@ Ultra-photorealistic, high-fidelity identity preservation, sharp facial details,
   ) as { inlineData?: { data: string } } | undefined;
 
   if (!imagePart?.inlineData?.data) {
-    throw new Error("Failed to generate headshot");
+    console.error("No image data found in response. Parts:", JSON.stringify(parts, null, 2).substring(0, 500));
+    throw new Error("Failed to generate headshot - no image in response");
   }
 
   return imagePart.inlineData.data; // Returns base64

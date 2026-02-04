@@ -8,7 +8,7 @@ export interface Order {
   stripe_session_id?: string;
   stripe_payment_intent?: string;
   amount: number;
-  tier: "basic" | "pro" | "premium";
+  tier: "basic" | "standard" | "premium";
   headshot_count: number;
   status: "pending" | "paid" | "training" | "generating" | "completed" | "failed";
   created_at: string;

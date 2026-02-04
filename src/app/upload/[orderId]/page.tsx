@@ -67,9 +67,9 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
   }
 
   const tier = order?.tier || "basic";
-  const headshotCount = order?.headshot_count || 10;
+  const headshotCount = order?.headshot_count || 5;
   const isPremium = tier === "premium";
-  const isPro = tier === "pro";
+  const isStandard = tier === "standard";
 
   // Show results gallery if we have generated images
   if (generatedImages && generatedImages.length > 0) {

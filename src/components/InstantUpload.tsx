@@ -1,11 +1,14 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, AlertTriangle, Crown, ChevronRight, ChevronLeft, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+
+// Demo mode: Skip generation and show existing images for testing
+const DEMO_ORDER_ID = "cs_test_a10w4eDn4CKk4FR9IgZh6bhHoaQpgMVuXjLs35oUdR6xC6wnA96VUPLTUP";
 
 interface InstantUploadProps {
   orderId: string;
@@ -84,7 +87,7 @@ type GenerationPhase = "idle" | "uploading" | "character-sheet" | "generating";
 export function InstantUpload({
   orderId,
   tier = "basic",
-  headshotCount = 10,
+  headshotCount = 5,
   onGenerationComplete,
   onError,
 }: InstantUploadProps) {
@@ -102,10 +105,32 @@ export function InstantUpload({
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
   const [characterSheetUrl, setCharacterSheetUrl] = useState<string | null>(null);
   const [characterSheetBase64, setCharacterSheetBase64] = useState<string | null>(null);
+  const [loadingDemoImages, setLoadingDemoImages] = useState(false);
+
+  // Demo mode detection
+  const isDemoMode = orderId === DEMO_ORDER_ID;
 
   const isPremium = tier === "premium";
-  const isPro = tier === "pro";
+  const isStandard = tier === "standard";
   const totalImages = headshotCount;
+
+  // In demo mode, fetch existing images from database
+  const loadDemoImages = async () => {
+    setLoadingDemoImages(true);
+    try {
+      const response = await fetch(`/api/demo-images?orderId=${orderId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.images && data.images.length > 0) {
+          onGenerationComplete(data.images);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load demo images:", err);
+    } finally {
+      setLoadingDemoImages(false);
+    }
+  };
 
   // Calculate images per style
   const getDistribution = () => {
@@ -171,8 +196,15 @@ export function InstantUpload({
     }
   };
 
-  // Step 1: Upload photos
+  // Step 1: Upload photos (or skip in demo mode)
   const handleUploadComplete = async () => {
+    // Demo mode: skip upload, go to style selection
+    if (isDemoMode) {
+      setStep("select");
+      setSelectedStyles(["outdoor-natural", "outdoor-sunset", "corporate-navy"]);
+      return;
+    }
+
     setError(null);
     setUploading(true);
     try {
@@ -199,6 +231,14 @@ export function InstantUpload({
 
   // Main generation workflow with character sheet
   const generateHeadshots = async () => {
+    // Demo mode: skip generation, load existing images
+    if (isDemoMode) {
+      setStep("generate");
+      setLoadingDemoImages(true);
+      await loadDemoImages();
+      return;
+    }
+
     if (selectedStyles.length === 0 || uploadedUrls.length === 0) return;
 
     setGenerating(true);
@@ -364,19 +404,28 @@ export function InstantUpload({
       {step === "upload" && (
         <>
           {files.length === 0 ? (
-            <div
-              {...getRootProps()}
-              className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${isDragActive ? "border-blue-500 bg-blue-50 scale-[1.02]" : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"}`}
-            >
-              <input {...getInputProps()} />
-              <div className={`w-20 h-20 bg-gradient-to-br ${tierGradient} rounded-full flex items-center justify-center mx-auto mb-6`}>
-                <Upload className="h-10 w-10 text-white" />
+            <div className="space-y-4">
+              <div
+                {...getRootProps()}
+                className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${isDragActive ? "border-blue-500 bg-blue-50 scale-[1.02]" : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"}`}
+              >
+                <input {...getInputProps()} />
+                <div className={`w-20 h-20 bg-gradient-to-br ${tierGradient} rounded-full flex items-center justify-center mx-auto mb-6`}>
+                  <Upload className="h-10 w-10 text-white" />
+                </div>
+                <p className="text-xl font-semibold text-gray-900 mb-2">
+                  {isDragActive ? "Drop your photos here" : "Upload your photos"}
+                </p>
+                <p className="text-gray-500 mb-4">1-5 photos for best results</p>
+                <p className="text-sm text-gray-400">JPG, PNG, or WebP up to 10MB each</p>
               </div>
-              <p className="text-xl font-semibold text-gray-900 mb-2">
-                {isDragActive ? "Drop your photos here" : "Upload your photos"}
-              </p>
-              <p className="text-gray-500 mb-4">1-5 photos for best results</p>
-              <p className="text-sm text-gray-400">JPG, PNG, or WebP up to 10MB each</p>
+
+              {/* Demo mode: Skip button */}
+              {isDemoMode && (
+                <Button onClick={handleUploadComplete} size="lg" className={`w-full py-6 text-lg bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
+                  Skip to Styles (Demo Mode)<ChevronRight className="h-5 w-5 ml-2" />
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
@@ -492,8 +541,9 @@ export function InstantUpload({
             <Button variant="outline" onClick={() => setStep("upload")} className="flex-1 cursor-pointer">
               <ChevronLeft className="h-4 w-4 mr-1" />Back
             </Button>
-            <Button onClick={generateHeadshots} disabled={selectedStyles.length === 0} size="lg" className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
-              <Sparkles className="h-5 w-5 mr-2" />Generate {totalImages} Headshots
+            <Button onClick={generateHeadshots} disabled={!isDemoMode && selectedStyles.length === 0} size="lg" className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
+              <Sparkles className="h-5 w-5 mr-2" />
+              {isDemoMode ? "View Demo Results" : `Generate ${totalImages} Headshots`}
             </Button>
           </div>
         </div>
@@ -571,6 +621,14 @@ export function InstantUpload({
             <div className="text-center py-12">
               <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
               <p className="text-gray-600">Starting generation...</p>
+            </div>
+          )}
+
+          {/* Demo mode loading */}
+          {loadingDemoImages && (
+            <div className="text-center py-12">
+              <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading demo images...</p>
             </div>
           )}
         </div>

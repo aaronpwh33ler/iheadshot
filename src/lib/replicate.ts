@@ -128,12 +128,12 @@ export interface GenerationResult {
 export function getStylesForTier(tier: string): typeof HEADSHOT_STYLES {
   switch (tier) {
     case "premium":
-      return HEADSHOT_STYLES; // All 20 styles
-    case "pro":
-      return HEADSHOT_STYLES.slice(0, 16); // 16 styles
+      return HEADSHOT_STYLES; // All styles (20 headshots)
+    case "standard":
+      return HEADSHOT_STYLES.slice(0, 10); // 10 styles (10 headshots)
     case "basic":
     default:
-      return HEADSHOT_STYLES.slice(0, 10); // 10 styles
+      return HEADSHOT_STYLES.slice(0, 5); // 5 styles (5 headshots)
   }
 }
 

@@ -21,7 +21,7 @@ function getStripe(): Stripe {
 function getPriceId(tier: PricingTier): string {
   const priceIds: Record<PricingTier, string | undefined> = {
     basic: process.env.STRIPE_PRICE_BASIC,
-    pro: process.env.STRIPE_PRICE_PRO,
+    standard: process.env.STRIPE_PRICE_STANDARD,
     premium: process.env.STRIPE_PRICE_PREMIUM,
   };
 

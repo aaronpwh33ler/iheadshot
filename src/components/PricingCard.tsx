@@ -11,7 +11,7 @@ interface PricingCardProps {
   headshots: number;
   features: string[];
   popular?: boolean;
-  tier: "basic" | "pro" | "premium";
+  tier: "basic" | "standard" | "premium";
   onSelect: (tier: string) => void;
   loading?: boolean;
 }

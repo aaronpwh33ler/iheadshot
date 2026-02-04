@@ -12,8 +12,6 @@ import {
   Sparkles,
   Maximize2,
   Loader2,
-  Check,
-  Crown,
   Zap,
 } from "lucide-react";
 import JSZip from "jszip";
@@ -30,13 +28,11 @@ interface GeneratedImage {
 interface ResultsGalleryProps {
   images: GeneratedImage[];
   orderId: string;
-  originalImageUrl?: string;
 }
 
-export function ResultsGallery({ images, orderId, originalImageUrl }: ResultsGalleryProps) {
+export function ResultsGallery({ images, orderId }: ResultsGalleryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [downloading, setDownloading] = useState(false);
-  const [upgradingImage, setUpgradingImage] = useState<string | null>(null);
   const [upscalingImages, setUpscalingImages] = useState(false);
   const [localImages, setLocalImages] = useState(images);
 
@@ -71,45 +67,6 @@ export function ResultsGallery({ images, orderId, originalImageUrl }: ResultsGal
       saveAs(blob, `${image.styleName.toLowerCase().replace(/\s+/g, "-")}.${extension}`);
     } catch (error) {
       console.error("Failed to download:", error);
-    }
-  };
-
-  const upgradeToPremium = async (image: GeneratedImage) => {
-    if (!originalImageUrl) {
-      alert("Original image not available for upgrade");
-      return;
-    }
-
-    setUpgradingImage(image.id);
-    try {
-      const response = await fetch("/api/regenerate-premium", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId,
-          imageUrl: originalImageUrl,
-          style: image.style,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Upgrade failed");
-
-      const data = await response.json();
-      if (data.image) {
-        // Replace the image in our local state
-        setLocalImages((prev) =>
-          prev.map((img) =>
-            img.id === image.id
-              ? { ...data.image, id: img.id }
-              : img
-          )
-        );
-      }
-    } catch (error) {
-      console.error("Upgrade failed:", error);
-      alert("Failed to upgrade image. Please try again.");
-    } finally {
-      setUpgradingImage(null);
     }
   };
 
@@ -177,25 +134,8 @@ export function ResultsGallery({ images, orderId, originalImageUrl }: ResultsGal
         </Button>
       </div>
 
-      {/* Upsell cards */}
-      <div className="grid md:grid-cols-2 gap-4">
-        {/* Premium Quality Upsell */}
-        <Card className="p-6 bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200">
-          <div className="flex items-start gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
-              <Crown className="h-6 w-6 text-white" />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 mb-1">Upgrade to Premium Quality</h3>
-              <p className="text-sm text-gray-600 mb-3">
-                Get ultra-detailed 8K headshots with our premium AI model. Perfect for print and large displays.
-              </p>
-              <p className="text-lg font-bold text-purple-600 mb-3">$4.99 per image</p>
-              <p className="text-xs text-gray-500">Click the crown icon on any image to upgrade</p>
-            </div>
-          </div>
-        </Card>
-
+      {/* Upsell card */}
+      <div className="max-w-xl">
         {/* 4K Upscaling Upsell */}
         <Card className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-green-200">
           <div className="flex items-start gap-4">
@@ -259,26 +199,6 @@ export function ResultsGallery({ images, orderId, originalImageUrl }: ResultsGal
 
             {/* Hover actions */}
             <div className="absolute top-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              {/* Upgrade button */}
-              {image.quality !== "premium" && (
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  className="h-8 w-8 p-0"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    upgradeToPremium(image);
-                  }}
-                  disabled={upgradingImage === image.id}
-                >
-                  {upgradingImage === image.id ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Crown className="h-4 w-4 text-purple-600" />
-                  )}
-                </Button>
-              )}
-
               {/* Download button */}
               <Button
                 size="sm"
@@ -350,30 +270,13 @@ export function ResultsGallery({ images, orderId, originalImageUrl }: ResultsGal
                   {selectedIndex + 1} of {localImages.length}
                 </span>
               </div>
-              <div className="flex gap-2">
-                {localImages[selectedIndex].quality !== "premium" && (
-                  <Button
-                    variant="outline"
-                    className="border-purple-500 text-purple-400 hover:bg-purple-500/20"
-                    onClick={() => upgradeToPremium(localImages[selectedIndex])}
-                    disabled={upgradingImage === localImages[selectedIndex].id}
-                  >
-                    {upgradingImage === localImages[selectedIndex].id ? (
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    ) : (
-                      <Crown className="h-4 w-4 mr-2" />
-                    )}
-                    Upgrade to Premium
-                  </Button>
-                )}
-                <Button
-                  variant="secondary"
-                  onClick={() => downloadSingle(localImages[selectedIndex], selectedIndex)}
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
-                </Button>
-              </div>
+              <Button
+                variant="secondary"
+                onClick={() => downloadSingle(localImages[selectedIndex], selectedIndex)}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
             </div>
           </div>
         </div>
