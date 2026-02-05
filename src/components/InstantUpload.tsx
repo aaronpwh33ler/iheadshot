@@ -127,30 +127,10 @@ export function InstantUpload({
 
   // Step 1: Upload photos (or skip in demo mode)
   const handleUploadComplete = async () => {
-    // Helper to get default styles as SelectedStyle array
-    const getDefaultStyles = (): SelectedStyle[] => {
-      const defaultIds = ["outdoor-natural", "outdoor-sunset", "corporate-navy"];
-      const remaining = totalImages;
-      const perStyle = Math.floor(remaining / defaultIds.length);
-      const extraFirst = remaining % defaultIds.length;
-
-      return defaultIds.map((id, index) => {
-        const preset = PRESET_STYLES.find(p => p.id === id);
-        return {
-          id,
-          name: preset?.name || id,
-          outfit: preset?.outfit || "",
-          location: preset?.location || "",
-          lighting: preset?.lighting || "",
-          quantity: perStyle + (index < extraFirst ? 1 : 0),
-        };
-      });
-    };
-
     // Demo mode: skip upload, go to style selection
     if (isDemoMode) {
       setStep("select");
-      setSelectedStyles(getDefaultStyles());
+      setSelectedStyles([]); // Start with no styles selected
       return;
     }
 
@@ -169,8 +149,7 @@ export function InstantUpload({
       }
       setUploadedUrls(urls);
       setStep("select");
-      // Pre-select popular styles with default quantities
-      setSelectedStyles(getDefaultStyles());
+      setSelectedStyles([]); // Start with no styles selected
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
