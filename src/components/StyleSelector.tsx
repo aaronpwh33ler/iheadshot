@@ -216,18 +216,18 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
         {/* Left: Style Presets */}
         <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-700 mb-4 px-1">Style Presets</h3>
-          <div className="space-y-3 max-h-[840px] overflow-y-scroll pr-2">
+          <div className="space-y-2 max-h-[480px] overflow-y-scroll pr-2">
             {PRESET_STYLES.map(preset => {
               const isSelected = selectedStyles.some(s => s.id === preset.id);
               return (
                 <div
                   key={preset.id}
-                  className={`bg-white rounded-xl border-2 p-3 flex items-center gap-4 transition-all ${
+                  className={`bg-white rounded-lg border-2 p-2 flex items-center gap-3 transition-all ${
                     isSelected ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   {/* Preview image */}
-                  <div className="w-20 h-24 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 shadow-sm">
+                  <div className="w-14 h-[72px] rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 shadow-sm">
                     {preset.previewImage ? (
                       <img
                         src={preset.previewImage}
@@ -235,7 +235,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-3xl bg-gradient-to-br from-gray-100 to-gray-200">
+                      <div className="w-full h-full flex items-center justify-center text-2xl bg-gradient-to-br from-gray-100 to-gray-200">
                         {preset.previewEmoji}
                       </div>
                     )}
@@ -251,26 +251,26 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
                   <button
                     onClick={() => addStyle(preset)}
                     disabled={remainingImages <= 0}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                    className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                       remainingImages > 0
                         ? "bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 shadow-md"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }`}
                   >
-                    <Plus className="h-5 w-5" />
+                    <Plus className="h-4 w-4" />
                   </button>
                 </div>
               );
             })}
 
             {/* Custom card at the bottom */}
-            <div className="bg-white rounded-xl border-2 border-dashed border-blue-300 p-3 flex items-center gap-4 transition-all hover:border-blue-400 hover:bg-blue-50/50">
+            <div className="bg-white rounded-lg border-2 border-dashed border-blue-300 p-2 flex items-center gap-3 transition-all hover:border-blue-400 hover:bg-blue-50/50">
               {/* Custom preview - sparkles on light bg */}
-              <div className="w-20 h-24 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 flex-shrink-0 flex items-center justify-center shadow-sm">
+              <div className="w-14 h-[72px] rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 flex-shrink-0 flex items-center justify-center shadow-sm">
                 <div className="relative">
-                  <Sparkles className="h-8 w-8 text-blue-500" />
-                  <Sparkles className="h-4 w-4 text-blue-300 absolute -top-2 -right-1" />
-                  <Sparkles className="h-3 w-3 text-blue-400 absolute -bottom-1 -left-2" />
+                  <Sparkles className="h-6 w-6 text-blue-500" />
+                  <Sparkles className="h-3 w-3 text-blue-300 absolute -top-1 -right-0.5" />
+                  <Sparkles className="h-2 w-2 text-blue-400 absolute -bottom-0.5 -left-1" />
                 </div>
               </div>
 
@@ -284,13 +284,13 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
               <button
                 onClick={addCustomStyle}
                 disabled={remainingImages <= 0}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                   remainingImages > 0
                     ? "bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 shadow-md"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
               >
-                <Plus className="h-5 w-5" />
+                <Plus className="h-4 w-4" />
               </button>
             </div>
           </div>
@@ -300,33 +300,33 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
         <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
           <h3 className="text-lg font-semibold text-gray-700 mb-4 px-1">Selected Styles</h3>
           {selectedStyles.length === 0 ? (
-            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-8 text-center h-[800px] flex flex-col items-center justify-center">
+            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-6 text-center h-[440px] flex flex-col items-center justify-center">
               <p className="text-gray-500">Click + to add styles</p>
               <p className="text-sm text-gray-400 mt-1">Your selections will appear here</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 max-h-[840px] overflow-y-scroll pr-2">
+            <div className="grid grid-cols-2 gap-2 max-h-[480px] overflow-y-scroll pr-2">
               {selectedStyles.map(style => (
                 <div
                   key={style.id}
-                  className="bg-white rounded-xl border-2 border-blue-400 p-3 shadow-md relative"
+                  className="bg-white rounded-lg border-2 border-blue-400 p-2 shadow-md relative"
                 >
                   {/* Quantity badge - only for presets */}
                   {!style.isCustom && (
-                    <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-md z-10">
+                    <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-md shadow-md z-10">
                       x{style.quantity}
                     </div>
                   )}
 
                   {/* Preview image */}
-                  <div className="w-full aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 mb-2 shadow-sm">
+                  <div className="w-full aspect-[3/4] rounded-md overflow-hidden bg-gray-100 mb-1.5 shadow-sm">
                     {style.isCustom ? (
                       // Custom card sparkles preview
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
                         <div className="relative">
-                          <Sparkles className="h-12 w-12 text-blue-500" />
-                          <Sparkles className="h-6 w-6 text-blue-300 absolute -top-3 -right-2" />
-                          <Sparkles className="h-4 w-4 text-blue-400 absolute -bottom-2 -left-3" />
+                          <Sparkles className="h-8 w-8 text-blue-500" />
+                          <Sparkles className="h-4 w-4 text-blue-300 absolute -top-2 -right-1" />
+                          <Sparkles className="h-3 w-3 text-blue-400 absolute -bottom-1 -left-2" />
                         </div>
                       </div>
                     ) : style.previewImage ? (
@@ -336,51 +336,51 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-gray-100 to-gray-200">
+                      <div className="w-full h-full flex items-center justify-center text-3xl bg-gradient-to-br from-gray-100 to-gray-200">
                         ✨
                       </div>
                     )}
                   </div>
 
                   {/* Name */}
-                  <h4 className="font-semibold text-gray-900 text-sm text-center mb-2">{style.name}</h4>
+                  <h4 className="font-semibold text-gray-900 text-xs text-center mb-1.5">{style.name}</h4>
 
                   {/* Controls - different for custom vs preset */}
                   {style.isCustom ? (
                     // Custom card: Edit and Remove buttons
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-1.5">
                       <button
                         onClick={() => editCustomStyle(style)}
-                        className="flex-1 py-2 px-3 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
+                        className="flex-1 py-1.5 px-2 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition-colors"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => removeCustomStyle(style.id)}
-                        className="w-8 h-8 rounded-lg border-2 border-gray-300 text-gray-500 flex items-center justify-center hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition-colors"
+                        className="w-7 h-7 rounded-md border-2 border-gray-300 text-gray-500 flex items-center justify-center hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition-colors"
                       >
-                        <Minus className="h-4 w-4" />
+                        <Minus className="h-3 w-3" />
                       </button>
                     </div>
                   ) : (
                     // Preset card: +/- controls
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-1.5">
                       <button
                         onClick={() => decrementStyle(style.id)}
-                        className="w-8 h-8 rounded-full border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                        className="w-7 h-7 rounded-full border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition-colors"
                       >
-                        <Minus className="h-4 w-4" />
+                        <Minus className="h-3 w-3" />
                       </button>
                       <button
                         onClick={() => addStyle(PRESET_STYLES.find(p => p.id === style.id)!)}
                         disabled={remainingImages <= 0}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                        className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
                           remainingImages > 0
                             ? "border-2 border-blue-400 text-blue-600 hover:bg-blue-50"
                             : "border-2 border-gray-200 text-gray-300 cursor-not-allowed"
                         }`}
                       >
-                        <Plus className="h-4 w-4" />
+                        <Plus className="h-3 w-3" />
                       </button>
                     </div>
                   )}
