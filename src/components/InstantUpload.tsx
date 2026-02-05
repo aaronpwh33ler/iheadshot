@@ -6,6 +6,7 @@ import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as Image
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
+import { StyleSelector, SelectedStyle, PRESET_STYLES } from "./StyleSelector";
 
 // Demo mode: Skip generation and show existing images for testing
 const DEMO_ORDER_ID = "cs_test_a10w4eDn4CKk4FR9IgZh6bhHoaQpgMVuXjLs35oUdR6xC6wnA96VUPLTUP";
@@ -31,55 +32,7 @@ interface FileWithPreview extends File {
   preview: string;
 }
 
-// Style categories with outfit/location/lighting variables
-const STYLE_CATEGORIES = [
-  {
-    name: "👔 Corporate & Business",
-    description: "Traditional professional looks",
-    styles: [
-      { id: "corporate-navy", name: "Corporate Navy", desc: "Navy suit, modern office", preview: "🏢" },
-      { id: "corporate-gray", name: "Corporate Gray", desc: "Gray suit, studio backdrop", preview: "📸" },
-      { id: "executive-black", name: "Executive Black", desc: "Black suit, executive office", preview: "🖤" },
-    ],
-  },
-  {
-    name: "👕 Business Casual",
-    description: "Relaxed professional style",
-    styles: [
-      { id: "casual-blue-shirt", name: "Blue Oxford", desc: "Blue shirt, startup office", preview: "💙" },
-      { id: "casual-white-shirt", name: "White Linen", desc: "White shirt, minimalist studio", preview: "🤍" },
-      { id: "smart-casual-sweater", name: "Navy Sweater", desc: "Sweater over shirt, cozy office", preview: "🧥" },
-    ],
-  },
-  {
-    name: "🎨 Creative & Modern",
-    description: "Contemporary looks",
-    styles: [
-      { id: "creative-turtleneck", name: "Black Turtleneck", desc: "Sleek turtleneck, white wall", preview: "⬛" },
-      { id: "tech-startup", name: "Tech Startup", desc: "Gray hoodie, tech office", preview: "💻" },
-    ],
-  },
-  {
-    name: "🌿 Outdoor & Natural",
-    description: "Beautiful natural settings",
-    recommended: true,
-    styles: [
-      { id: "outdoor-natural", name: "Park Natural", desc: "Light jacket, green park", preview: "🌳" },
-      { id: "outdoor-urban", name: "Urban Rooftop", desc: "Blazer + tee, city skyline", preview: "🏙️" },
-      { id: "outdoor-sunset", name: "Golden Hour", desc: "Casual shirt, sunset backdrop", preview: "🌅" },
-    ],
-  },
-  {
-    name: "🏥 Industry Specific",
-    description: "Profession-focused looks",
-    styles: [
-      { id: "healthcare-pro", name: "Healthcare", desc: "White coat, medical facility", preview: "🩺" },
-      { id: "academic-scholar", name: "Academic", desc: "Tweed blazer, library", preview: "📚" },
-      { id: "finance-exec", name: "Finance", desc: "Pinstripe suit, upscale office", preview: "💼" },
-      { id: "legal-pro", name: "Legal", desc: "Dark suit, law office", preview: "⚖️" },
-    ],
-  },
-];
+// Note: Style categories are now defined in StyleSelector component
 
 type Step = "upload" | "select" | "generate";
 type GenerationPhase = "idle" | "uploading" | "character-sheet" | "generating";
@@ -93,7 +46,7 @@ export function InstantUpload({
 }: InstantUploadProps) {
   const [step, setStep] = useState<Step>("upload");
   const [files, setFiles] = useState<FileWithPreview[]>([]);
-  const [selectedStyles, setSelectedStyles] = useState<string[]>([]);
+  const [selectedStyles, setSelectedStyles] = useState<SelectedStyle[]>([]);
   const [generating, setGenerating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [generationPhase, setGenerationPhase] = useState<GenerationPhase>("idle");
@@ -132,16 +85,9 @@ export function InstantUpload({
     }
   };
 
-  // Calculate images per style
-  const getDistribution = () => {
-    if (selectedStyles.length === 0) return {};
-    const baseCount = Math.floor(totalImages / selectedStyles.length);
-    const remainder = totalImages % selectedStyles.length;
-    const distribution: Record<string, number> = {};
-    selectedStyles.forEach((styleId, index) => {
-      distribution[styleId] = baseCount + (index < remainder ? 1 : 0);
-    });
-    return distribution;
+  // Get total allocated images from selected styles
+  const getAllocatedImages = () => {
+    return selectedStyles.reduce((sum, s) => sum + s.quantity, 0);
   };
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -179,29 +125,32 @@ export function InstantUpload({
     setOverLimitWarning(false);
   };
 
-  const toggleStyle = (styleId: string) => {
-    setSelectedStyles((prev) =>
-      prev.includes(styleId) ? prev.filter((id) => id !== styleId) : [...prev, styleId]
-    );
-  };
-
-  const selectAllInCategory = (categoryStyles: { id: string }[]) => {
-    const styleIds = categoryStyles.map((s) => s.id);
-    const allSelected = styleIds.every((id) => selectedStyles.includes(id));
-    if (allSelected) {
-      setSelectedStyles((prev) => prev.filter((id) => !styleIds.includes(id)));
-    } else {
-      const newStyles = styleIds.filter((id) => !selectedStyles.includes(id));
-      setSelectedStyles((prev) => [...prev, ...newStyles]);
-    }
-  };
-
   // Step 1: Upload photos (or skip in demo mode)
   const handleUploadComplete = async () => {
+    // Helper to get default styles as SelectedStyle array
+    const getDefaultStyles = (): SelectedStyle[] => {
+      const defaultIds = ["outdoor-natural", "outdoor-sunset", "corporate-navy"];
+      const remaining = totalImages;
+      const perStyle = Math.floor(remaining / defaultIds.length);
+      const extraFirst = remaining % defaultIds.length;
+
+      return defaultIds.map((id, index) => {
+        const preset = PRESET_STYLES.find(p => p.id === id);
+        return {
+          id,
+          name: preset?.name || id,
+          outfit: preset?.outfit || "",
+          location: preset?.location || "",
+          lighting: preset?.lighting || "",
+          quantity: perStyle + (index < extraFirst ? 1 : 0),
+        };
+      });
+    };
+
     // Demo mode: skip upload, go to style selection
     if (isDemoMode) {
       setStep("select");
-      setSelectedStyles(["outdoor-natural", "outdoor-sunset", "corporate-navy"]);
+      setSelectedStyles(getDefaultStyles());
       return;
     }
 
@@ -220,8 +169,8 @@ export function InstantUpload({
       }
       setUploadedUrls(urls);
       setStep("select");
-      // Pre-select popular styles
-      setSelectedStyles(["outdoor-natural", "outdoor-sunset", "corporate-navy"]);
+      // Pre-select popular styles with default quantities
+      setSelectedStyles(getDefaultStyles());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -245,8 +194,6 @@ export function InstantUpload({
     setStep("generate");
     setError(null);
     setGeneratedImages([]);
-
-    const distribution = getDistribution();
 
     try {
       // PHASE 1: Generate character sheet
@@ -273,18 +220,17 @@ export function InstantUpload({
       // PHASE 2: Generate headshots with identity lock
       setGenerationPhase("generating");
 
-      // Build generation queue
-      const queue: { styleId: string; variant: number }[] = [];
-      for (const styleId of selectedStyles) {
-        const count = distribution[styleId] || 1;
-        for (let v = 1; v <= count; v++) {
-          queue.push({ styleId, variant: v });
+      // Build generation queue from SelectedStyles (with custom outfit/location/lighting)
+      const queue: { style: SelectedStyle; variant: number }[] = [];
+      for (const style of selectedStyles) {
+        for (let v = 1; v <= style.quantity; v++) {
+          queue.push({ style, variant: v });
         }
       }
 
       // Process queue
-      for (const { styleId, variant } of queue) {
-        setCurrentGenerating(styleId);
+      for (const { style, variant } of queue) {
+        setCurrentGenerating(style.id);
         setCurrentVariant(variant);
 
         try {
@@ -299,8 +245,14 @@ export function InstantUpload({
               imageUrl: uploadedUrls[0],
               characterSheetUrl: sheetData.characterSheetUrl,
               characterSheetBase64: sheetData.characterSheetBase64,
-              styleId,
+              styleId: style.id,
               variant,
+              // Pass custom style configuration
+              customOutfit: style.outfit,
+              customLocation: style.location,
+              customLighting: style.lighting,
+              isCustomStyle: style.isCustom,
+              customPrompt: style.customPrompt,
             }),
             signal: controller.signal,
           });
@@ -308,7 +260,7 @@ export function InstantUpload({
           clearTimeout(timeoutId);
 
           if (!response.ok) {
-            console.error(`Failed to generate ${styleId} v${variant}`);
+            console.error(`Failed to generate ${style.id} v${variant}`);
             continue;
           }
 
@@ -317,7 +269,7 @@ export function InstantUpload({
             setGeneratedImages((prev) => [...prev, data.image]);
           }
         } catch (fetchError) {
-          console.error(`Error generating ${styleId} v${variant}:`, fetchError);
+          console.error(`Error generating ${style.id} v${variant}:`, fetchError);
           continue;
         }
       }
@@ -344,11 +296,17 @@ export function InstantUpload({
     }
   };
 
-  // Helper to get style info
+  // Helper to get style info from preset or selected styles
   const getStyleInfo = (styleId: string) => {
-    for (const cat of STYLE_CATEGORIES) {
-      const style = cat.styles.find((s) => s.id === styleId);
-      if (style) return style;
+    // First check if it's a selected custom style
+    const selectedStyle = selectedStyles.find(s => s.id === styleId);
+    if (selectedStyle?.isCustom) {
+      return { name: "Custom", desc: selectedStyle.customPrompt || "", preview: "✨" };
+    }
+    // Otherwise find in presets
+    const preset = PRESET_STYLES.find(p => p.id === styleId);
+    if (preset) {
+      return { name: preset.name, desc: `${preset.outfit}`, preview: preset.previewEmoji };
     }
     return { name: styleId, desc: "", preview: "📷" };
   };
@@ -365,8 +323,6 @@ export function InstantUpload({
     : isStandard
     ? "bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200"
     : "bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200";
-
-  const distribution = getDistribution();
 
   return (
     <div className="space-y-6">
@@ -472,78 +428,38 @@ export function InstantUpload({
         </>
       )}
 
-      {/* STEP 2: Select Styles */}
+      {/* STEP 2: Select Styles - New StyleSelector component */}
       {step === "select" && (
         <div className="space-y-6">
           <div className={`p-5 rounded-xl border-2 ${tierBg}`}>
             <h3 className="font-bold text-lg text-gray-900 mb-2 text-center">Choose Your Headshot Styles</h3>
-            <p className="text-center text-gray-600 mb-4">
-              Select styles with different <strong>outfits</strong>, <strong>locations</strong>, and <strong>lighting</strong>.
-              <br />We&apos;ll create <span className="font-bold text-blue-600">{totalImages}</span> headshots divided among your choices.
+            <p className="text-center text-gray-600">
+              Select styles and customize <strong>outfits</strong>, <strong>locations</strong>, and <strong>lighting</strong>.
+              <br />Allocate your <span className="font-bold text-blue-600">{totalImages}</span> headshots across different styles.
             </p>
-            {selectedStyles.length > 0 && (
-              <div className="bg-white rounded-lg p-4 border">
-                <p className="text-sm text-gray-500 mb-3 text-center">Your breakdown:</p>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {selectedStyles.map((styleId) => {
-                    const style = getStyleInfo(styleId);
-                    return (
-                      <div key={styleId} className="flex items-center gap-2 bg-blue-50 px-3 py-2 rounded-full border border-blue-200">
-                        <span className="text-lg">{style.preview}</span>
-                        <span className="font-medium text-gray-900 text-sm">{style.name}</span>
-                        <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">×{distribution[styleId]}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-            {STYLE_CATEGORIES.map((category) => (
-              <div key={category.name} className={`border-2 rounded-xl p-4 ${category.recommended ? "border-green-300 bg-green-50/50" : "border-gray-200"}`}>
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 flex items-center gap-2">
-                      {category.name}
-                      {category.recommended && <Badge className="bg-green-500 text-white text-xs">Best Results</Badge>}
-                    </h3>
-                    <p className="text-xs text-gray-500">{category.description}</p>
-                  </div>
-                  <button onClick={() => selectAllInCategory(category.styles)} className="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                    {category.styles.every((s) => selectedStyles.includes(s.id)) ? "Remove all" : "Add all"}
-                  </button>
-                </div>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {category.styles.map((style) => {
-                    const isSelected = selectedStyles.includes(style.id);
-                    return (
-                      <button key={style.id} onClick={() => toggleStyle(style.id)} className={`relative p-4 rounded-xl text-center transition-all border-2 cursor-pointer ${isSelected ? "border-blue-500 bg-blue-50 shadow-md" : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"}`}>
-                        <span className="text-3xl mb-2 block">{style.preview}</span>
-                        <p className={`font-medium text-sm ${isSelected ? "text-blue-700" : "text-gray-900"}`}>{style.name}</p>
-                        <p className="text-xs text-gray-500 mt-1">{style.desc}</p>
-                        {isSelected && (
-                          <>
-                            <div className="absolute top-2 right-2 bg-blue-500 text-white rounded-full p-1"><CheckCircle2 className="h-4 w-4" /></div>
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">×{distribution[style.id]}</div>
-                          </>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+          {/* New StyleSelector component with preview images and customization */}
+          <div className="max-h-[500px] overflow-y-auto pr-2">
+            <StyleSelector
+              totalImages={totalImages}
+              selectedStyles={selectedStyles}
+              onStylesChange={setSelectedStyles}
+            />
           </div>
 
           <div className="flex gap-3">
             <Button variant="outline" onClick={() => setStep("upload")} className="flex-1 cursor-pointer">
               <ChevronLeft className="h-4 w-4 mr-1" />Back
             </Button>
-            <Button onClick={generateHeadshots} disabled={!isDemoMode && selectedStyles.length === 0} size="lg" className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
+            <Button
+              onClick={generateHeadshots}
+              disabled={!isDemoMode && (selectedStyles.length === 0 || getAllocatedImages() === 0)}
+              size="lg"
+              className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}
+            >
               <Sparkles className="h-5 w-5 mr-2" />
-              {isDemoMode ? "View Demo Results" : `Generate ${totalImages} Headshots`}
+              {isDemoMode ? "View Demo Results" : `Generate ${getAllocatedImages()} Headshots`}
             </Button>
           </div>
         </div>
