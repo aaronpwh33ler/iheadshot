@@ -116,54 +116,16 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
 
   // Show upload interface
   return (
-    <div className={`py-12 min-h-screen bg-gradient-to-b ${tierBgGradient}`}>
-      <div className="container mx-auto px-4 max-w-5xl">
-        <div className="text-center mb-10">
-          <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${tierGradient} rounded-2xl mb-6 shadow-lg`}>
-            {isPremium ? <Crown className="h-8 w-8 text-white" /> : <Camera className="h-8 w-8 text-white" />}
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Create Your {isPremium ? "Premium " : ""}Headshots
-          </h1>
-          <p className="text-lg text-gray-600 max-w-xl mx-auto">
-            Upload 1-5 photos and our AI will create {headshotCount} professional headshot styles.
-          </p>
-        </div>
-
-        <Card className="p-6 md:p-8 shadow-xl border-0">
-          <InstantUpload
-            orderId={orderId}
-            tier={tier}
-            headshotCount={headshotCount}
-            onGenerationComplete={handleGenerationComplete}
-            onError={handleError}
-          />
-        </Card>
-
-        {/* Features list - updated without 30 seconds claim */}
-        <div className="mt-10 grid grid-cols-3 gap-6 text-center">
-          <div>
-            <div className={`w-12 h-12 ${isPremium ? "bg-amber-100" : "bg-blue-100"} rounded-xl flex items-center justify-center mx-auto mb-3`}>
-              <Sparkles className={`h-6 w-6 ${isPremium ? "text-amber-600" : "text-blue-600"}`} />
-            </div>
-            <h3 className="font-medium text-gray-900 mb-1">AI-Powered</h3>
-            <p className="text-sm text-gray-500">{isPremium ? "Premium 4K Model" : "Latest FLUX AI"}</p>
-          </div>
-          <div>
-            <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-3">
-              <CheckCircle2 className="h-6 w-6 text-green-600" />
-            </div>
-            <h3 className="font-medium text-gray-900 mb-1">{headshotCount} Styles</h3>
-            <p className="text-sm text-gray-500">Professional variety</p>
-          </div>
-          <div>
-            <div className={`w-12 h-12 ${isPremium ? "bg-orange-100" : "bg-purple-100"} rounded-xl flex items-center justify-center mx-auto mb-3`}>
-              <Zap className={`h-6 w-6 ${isPremium ? "text-orange-600" : "text-purple-600"}`} />
-            </div>
-            <h3 className="font-medium text-gray-900 mb-1">Fast Results</h3>
-            <p className="text-sm text-gray-500">Ready in minutes</p>
-          </div>
-        </div>
+    <div className={`py-8 min-h-screen bg-gradient-to-b ${tierBgGradient}`}>
+      {/* Full-width container for the upload flow */}
+      <div className="container mx-auto px-4">
+        <InstantUpload
+          orderId={orderId}
+          tier={tier}
+          headshotCount={headshotCount}
+          onGenerationComplete={handleGenerationComplete}
+          onError={handleError}
+        />
 
         <p className="text-center text-sm text-gray-400 mt-8">
           Order ID: {orderId}
