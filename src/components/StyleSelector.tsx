@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle2, ChevronDown, Plus, Minus, Sparkles, PenLine } from "lucide-react";
+import { CheckCircle2, Plus, Minus, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -14,7 +14,7 @@ export interface StyleConfig {
   location: string;
   lighting: string;
   previewEmoji: string;
-  previewImage?: string; // URL to preview image
+  previewImage?: string;
 }
 
 // Selected style with user customizations
@@ -75,7 +75,7 @@ const LIGHTING_OPTIONS = [
 
 // Preset styles with default configurations
 const PRESET_STYLES: StyleConfig[] = [
-  // Outdoor & Natural (Recommended)
+  // Outdoor & Natural
   { id: "outdoor-natural", name: "Natural Light", category: "Outdoor & Natural", outfit: "a casual but professional light jacket", location: "outdoors in a lush green park with soft bokeh background", lighting: "golden hour warm sunlight", previewEmoji: "🌳", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/5c3330ae-7f62-49e3-99bf-153edfb3572d-outdoor-natural-v1.jpg" },
   { id: "outdoor-urban", name: "Urban Professional", category: "Outdoor & Natural", outfit: "a modern blazer with a casual t-shirt underneath", location: "on a city rooftop with blurred skyline", lighting: "beautiful sunset golden hour light", previewEmoji: "🏙️", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/902349f2-4bc9-4037-b9a7-8e6e1ccba629-outdoor-urban-v1.jpg" },
   { id: "outdoor-sunset", name: "Golden Hour", category: "Outdoor & Natural", outfit: "a smart casual button-up shirt", location: "outdoors with warm sunset colors in the background", lighting: "beautiful sunset golden hour light", previewEmoji: "🌅", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/7b4aa176-f65d-4790-ae21-3546cc20bb70-outdoor-sunset-v1.jpg" },
@@ -102,7 +102,6 @@ interface StyleSelectorProps {
 }
 
 export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: StyleSelectorProps) {
-  const [expandedStyle, setExpandedStyle] = useState<string | null>(null);
   const [customPrompt, setCustomPrompt] = useState("");
 
   // Get remaining images to allocate
@@ -116,20 +115,19 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
     if (existing) {
       // Remove style
       onStylesChange(selectedStyles.filter(s => s.id !== preset.id));
-      if (expandedStyle === preset.id) setExpandedStyle(null);
     } else {
-      // Add style with default quantity
-      const defaultQty = Math.max(1, Math.min(remainingImages, Math.ceil(remainingImages / 3)));
+      // Add style with default quantity of 1
       const newStyle: SelectedStyle = {
         id: preset.id,
         name: preset.name,
         outfit: preset.outfit,
         location: preset.location,
         lighting: preset.lighting,
-        quantity: defaultQty,
+        quantity: Math.min(1, remainingImages),
       };
-      onStylesChange([...selectedStyles, newStyle]);
-      setExpandedStyle(preset.id);
+      if (remainingImages > 0) {
+        onStylesChange([...selectedStyles, newStyle]);
+      }
     }
   };
 
@@ -151,40 +149,35 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
       outfit: customPrompt,
       location: "",
       lighting: "",
-      quantity: Math.min(remainingImages, 2),
+      quantity: Math.min(1, remainingImages),
       isCustom: true,
       customPrompt: customPrompt,
     };
     onStylesChange([...selectedStyles, newStyle]);
     setCustomPrompt("");
-    setExpandedStyle(customId);
   };
 
-  // Group presets by category
-  const categories = [
-    { name: "🌿 Outdoor & Natural", recommended: true, styles: PRESET_STYLES.filter(s => s.category === "Outdoor & Natural") },
-    { name: "👔 Corporate", styles: PRESET_STYLES.filter(s => s.category === "Corporate") },
-    { name: "👕 Business Casual", styles: PRESET_STYLES.filter(s => s.category === "Business Casual") },
-    { name: "🎨 Creative", styles: PRESET_STYLES.filter(s => s.category === "Creative") },
-    { name: "🏥 Industry", styles: PRESET_STYLES.filter(s => s.category === "Industry") },
-  ];
+  // Get label for dropdown value
+  const getOutfitLabel = (value: string) => OUTFIT_OPTIONS.find(o => o.value === value)?.label || "Custom";
+  const getLocationLabel = (value: string) => LOCATION_OPTIONS.find(o => o.value === value)?.label || "Custom";
+  const getLightingLabel = (value: string) => LIGHTING_OPTIONS.find(o => o.value === value)?.label || "Custom";
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Allocation summary */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-4 rounded-xl border border-blue-200">
+      <div className="bg-gradient-to-r from-blue-50 to-purple-50 p-3 rounded-xl border border-blue-200">
         <div className="flex items-center justify-between">
           <div>
-            <p className="font-medium text-gray-900">Image Allocation</p>
-            <p className="text-sm text-gray-600">
-              {allocatedImages} of {totalImages} images assigned
+            <p className="font-medium text-gray-900 text-sm">Image Allocation</p>
+            <p className="text-xs text-gray-600">
+              {allocatedImages} of {totalImages} assigned
               {remainingImages > 0 && <span className="text-blue-600 ml-1">({remainingImages} remaining)</span>}
             </p>
           </div>
           {selectedStyles.length > 0 && (
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-1">
               {selectedStyles.map(s => (
-                <Badge key={s.id} variant="secondary" className="bg-white">
+                <Badge key={s.id} variant="secondary" className="bg-white text-xs">
                   {s.name} ×{s.quantity}
                 </Badge>
               ))}
@@ -193,200 +186,256 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
         </div>
       </div>
 
-      {/* Style categories */}
-      {categories.map(category => (
-        <div key={category.name} className="space-y-3">
-          <div className="flex items-center gap-2">
-            <h3 className="font-semibold text-gray-900">{category.name}</h3>
-            {category.recommended && (
-              <Badge className="bg-green-500 text-white text-xs">Best Results</Badge>
-            )}
-          </div>
+      {/* Style cards - 3 column grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {PRESET_STYLES.map(preset => {
+          const selected = selectedStyles.find(s => s.id === preset.id);
+          const isSelected = !!selected;
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {category.styles.map(preset => {
-              const selected = selectedStyles.find(s => s.id === preset.id);
-              const isExpanded = expandedStyle === preset.id;
-
-              return (
+          return (
+            <div
+              key={preset.id}
+              className={`rounded-xl border-2 transition-all overflow-hidden bg-gradient-to-br from-orange-50/50 to-amber-50/30 ${
+                isSelected
+                  ? "border-blue-500 shadow-lg"
+                  : "border-gray-200 hover:border-blue-300"
+              }`}
+            >
+              <div className="p-3 flex gap-3">
+                {/* Preview image - square on left */}
                 <div
-                  key={preset.id}
-                  className={`relative rounded-xl border-2 transition-all overflow-hidden ${
-                    selected
-                      ? "border-blue-500 bg-blue-50 shadow-md"
-                      : "border-gray-200 hover:border-blue-300 bg-white"
-                  }`}
+                  className={`w-24 h-28 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 cursor-pointer ${!isSelected ? "hover:ring-2 hover:ring-blue-300" : ""}`}
+                  onClick={() => toggleStyle(preset)}
                 >
-                  {/* Main card - clickable */}
-                  <div
-                    className="p-3 cursor-pointer"
-                    onClick={() => toggleStyle(preset)}
-                  >
-                    <div className="flex gap-3">
-                      {/* Preview image or emoji */}
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
-                        {preset.previewImage ? (
-                          <img
-                            src={preset.previewImage}
-                            alt={preset.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center text-3xl">
-                            {preset.previewEmoji}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Info */}
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-gray-900 truncate">{preset.name}</p>
-                        <p className="text-xs text-gray-500 line-clamp-2">
-                          {OUTFIT_OPTIONS.find(o => o.value === preset.outfit)?.label || "Custom"} • {LOCATION_OPTIONS.find(l => l.value === preset.location)?.label || "Custom"}
-                        </p>
-                      </div>
-
-                      {/* Selection indicator */}
-                      {selected && (
-                        <div className="flex items-center gap-1">
-                          <span className="bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded-full">
-                            ×{selected.quantity}
-                          </span>
-                          <CheckCircle2 className="h-5 w-5 text-blue-600" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Expand/collapse toggle */}
-                  {selected && (
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setExpandedStyle(isExpanded ? null : preset.id);
-                      }}
-                      className="w-full py-2 px-3 bg-blue-100 text-blue-700 text-sm flex items-center justify-center gap-1 hover:bg-blue-200"
-                    >
-                      <PenLine className="h-3 w-3" />
-                      {isExpanded ? "Hide options" : "Customize"}
-                      <ChevronDown className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                    </button>
-                  )}
-
-                  {/* Expanded customization panel */}
-                  {selected && isExpanded && (
-                    <div className="p-3 bg-white border-t border-blue-200 space-y-3">
-                      {/* Quantity */}
-                      <div>
-                        <label className="text-xs font-medium text-gray-700 mb-1 block">Quantity</label>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => updateStyle(preset.id, { quantity: Math.max(1, selected.quantity - 1) })}
-                            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                            disabled={selected.quantity <= 1}
-                          >
-                            <Minus className="h-4 w-4" />
-                          </button>
-                          <span className="w-8 text-center font-medium">{selected.quantity}</span>
-                          <button
-                            onClick={() => updateStyle(preset.id, { quantity: Math.min(selected.quantity + 1, selected.quantity + remainingImages) })}
-                            className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200"
-                            disabled={remainingImages <= 0}
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Outfit dropdown */}
-                      <div>
-                        <label className="text-xs font-medium text-gray-700 mb-1 block">Outfit</label>
-                        <select
-                          value={selected.outfit}
-                          onChange={(e) => updateStyle(preset.id, { outfit: e.target.value })}
-                          className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                        >
-                          {OUTFIT_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Location dropdown */}
-                      <div>
-                        <label className="text-xs font-medium text-gray-700 mb-1 block">Location</label>
-                        <select
-                          value={selected.location}
-                          onChange={(e) => updateStyle(preset.id, { location: e.target.value })}
-                          className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                        >
-                          {LOCATION_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Lighting dropdown */}
-                      <div>
-                        <label className="text-xs font-medium text-gray-700 mb-1 block">Lighting</label>
-                        <select
-                          value={selected.lighting}
-                          onChange={(e) => updateStyle(preset.id, { lighting: e.target.value })}
-                          className="w-full text-sm border border-gray-300 rounded-lg px-3 py-2 bg-white"
-                        >
-                          {LIGHTING_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
-                          ))}
-                        </select>
-                      </div>
+                  {preset.previewImage ? (
+                    <img
+                      src={preset.previewImage}
+                      alt={preset.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-4xl bg-gradient-to-br from-gray-100 to-gray-200">
+                      {preset.previewEmoji}
                     </div>
                   )}
                 </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
 
-      {/* Custom style input */}
-      <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 hover:border-purple-300 transition-colors">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
-            <Sparkles className="h-5 w-5 text-white" />
-          </div>
-          <div className="flex-1">
-            <p className="font-medium text-gray-900 mb-1">Custom Style</p>
-            <p className="text-xs text-gray-500 mb-2">Describe what you want (e.g., "Blue blazer, outdoor cafe, morning light")</p>
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={customPrompt}
-                onChange={(e) => setCustomPrompt(e.target.value)}
-                placeholder="Describe your ideal headshot..."
-                className="flex-1 text-sm border border-gray-300 rounded-lg px-3 py-2"
-                onKeyDown={(e) => e.key === "Enter" && addCustomStyle()}
-              />
-              <Button
-                onClick={addCustomStyle}
-                disabled={!customPrompt.trim() || remainingImages <= 0}
-                size="sm"
-                className="bg-purple-600 hover:bg-purple-700"
-              >
-                Add
-              </Button>
+                {/* Right side - name + dropdowns */}
+                <div className="flex-1 min-w-0 flex flex-col">
+                  {/* Header: name + checkmark */}
+                  <div className="flex items-start justify-between mb-2">
+                    <h3
+                      className="font-semibold text-gray-900 cursor-pointer hover:text-blue-600"
+                      onClick={() => toggleStyle(preset)}
+                    >
+                      {preset.name}
+                    </h3>
+                    {isSelected && (
+                      <CheckCircle2 className="h-5 w-5 text-blue-500 flex-shrink-0" />
+                    )}
+                  </div>
+
+                  {/* Dropdowns - always visible */}
+                  <div className="space-y-1.5 flex-1">
+                    {/* Outfit */}
+                    <div>
+                      <label className="text-[10px] text-gray-500 uppercase tracking-wide">Outfit</label>
+                      <select
+                        value={selected?.outfit || preset.outfit}
+                        onChange={(e) => {
+                          if (selected) {
+                            updateStyle(preset.id, { outfit: e.target.value });
+                          } else {
+                            // Auto-select when changing dropdown
+                            const newStyle: SelectedStyle = {
+                              id: preset.id,
+                              name: preset.name,
+                              outfit: e.target.value,
+                              location: preset.location,
+                              lighting: preset.lighting,
+                              quantity: Math.min(1, remainingImages),
+                            };
+                            if (remainingImages > 0) {
+                              onStylesChange([...selectedStyles, newStyle]);
+                            }
+                          }
+                        }}
+                        className="w-full text-xs border border-gray-200 rounded px-2 py-1 bg-white truncate"
+                      >
+                        {OUTFIT_OPTIONS.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                      <label className="text-[10px] text-gray-500 uppercase tracking-wide">Location</label>
+                      <select
+                        value={selected?.location || preset.location}
+                        onChange={(e) => {
+                          if (selected) {
+                            updateStyle(preset.id, { location: e.target.value });
+                          } else {
+                            const newStyle: SelectedStyle = {
+                              id: preset.id,
+                              name: preset.name,
+                              outfit: preset.outfit,
+                              location: e.target.value,
+                              lighting: preset.lighting,
+                              quantity: Math.min(1, remainingImages),
+                            };
+                            if (remainingImages > 0) {
+                              onStylesChange([...selectedStyles, newStyle]);
+                            }
+                          }
+                        }}
+                        className="w-full text-xs border border-gray-200 rounded px-2 py-1 bg-white truncate"
+                      >
+                        {LOCATION_OPTIONS.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Lighting */}
+                    <div>
+                      <label className="text-[10px] text-gray-500 uppercase tracking-wide">Lighting</label>
+                      <select
+                        value={selected?.lighting || preset.lighting}
+                        onChange={(e) => {
+                          if (selected) {
+                            updateStyle(preset.id, { lighting: e.target.value });
+                          } else {
+                            const newStyle: SelectedStyle = {
+                              id: preset.id,
+                              name: preset.name,
+                              outfit: preset.outfit,
+                              location: preset.location,
+                              lighting: e.target.value,
+                              quantity: Math.min(1, remainingImages),
+                            };
+                            if (remainingImages > 0) {
+                              onStylesChange([...selectedStyles, newStyle]);
+                            }
+                          }
+                        }}
+                        className="w-full text-xs border border-gray-200 rounded px-2 py-1 bg-white truncate"
+                      >
+                        {LIGHTING_OPTIONS.map(opt => (
+                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Quantity controls - bottom right */}
+                  <div className="flex items-center justify-end gap-1 mt-2 pt-1 border-t border-gray-100">
+                    <button
+                      onClick={() => {
+                        if (selected && selected.quantity > 1) {
+                          updateStyle(preset.id, { quantity: selected.quantity - 1 });
+                        } else if (selected && selected.quantity === 1) {
+                          // Remove when going to 0
+                          onStylesChange(selectedStyles.filter(s => s.id !== preset.id));
+                        }
+                      }}
+                      disabled={!isSelected}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center border ${
+                        isSelected
+                          ? "border-blue-300 text-blue-600 hover:bg-blue-50"
+                          : "border-gray-200 text-gray-300"
+                      }`}
+                    >
+                      <Minus className="h-3 w-3" />
+                    </button>
+                    <span className={`text-sm font-medium w-6 text-center ${isSelected ? "text-gray-900" : "text-gray-400"}`}>
+                      ×{selected?.quantity || 0}
+                    </span>
+                    <button
+                      onClick={() => {
+                        if (selected) {
+                          if (remainingImages > 0) {
+                            updateStyle(preset.id, { quantity: selected.quantity + 1 });
+                          }
+                        } else {
+                          // Add with quantity 1
+                          const newStyle: SelectedStyle = {
+                            id: preset.id,
+                            name: preset.name,
+                            outfit: preset.outfit,
+                            location: preset.location,
+                            lighting: preset.lighting,
+                            quantity: 1,
+                          };
+                          if (remainingImages > 0) {
+                            onStylesChange([...selectedStyles, newStyle]);
+                          }
+                        }
+                      }}
+                      disabled={remainingImages <= 0 && !isSelected}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center border ${
+                        remainingImages > 0 || isSelected
+                          ? "border-blue-300 text-blue-600 hover:bg-blue-50"
+                          : "border-gray-200 text-gray-300"
+                      }`}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Custom style card */}
+        <div className="rounded-xl border-2 border-dashed border-gray-300 bg-gradient-to-br from-purple-50/30 to-pink-50/30 hover:border-purple-400 transition-all">
+          <div className="p-3 flex gap-3">
+            {/* Blank preview area */}
+            <div className="w-24 h-28 rounded-lg bg-gradient-to-br from-purple-100 to-pink-100 flex-shrink-0 flex items-center justify-center">
+              <Sparkles className="h-8 w-8 text-purple-400" />
+            </div>
+
+            {/* Right side */}
+            <div className="flex-1 min-w-0 flex flex-col">
+              <h3 className="font-semibold text-gray-900 mb-2">Custom Style</h3>
+
+              {/* Text input for custom prompt */}
+              <div className="flex-1">
+                <label className="text-[10px] text-gray-500 uppercase tracking-wide">Describe your style</label>
+                <textarea
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  placeholder="e.g., Blue blazer, outdoor cafe, morning light..."
+                  className="w-full text-xs border border-gray-200 rounded px-2 py-1.5 bg-white resize-none h-[72px]"
+                />
+              </div>
+
+              {/* Add button */}
+              <div className="flex items-center justify-end gap-2 mt-2 pt-1 border-t border-gray-100">
+                <Button
+                  onClick={addCustomStyle}
+                  disabled={!customPrompt.trim() || remainingImages <= 0}
+                  size="sm"
+                  className="bg-purple-600 hover:bg-purple-700 text-xs h-7 px-3"
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  Add
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Custom styles list */}
+      {/* Custom styles that have been added */}
       {selectedStyles.filter(s => s.isCustom).map(custom => (
         <div key={custom.id} className="bg-purple-50 border-2 border-purple-300 rounded-xl p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-purple-600" />
-              <span className="font-medium text-purple-900">Custom: "{custom.customPrompt}"</span>
-              <span className="bg-purple-600 text-white text-xs font-bold px-2 py-0.5 rounded-full">×{custom.quantity}</span>
+              <span className="font-medium text-purple-900 text-sm">Custom: &quot;{custom.customPrompt}&quot;</span>
             </div>
             <div className="flex items-center gap-2">
               <button
@@ -395,8 +444,13 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
               >
                 <Minus className="h-3 w-3" />
               </button>
+              <span className="text-sm font-medium w-6 text-center">×{custom.quantity}</span>
               <button
-                onClick={() => updateStyle(custom.id, { quantity: custom.quantity + 1 })}
+                onClick={() => {
+                  if (remainingImages > 0) {
+                    updateStyle(custom.id, { quantity: custom.quantity + 1 });
+                  }
+                }}
                 className="w-6 h-6 rounded-full bg-purple-200 flex items-center justify-center hover:bg-purple-300"
                 disabled={remainingImages <= 0}
               >
@@ -404,7 +458,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
               </button>
               <button
                 onClick={() => onStylesChange(selectedStyles.filter(s => s.id !== custom.id))}
-                className="text-red-500 hover:text-red-700 text-sm ml-2"
+                className="text-red-500 hover:text-red-700 text-xs ml-2"
               >
                 Remove
               </button>
