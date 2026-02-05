@@ -117,7 +117,7 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
   // Show upload interface
   return (
     <div className={`py-12 min-h-screen bg-gradient-to-b ${tierBgGradient}`}>
-      <div className="container mx-auto px-4 max-w-2xl">
+      <div className="container mx-auto px-4 max-w-5xl">
         <div className="text-center mb-10">
           <div className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br ${tierGradient} rounded-2xl mb-6 shadow-lg`}>
             {isPremium ? <Crown className="h-8 w-8 text-white" /> : <Camera className="h-8 w-8 text-white" />}
