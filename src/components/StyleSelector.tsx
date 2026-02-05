@@ -211,11 +211,11 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
         )}
       </div>
 
-      {/* Two column layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Left: Style Presets */}
-        <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 px-1">Style Presets</h3>
+      {/* Two column layout - 1/3 presets, 2/3 selected */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Left: Style Presets (1/3 width) */}
+        <div className="bg-gray-50 rounded-2xl p-3 border border-gray-200 lg:col-span-1">
+          <h3 className="text-base font-semibold text-gray-700 mb-3 px-1">Style Presets</h3>
           <div className="space-y-2 max-h-[480px] overflow-y-scroll pr-2">
             {PRESET_STYLES.map(preset => {
               const isSelected = selectedStyles.some(s => s.id === preset.id);
@@ -296,16 +296,16 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
           </div>
         </div>
 
-        {/* Right: Selected Styles */}
-        <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
-          <h3 className="text-lg font-semibold text-gray-700 mb-4 px-1">Selected Styles</h3>
+        {/* Right: Selected Styles (2/3 width) */}
+        <div className="bg-blue-50 rounded-2xl p-3 border border-blue-200 lg:col-span-2">
+          <h3 className="text-base font-semibold text-gray-700 mb-3 px-1">Selected Styles</h3>
           {selectedStyles.length === 0 ? (
             <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-6 text-center h-[440px] flex flex-col items-center justify-center">
               <p className="text-gray-500">Click + to add styles</p>
               <p className="text-sm text-gray-400 mt-1">Your selections will appear here</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-2 max-h-[480px] overflow-y-scroll pr-2">
+            <div className="grid grid-cols-3 gap-2 max-h-[480px] overflow-y-scroll pr-2 pt-2">
               {selectedStyles.map(style => (
                 <div
                   key={style.id}
