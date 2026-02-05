@@ -1,6 +1,7 @@
 "use client";
 
-import { Plus, Minus } from "lucide-react";
+import { useState } from "react";
+import { Plus, Minus, Sparkles } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 // Style configuration
@@ -92,12 +93,17 @@ interface StyleSelectorProps {
 }
 
 export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: StyleSelectorProps) {
+  const [editingCustomId, setEditingCustomId] = useState<string | null>(null);
+  const [customOutfit, setCustomOutfit] = useState("");
+  const [customLocation, setCustomLocation] = useState("");
+  const [customLighting, setCustomLighting] = useState("");
+
   // Get allocated count
   const allocatedImages = selectedStyles.reduce((sum, s) => sum + s.quantity, 0);
   const remainingImages = totalImages - allocatedImages;
   const progressPercent = (allocatedImages / totalImages) * 100;
 
-  // Add or increment style
+  // Add or increment style (for presets only - they consolidate)
   const addStyle = (preset: StyleConfig) => {
     if (remainingImages <= 0) return;
 
@@ -118,6 +124,59 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
         quantity: 1,
         previewImage: preset.previewImage,
       }]);
+    }
+  };
+
+  // Add a NEW custom card (each one is unique, never consolidates)
+  const addCustomStyle = () => {
+    if (remainingImages <= 0) return;
+
+    const customId = `custom-${Date.now()}`;
+    onStylesChange([...selectedStyles, {
+      id: customId,
+      name: "Custom",
+      outfit: OUTFIT_OPTIONS[0].value,
+      location: LOCATION_OPTIONS[0].value,
+      lighting: LIGHTING_OPTIONS[0].value,
+      quantity: 1,
+      isCustom: true,
+    }]);
+    // Open edit modal for this new custom
+    setEditingCustomId(customId);
+    setCustomOutfit(OUTFIT_OPTIONS[0].value);
+    setCustomLocation(LOCATION_OPTIONS[0].value);
+    setCustomLighting(LIGHTING_OPTIONS[0].value);
+  };
+
+  // Edit an existing custom card
+  const editCustomStyle = (style: SelectedStyle) => {
+    setEditingCustomId(style.id);
+    setCustomOutfit(style.outfit);
+    setCustomLocation(style.location);
+    setCustomLighting(style.lighting);
+  };
+
+  // Save custom edits
+  const saveCustomEdits = () => {
+    if (!editingCustomId) return;
+    onStylesChange(selectedStyles.map(s =>
+      s.id === editingCustomId
+        ? { ...s, outfit: customOutfit, location: customLocation, lighting: customLighting }
+        : s
+    ));
+    setEditingCustomId(null);
+  };
+
+  // Cancel custom edits
+  const cancelCustomEdits = () => {
+    setEditingCustomId(null);
+  };
+
+  // Remove custom card
+  const removeCustomStyle = (id: string) => {
+    onStylesChange(selectedStyles.filter(s => s.id !== id));
+    if (editingCustomId === id) {
+      setEditingCustomId(null);
     }
   };
 
@@ -203,6 +262,37 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
                 </div>
               );
             })}
+
+            {/* Custom card at the bottom */}
+            <div className="bg-white rounded-xl border-2 border-dashed border-blue-300 p-3 flex items-center gap-4 transition-all hover:border-blue-400 hover:bg-blue-50/50">
+              {/* Custom preview - sparkles on light bg */}
+              <div className="w-20 h-24 rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 flex-shrink-0 flex items-center justify-center shadow-sm">
+                <div className="relative">
+                  <Sparkles className="h-8 w-8 text-blue-500" />
+                  <Sparkles className="h-4 w-4 text-blue-300 absolute -top-2 -right-1" />
+                  <Sparkles className="h-3 w-3 text-blue-400 absolute -bottom-1 -left-2" />
+                </div>
+              </div>
+
+              {/* Name */}
+              <div className="flex-1 min-w-0">
+                <h4 className="font-semibold text-gray-900">Custom</h4>
+                <p className="text-xs text-gray-500 mt-0.5">Create your own</p>
+              </div>
+
+              {/* Add button */}
+              <button
+                onClick={addCustomStyle}
+                disabled={remainingImages <= 0}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                  remainingImages > 0
+                    ? "bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 shadow-md"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                <Plus className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -221,14 +311,25 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
                   key={style.id}
                   className="bg-white rounded-xl border-2 border-blue-400 p-3 shadow-md relative"
                 >
-                  {/* Quantity badge */}
-                  <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-md z-10">
-                    x{style.quantity}
-                  </div>
+                  {/* Quantity badge - only for presets */}
+                  {!style.isCustom && (
+                    <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-sm font-bold px-2.5 py-1 rounded-lg shadow-md z-10">
+                      x{style.quantity}
+                    </div>
+                  )}
 
                   {/* Preview image */}
                   <div className="w-full aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 mb-2 shadow-sm">
-                    {style.previewImage ? (
+                    {style.isCustom ? (
+                      // Custom card sparkles preview
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+                        <div className="relative">
+                          <Sparkles className="h-12 w-12 text-blue-500" />
+                          <Sparkles className="h-6 w-6 text-blue-300 absolute -top-3 -right-2" />
+                          <Sparkles className="h-4 w-4 text-blue-400 absolute -bottom-2 -left-3" />
+                        </div>
+                      </div>
+                    ) : style.previewImage ? (
                       <img
                         src={style.previewImage}
                         alt={style.name}
@@ -244,32 +345,119 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
                   {/* Name */}
                   <h4 className="font-semibold text-gray-900 text-sm text-center mb-2">{style.name}</h4>
 
-                  {/* +/- controls */}
-                  <div className="flex items-center justify-center gap-2">
-                    <button
-                      onClick={() => decrementStyle(style.id)}
-                      className="w-8 h-8 rounded-full border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition-colors"
-                    >
-                      <Minus className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => addStyle(PRESET_STYLES.find(p => p.id === style.id)!)}
-                      disabled={remainingImages <= 0}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
-                        remainingImages > 0
-                          ? "border-2 border-blue-400 text-blue-600 hover:bg-blue-50"
-                          : "border-2 border-gray-200 text-gray-300 cursor-not-allowed"
-                      }`}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
+                  {/* Controls - different for custom vs preset */}
+                  {style.isCustom ? (
+                    // Custom card: Edit and Remove buttons
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => editCustomStyle(style)}
+                        className="flex-1 py-2 px-3 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => removeCustomStyle(style.id)}
+                        className="w-8 h-8 rounded-lg border-2 border-gray-300 text-gray-500 flex items-center justify-center hover:bg-red-50 hover:border-red-300 hover:text-red-500 transition-colors"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    // Preset card: +/- controls
+                    <div className="flex items-center justify-center gap-2">
+                      <button
+                        onClick={() => decrementStyle(style.id)}
+                        className="w-8 h-8 rounded-full border-2 border-gray-300 text-gray-600 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                      >
+                        <Minus className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => addStyle(PRESET_STYLES.find(p => p.id === style.id)!)}
+                        disabled={remainingImages <= 0}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
+                          remainingImages > 0
+                            ? "border-2 border-blue-400 text-blue-600 hover:bg-blue-50"
+                            : "border-2 border-gray-200 text-gray-300 cursor-not-allowed"
+                        }`}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           )}
         </div>
       </div>
+
+      {/* Edit Custom Modal */}
+      {editingCustomId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-blue-500" />
+              Customize Your Style
+            </h3>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Outfit</label>
+                <select
+                  value={customOutfit}
+                  onChange={(e) => setCustomOutfit(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {OUTFIT_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Location</label>
+                <select
+                  value={customLocation}
+                  onChange={(e) => setCustomLocation(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {LOCATION_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-1 block">Lighting</label>
+                <select
+                  value={customLighting}
+                  onChange={(e) => setCustomLighting(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  {LIGHTING_OPTIONS.map(opt => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={cancelCustomEdits}
+                className="flex-1 py-2 px-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveCustomEdits}
+                className="flex-1 py-2 px-4 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
