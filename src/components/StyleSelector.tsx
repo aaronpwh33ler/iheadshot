@@ -157,7 +157,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
         {/* Left: Style Presets */}
         <div className="bg-gray-50 rounded-2xl p-4 border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-700 mb-4 px-1">Style Presets</h3>
-          <div className="space-y-3 max-h-[420px] overflow-y-auto pr-2">
+          <div className="space-y-3 max-h-[840px] overflow-y-scroll pr-2">
             {PRESET_STYLES.map(preset => {
               const isSelected = selectedStyles.some(s => s.id === preset.id);
               return (
@@ -210,12 +210,12 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
         <div className="bg-blue-50 rounded-2xl p-4 border border-blue-200">
           <h3 className="text-lg font-semibold text-gray-700 mb-4 px-1">Selected Styles</h3>
           {selectedStyles.length === 0 ? (
-            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-8 text-center h-[380px] flex flex-col items-center justify-center">
+            <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-8 text-center h-[800px] flex flex-col items-center justify-center">
               <p className="text-gray-500">Click + to add styles</p>
               <p className="text-sm text-gray-400 mt-1">Your selections will appear here</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3 max-h-[420px] overflow-y-auto pr-2">
+            <div className="grid grid-cols-2 gap-3 max-h-[840px] overflow-y-scroll pr-2">
               {selectedStyles.map(style => (
                 <div
                   key={style.id}
