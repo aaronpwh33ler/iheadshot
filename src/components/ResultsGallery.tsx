@@ -94,7 +94,8 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
         const image = localImages[i];
         const response = await fetch(image.imageUrl);
         const blob = await response.blob();
-        const extension = image.imageUrl.includes(".png") ? "png" : "webp";
+        // Determine extension - default to jpg for best compatibility
+        const extension = image.imageUrl.includes(".png") ? "png" : image.imageUrl.includes(".webp") ? "webp" : "jpg";
         const suffix = upscaledIds.has(image.id) ? "-4k" : "";
         folder?.file(`${image.styleName.toLowerCase().replace(/\s+/g, "-")}${suffix}.${extension}`, blob);
       }
@@ -112,7 +113,8 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
     try {
       const response = await fetch(image.imageUrl);
       const blob = await response.blob();
-      const extension = image.imageUrl.includes(".png") ? "png" : "webp";
+      // Determine extension - default to jpg for best compatibility
+      const extension = image.imageUrl.includes(".png") ? "png" : image.imageUrl.includes(".webp") ? "webp" : "jpg";
       const suffix = upscaledIds.has(image.id) ? "-4k" : "";
       saveAs(blob, `${image.styleName.toLowerCase().replace(/\s+/g, "-")}${suffix}.${extension}`);
     } catch (error) {
@@ -363,18 +365,18 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
       {/* Upscale Modal with Before/After Slider */}
       {upscaleModalImage && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-2 sm:p-4"
           onClick={closeUpscaleModal}
         >
           <div
-            className="bg-white rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl"
+            className="bg-white rounded-2xl max-w-3xl w-full max-h-[95vh] overflow-hidden shadow-2xl flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-3 sm:p-4 border-b shrink-0">
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Upgrade to 4K Resolution</h3>
-                <p className="text-sm text-gray-600">{upscaleModalImage.styleName}</p>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900">Upgrade to 4K Resolution</h3>
+                <p className="text-xs sm:text-sm text-gray-600">{upscaleModalImage.styleName}</p>
               </div>
               <button
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -387,7 +389,8 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
             {/* Before/After Comparison */}
             <div
               ref={sliderRef}
-              className="relative aspect-[4/5] bg-gray-900 overflow-hidden cursor-ew-resize select-none"
+              className="relative aspect-[3/4] sm:aspect-[4/5] bg-gray-900 overflow-hidden cursor-ew-resize select-none flex-1 min-h-0"
+              style={{ maxHeight: 'calc(95vh - 180px)' }}
               onMouseDown={handleSliderMouseDown}
             >
               {/* "Before" - Always show the ORIGINAL image */}
@@ -506,34 +509,34 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-gray-50 border-t">
+            <div className="p-3 sm:p-4 bg-gray-50 border-t shrink-0">
               {upscaledIds.has(upscaleModalImage.id) ? (
                 // Already upscaled
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div className="flex items-center gap-2 text-green-600">
                     <Check className="h-5 w-5" />
                     <span className="font-medium">Upscaled to 4K!</span>
                   </div>
-                  <Button onClick={() => downloadSingle(upscaleModalImage)}>
+                  <Button onClick={() => downloadSingle(upscaleModalImage)} className="w-full sm:w-auto">
                     <Download className="h-4 w-4 mr-2" />
                     Download 4K
                   </Button>
                 </div>
               ) : (
                 // Not yet upscaled - individual pricing only
-                <div className="flex items-center justify-between">
-                  <div>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="text-center sm:text-left">
                     <p className="font-bold text-lg text-gray-900">${pricing.individual}</p>
                     <p className="text-sm text-gray-600">per image</p>
                   </div>
-                  <div className="flex gap-3">
-                    <Button variant="outline" onClick={closeUpscaleModal}>
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
+                    <Button variant="outline" onClick={closeUpscaleModal} className="w-full sm:w-auto">
                       Maybe Later
                     </Button>
                     <Button
                       onClick={() => upscaleSingle(upscaleModalImage)}
                       disabled={upscalingCurrent}
-                      className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                      className="w-full sm:w-auto bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
                     >
                       {upscalingCurrent ? (
                         <>
@@ -558,18 +561,18 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
       {/* Bulk Upscale Modal */}
       {showBulkUpscaleModal && (
         <div
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-2 sm:p-4"
           onClick={() => setShowBulkUpscaleModal(false)}
         >
           <div
-            className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl"
+            className="bg-white rounded-2xl max-w-2xl w-full max-h-[95vh] overflow-auto shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 border-b">
+            <div className="flex items-center justify-between p-3 sm:p-4 border-b">
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Upgrade All to 4K Resolution</h3>
-                <p className="text-sm text-gray-600">{localImages.length} images will be processed</p>
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900">Upgrade All to 4K Resolution</h3>
+                <p className="text-xs sm:text-sm text-gray-600">{localImages.length} images will be processed</p>
               </div>
               <button
                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
