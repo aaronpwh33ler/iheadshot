@@ -1,8 +1,8 @@
-// Topaz Labs Bloom API for upscaling
-// Documentation: https://developer.topazlabs.com/premium-models/bloom
-// Using Realism model with low creativity for best headshot results
+// Topaz Labs Image API for upscaling
+// Documentation: https://developer.topazlabs.com/image-api/introduction
+// Using Standard V2 model with face enhancement for best headshot results
 
-const TOPAZ_API_URL = "https://api.topazlabs.com/v1";
+const TOPAZ_API_URL = "https://api.topazlabs.com/image/v1/enhance";
 const TOPAZ_API_KEY = process.env.TOPAZ_API_KEY;
 
 export interface UpscaleResult {
@@ -15,22 +15,69 @@ export interface UpscaleResult {
 }
 
 export interface UpscaleOptions {
-  scale?: 2 | 4 | 8; // Upscale factor
-  creativity?: number; // 0-10, lower = more faithful to original (1-2 recommended for headshots)
-  model?: "realism" | "standard" | "low-resolution" | "cgi";
-  outputFormat?: "png" | "jpg" | "webp";
+  scale?: 2 | 4 | 8; // Upscale factor (converted to output_width)
+  outputFormat?: "jpeg" | "png" | "webp";
+  faceEnhancement?: boolean;
+  faceEnhancementCreativity?: number; // 0-1, lower = more faithful
 }
 
-// Upscale an image using Topaz Bloom with Realism preset
+// Download image and convert to blob
+async function fetchImageAsBlob(imageUrl: string): Promise<Blob> {
+  const response = await fetch(imageUrl);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image: ${response.statusText}`);
+  }
+  return await response.blob();
+}
+
+// Upload upscaled image to Supabase and return URL
+async function uploadToSupabase(
+  imageBlob: Blob,
+  orderId: string,
+  originalUrl: string
+): Promise<string> {
+  const { createAdminSupabaseClient } = await import("@/lib/supabase");
+  const supabase = createAdminSupabaseClient();
+
+  // Generate unique filename
+  const timestamp = Date.now();
+  const extension = imageBlob.type.includes("png") ? "png" : imageBlob.type.includes("webp") ? "webp" : "jpg";
+  const filename = `${orderId}/upscaled-${timestamp}.${extension}`;
+
+  // Convert blob to buffer for upload
+  const arrayBuffer = await imageBlob.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  const { data, error } = await supabase.storage
+    .from("headshots")
+    .upload(`generated/${filename}`, buffer, {
+      contentType: imageBlob.type,
+      upsert: true,
+    });
+
+  if (error) {
+    console.error("Supabase upload error:", error);
+    throw new Error(`Failed to upload upscaled image: ${error.message}`);
+  }
+
+  // Get public URL
+  const { data: urlData } = supabase.storage
+    .from("headshots")
+    .getPublicUrl(`generated/${filename}`);
+
+  return urlData.publicUrl;
+}
+
+// Upscale an image using Topaz Labs Image API
 export async function upscaleWithBloom(
   imageUrl: string,
   options: UpscaleOptions = {}
 ): Promise<UpscaleResult | null> {
   const {
     scale = 4,
-    creativity = 1, // Low creativity for faithful upscaling
-    model = "realism", // Realism preset for best headshot results
-    outputFormat = "png"
+    outputFormat = "png",
+    faceEnhancement = true,
+    faceEnhancementCreativity = 0, // Low creativity for faithful upscaling
   } = options;
 
   if (!TOPAZ_API_KEY) {
@@ -39,45 +86,63 @@ export async function upscaleWithBloom(
   }
 
   try {
-    console.log(`Starting Topaz upscale: ${scale}x, model=${model}, creativity=${creativity}`);
+    console.log(`Starting Topaz upscale: ${scale}x, format=${outputFormat}`);
 
-    // Start the upscale job
-    const response = await fetch(`${TOPAZ_API_URL}/bloom/upscale`, {
+    // Fetch the original image
+    const imageBlob = await fetchImageAsBlob(imageUrl);
+
+    // Calculate output width based on scale
+    // Assuming input is ~720p (1280x720), 4x would be 5120 (close to 4K)
+    // Max output is 24MP (e.g., 6000x4000)
+    const outputWidth = scale === 2 ? 2560 : scale === 4 ? 5120 : 7680;
+
+    // Create form data for multipart request
+    const formData = new FormData();
+    formData.append("image", imageBlob, "image.jpg");
+    formData.append("model", "Standard V2");
+    formData.append("output_width", outputWidth.toString());
+    formData.append("output_format", outputFormat);
+    formData.append("subject_detection", "Foreground");
+    formData.append("face_enhancement", faceEnhancement.toString());
+    formData.append("face_enhancement_creativity", faceEnhancementCreativity.toString());
+    formData.append("face_enhancement_strength", "0.8");
+
+    // Make API request
+    const response = await fetch(TOPAZ_API_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${TOPAZ_API_KEY}`,
-        "Content-Type": "application/json",
+        "X-API-Key": TOPAZ_API_KEY,
+        "accept": `image/${outputFormat}`,
       },
-      body: JSON.stringify({
-        image_url: imageUrl,
-        scale_factor: scale,
-        model: model,
-        creativity: creativity,
-        output_format: outputFormat,
-        // Additional options for best quality
-        denoise: 0, // No denoising for AI-generated images
-        sharpen: 0.3, // Slight sharpening
-        face_recovery: true, // Enable face enhancement
-      }),
+      body: formData,
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error("Topaz API error:", error);
-      throw new Error(`Upscale failed: ${error}`);
+      const errorText = await response.text();
+      console.error("Topaz API error:", response.status, errorText);
+      throw new Error(`Upscale failed: ${response.status} - ${errorText}`);
     }
 
-    const result = await response.json();
+    // Get the upscaled image as blob
+    const upscaledBlob = await response.blob();
 
-    console.log(`Topaz upscale complete: ${result.width}x${result.height}`);
+    // Extract dimensions from response headers if available
+    const width = parseInt(response.headers.get("x-output-width") || outputWidth.toString());
+    const height = parseInt(response.headers.get("x-output-height") || "0");
+
+    console.log(`Topaz upscale complete: ${width}x${height || "auto"}`);
+
+    // Upload to Supabase and get permanent URL
+    // For now, create a data URL (will need to implement proper storage)
+    const upscaledUrl = await uploadToSupabase(upscaledBlob, "upscaled", imageUrl);
 
     return {
-      id: result.id || `upscale-${Date.now()}`,
+      id: `upscale-${Date.now()}`,
       originalUrl: imageUrl,
-      upscaledUrl: result.output_url || result.url,
+      upscaledUrl,
       scale,
-      width: result.width,
-      height: result.height,
+      width,
+      height: height || Math.round(width * 1.33), // Estimate if not provided
     };
   } catch (error) {
     console.error("Upscale error:", error);
@@ -92,25 +157,24 @@ export async function batchUpscale(
 ): Promise<UpscaleResult[]> {
   const results: UpscaleResult[] = [];
 
-  // Process in parallel but limit concurrency
-  const batchSize = 3;
-  for (let i = 0; i < imageUrls.length; i += batchSize) {
-    const batch = imageUrls.slice(i, i + batchSize);
-    const batchResults = await Promise.all(
-      batch.map((url) => upscaleWithBloom(url, options))
-    );
-
-    for (const result of batchResults) {
+  // Process sequentially to avoid rate limits
+  for (const url of imageUrls) {
+    try {
+      const result = await upscaleWithBloom(url, options);
       if (result) {
         results.push(result);
       }
+      // Small delay between requests
+      await new Promise(resolve => setTimeout(resolve, 500));
+    } catch (error) {
+      console.error(`Failed to upscale ${url}:`, error);
     }
   }
 
   return results;
 }
 
-// Calculate upscale pricing
+// Calculate upscale pricing (client-side display only)
 export function calculateUpscalePrice(imageCount: number, scale: 2 | 4 | 8): number {
   // Pricing per image based on scale factor
   const pricePerImage = {

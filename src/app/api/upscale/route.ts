@@ -15,12 +15,12 @@ export async function POST(request: NextRequest) {
 
     console.log(`Starting upscale for order ${orderId}: ${imageUrls.length} images at ${scale}x with Realism preset`);
 
-    // Upscale images using Realism model with low creativity
+    // Upscale images using Standard V2 with face enhancement
     const results = await batchUpscale(imageUrls, {
       scale,
-      creativity, // Low creativity (1) for faithful upscaling
-      model: "realism", // Realism preset for best headshot results
       outputFormat: "png",
+      faceEnhancement: true,
+      faceEnhancementCreativity: 0, // Low creativity for faithful upscaling
     });
 
     if (results.length === 0) {

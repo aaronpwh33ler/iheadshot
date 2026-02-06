@@ -364,6 +364,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                   src={upscaleModalImage.imageUrl}
                   alt="Original"
                   className="w-full h-full object-cover"
+                  draggable={false}
                   style={{
                     filter: upscaledIds.has(upscaleModalImage.id) ? "none" : "blur(0.5px)",
                     imageRendering: upscaledIds.has(upscaleModalImage.id) ? "auto" : "pixelated"
@@ -387,6 +388,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                     src={upscaleModalImage.imageUrl}
                     alt="4K"
                     className="w-full h-full object-cover"
+                    draggable={false}
                   />
                 ) : (
                   // Not yet upscaled - show blurred preview
@@ -395,6 +397,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                       src={upscaleModalImage.imageUrl}
                       alt="4K Preview"
                       className="w-full h-full object-cover blur-sm"
+                      draggable={false}
                     />
                     {/* 4K Overlay */}
                     <div className="absolute inset-0 bg-gradient-to-br from-green-500/20 to-emerald-500/20 flex items-center justify-center">
