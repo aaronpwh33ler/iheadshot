@@ -151,7 +151,7 @@ export async function upscaleWithBloom(
 
     const formData = new FormData();
     formData.append("image", imageBlob, "image.jpg");
-    formData.append("model", "Upscale High Fidelity"); // Best for portrait upscaling
+    formData.append("model", "Upscale Standard"); // Standard upscaling model
     formData.append("output_width", outputWidth.toString());
     formData.append("output_format", outputFormat);
 
