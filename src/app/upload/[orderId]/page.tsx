@@ -91,6 +91,7 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
           <ResultsGallery
             images={generatedImages}
             orderId={orderId}
+            tier={tier}
           />
 
           <p className="text-center text-sm text-gray-500 mt-8">
