@@ -16,9 +16,10 @@ export async function POST(request: NextRequest) {
     console.log(`Starting upscale for order ${orderId}: ${imageUrls.length} images at ${scale}x with Realism preset`);
 
     // Upscale images using Standard V2 with face enhancement
+    // Using JPEG to keep file size under Supabase limit (PNG 4K can be 50MB+)
     const results = await batchUpscale(imageUrls, {
       scale,
-      outputFormat: "png",
+      outputFormat: "jpeg",
       faceEnhancement: true,
       faceEnhancementCreativity: 0, // Low creativity for faithful upscaling
       orderId, // Pass orderId for organizing uploads
