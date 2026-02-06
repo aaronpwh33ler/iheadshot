@@ -49,6 +49,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
   const [showBulkUpscaleModal, setShowBulkUpscaleModal] = useState(false);
   const [upscalingCurrent, setUpscalingCurrent] = useState(false);
   const [upscalingAll, setUpscalingAll] = useState(false);
+  const [processingImageUrl, setProcessingImageUrl] = useState<string | null>(null); // For processing overlay
   const [sliderPosition, setSliderPosition] = useState(50);
   const sliderRef = useRef<HTMLDivElement>(null);
   const isDragging = useRef(false);
@@ -162,6 +163,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
 
   const upscaleSingle = async (image: GeneratedImage) => {
     setUpscalingCurrent(true);
+    setProcessingImageUrl(image.imageUrl); // Show processing overlay
     try {
       const response = await fetch("/api/upscale", {
         method: "POST",
@@ -200,6 +202,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
       alert(message);
     } finally {
       setUpscalingCurrent(false);
+      setProcessingImageUrl(null); // Hide processing overlay
     }
   };
 
@@ -443,6 +446,58 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                   4K Enhanced
                 </div>
               </div>
+
+              {/* Processing Overlay - shows when upscaling */}
+              {processingImageUrl && (
+                <div className="absolute inset-0 z-20">
+                  {/* Blurred image with green tint */}
+                  <img
+                    src={processingImageUrl}
+                    alt="Processing"
+                    className="w-full h-full object-cover blur-md"
+                    draggable={false}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-br from-green-500/40 to-emerald-600/40" />
+
+                  {/* Animated particles */}
+                  <div className="absolute inset-0 overflow-hidden">
+                    {[...Array(20)].map((_, i) => (
+                      <div
+                        key={i}
+                        className="absolute w-2 h-2 bg-white/60 rounded-full animate-pulse"
+                        style={{
+                          left: `${Math.random() * 100}%`,
+                          top: `${Math.random() * 100}%`,
+                          animationDelay: `${Math.random() * 2}s`,
+                          animationDuration: `${1 + Math.random() * 2}s`,
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Scanning line effect */}
+                  <div
+                    className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-green-400 to-transparent animate-bounce"
+                    style={{ top: "50%", animationDuration: "1.5s" }}
+                  />
+
+                  {/* Center content */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="bg-black/60 backdrop-blur-sm rounded-2xl p-8 text-center">
+                      <div className="w-16 h-16 mx-auto mb-4 relative">
+                        <Zap className="w-16 h-16 text-green-400 animate-pulse" />
+                        <div className="absolute inset-0 w-16 h-16 border-4 border-green-400/30 rounded-full animate-ping" />
+                      </div>
+                      <h3 className="text-white text-xl font-bold mb-2">Enhancing to 4K</h3>
+                      <p className="text-green-200 text-sm">AI processing in progress...</p>
+                      <div className="mt-4 flex items-center justify-center gap-2">
+                        <Loader2 className="w-5 h-5 text-green-400 animate-spin" />
+                        <span className="text-white/80 text-sm">This may take a moment</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Slider handle */}
               <div
