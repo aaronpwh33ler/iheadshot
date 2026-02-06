@@ -151,7 +151,7 @@ export async function upscaleWithBloom(
 
     const formData = new FormData();
     formData.append("image", imageBlob, "image.jpg");
-    formData.append("model", "Standard V2"); // Correct API model name for upscaling
+    formData.append("model", "Bloom Realism"); // Closest to desktop "Realism" model
     formData.append("output_width", outputWidth.toString());
     formData.append("output_format", outputFormat);
 

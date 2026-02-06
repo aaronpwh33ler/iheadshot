@@ -46,6 +46,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
 
   // Upscale modal state
   const [upscaleModalImage, setUpscaleModalImage] = useState<GeneratedImage | null>(null);
+  const [upscaleModalOriginalUrl, setUpscaleModalOriginalUrl] = useState<string | null>(null); // Store original for before/after
   const [showBulkUpscaleModal, setShowBulkUpscaleModal] = useState(false);
   const [upscalingCurrent, setUpscalingCurrent] = useState(false);
   const [upscalingAll, setUpscalingAll] = useState(false);
@@ -208,11 +209,13 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
 
   const openUpscaleModal = (image: GeneratedImage) => {
     setUpscaleModalImage(image);
+    setUpscaleModalOriginalUrl(image.imageUrl); // Store original URL for before/after comparison
     setSliderPosition(50);
   };
 
   const closeUpscaleModal = () => {
     setUpscaleModalImage(null);
+    setUpscaleModalOriginalUrl(null);
     setUpscalingCurrent(false);
   };
 
@@ -387,16 +390,16 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
               className="relative aspect-[4/5] bg-gray-900 overflow-hidden cursor-ew-resize select-none"
               onMouseDown={handleSliderMouseDown}
             >
-              {/* "Before" - Original with slight pixelation effect */}
+              {/* "Before" - Always show the ORIGINAL image */}
               <div className="absolute inset-0">
                 <img
-                  src={upscaleModalImage.imageUrl}
+                  src={upscaleModalOriginalUrl || upscaleModalImage.imageUrl}
                   alt="Original"
                   className="w-full h-full object-cover"
                   draggable={false}
                   style={{
-                    filter: upscaledIds.has(upscaleModalImage.id) ? "none" : "blur(0.5px)",
-                    imageRendering: upscaledIds.has(upscaleModalImage.id) ? "auto" : "pixelated"
+                    filter: "blur(0.5px)",
+                    imageRendering: "pixelated"
                   }}
                 />
                 {/* "Before" label with resolution */}
@@ -406,13 +409,13 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                 </div>
               </div>
 
-              {/* "After" - 4K preview (blurred with overlay if not purchased) */}
+              {/* "After" - 4K version (actual upscaled or preview) */}
               <div
                 className="absolute inset-0 overflow-hidden"
                 style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
               >
                 {upscaledIds.has(upscaleModalImage.id) ? (
-                  // Already upscaled - show full quality
+                  // Already upscaled - show the actual 4K image
                   <img
                     src={upscaleModalImage.imageUrl}
                     alt="4K"
@@ -420,10 +423,10 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                     draggable={false}
                   />
                 ) : (
-                  // Not yet upscaled - show blurred preview
+                  // Not yet upscaled - show blurred preview with overlay
                   <>
                     <img
-                      src={upscaleModalImage.imageUrl}
+                      src={upscaleModalOriginalUrl || upscaleModalImage.imageUrl}
                       alt="4K Preview"
                       className="w-full h-full object-cover blur-sm"
                       draggable={false}
@@ -458,22 +461,6 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                     draggable={false}
                   />
                   <div className="absolute inset-0 bg-gradient-to-br from-green-500/40 to-emerald-600/40" />
-
-                  {/* Animated particles */}
-                  <div className="absolute inset-0 overflow-hidden">
-                    {[...Array(20)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="absolute w-2 h-2 bg-white/60 rounded-full animate-pulse"
-                        style={{
-                          left: `${Math.random() * 100}%`,
-                          top: `${Math.random() * 100}%`,
-                          animationDelay: `${Math.random() * 2}s`,
-                          animationDuration: `${1 + Math.random() * 2}s`,
-                        }}
-                      />
-                    ))}
-                  </div>
 
                   {/* Scanning line effect */}
                   <div
