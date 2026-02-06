@@ -19,6 +19,7 @@ export interface UpscaleOptions {
   outputFormat?: "jpeg" | "png" | "webp";
   faceEnhancement?: boolean;
   faceEnhancementCreativity?: number; // 0-1, lower = more faithful
+  orderId?: string; // For organizing uploads in Supabase
 }
 
 // Download image and convert to blob
@@ -72,12 +73,13 @@ async function uploadToSupabase(
 export async function upscaleWithBloom(
   imageUrl: string,
   options: UpscaleOptions = {}
-): Promise<UpscaleResult | null> {
+): Promise<UpscaleResult> {
   const {
     scale = 4,
     outputFormat = "png",
     faceEnhancement = true,
     faceEnhancementCreativity = 0, // Low creativity for faithful upscaling
+    orderId = "upscaled", // Default folder for uploads
   } = options;
 
   if (!TOPAZ_API_KEY) {
@@ -120,6 +122,16 @@ export async function upscaleWithBloom(
     if (!response.ok) {
       const errorText = await response.text();
       console.error("Topaz API error:", response.status, errorText);
+
+      // Parse common error messages
+      if (response.status === 401) {
+        throw new Error("Invalid API key. Please check your TOPAZ_API_KEY.");
+      } else if (response.status === 402 || errorText.includes("credit") || errorText.includes("balance")) {
+        throw new Error("Insufficient credits. Please add credits at topazlabs.com/api");
+      } else if (response.status === 429) {
+        throw new Error("Rate limited. Please wait and try again.");
+      }
+
       throw new Error(`Upscale failed: ${response.status} - ${errorText}`);
     }
 
@@ -133,8 +145,9 @@ export async function upscaleWithBloom(
     console.log(`Topaz upscale complete: ${width}x${height || "auto"}`);
 
     // Upload to Supabase and get permanent URL
-    // For now, create a data URL (will need to implement proper storage)
-    const upscaledUrl = await uploadToSupabase(upscaledBlob, "upscaled", imageUrl);
+    console.log(`Uploading upscaled image to Supabase for order: ${orderId}`);
+    const upscaledUrl = await uploadToSupabase(upscaledBlob, orderId, imageUrl);
+    console.log(`Upload complete: ${upscaledUrl}`);
 
     return {
       id: `upscale-${Date.now()}`,
@@ -146,7 +159,8 @@ export async function upscaleWithBloom(
     };
   } catch (error) {
     console.error("Upscale error:", error);
-    return null;
+    // Re-throw to propagate to caller
+    throw error;
   }
 }
 
@@ -156,19 +170,29 @@ export async function batchUpscale(
   options: UpscaleOptions = {}
 ): Promise<UpscaleResult[]> {
   const results: UpscaleResult[] = [];
+  const errors: string[] = [];
 
   // Process sequentially to avoid rate limits
-  for (const url of imageUrls) {
+  for (let i = 0; i < imageUrls.length; i++) {
+    const url = imageUrls[i];
     try {
+      console.log(`Upscaling image ${i + 1}/${imageUrls.length}`);
       const result = await upscaleWithBloom(url, options);
-      if (result) {
-        results.push(result);
-      }
+      results.push(result);
       // Small delay between requests
-      await new Promise(resolve => setTimeout(resolve, 500));
+      if (i < imageUrls.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
     } catch (error) {
-      console.error(`Failed to upscale ${url}:`, error);
+      const errorMsg = error instanceof Error ? error.message : "Unknown error";
+      console.error(`Failed to upscale image ${i + 1}:`, errorMsg);
+      errors.push(errorMsg);
     }
+  }
+
+  // If all failed, throw the first error
+  if (results.length === 0 && errors.length > 0) {
+    throw new Error(errors[0]);
   }
 
   return results;

@@ -31,11 +31,11 @@ interface ResultsGalleryProps {
   tier?: string;
 }
 
-// Pricing structure
+// Pricing structure - bulk should always be cheaper than individual total
 const PRICING = {
-  basic: { all: 9.99, individual: 2.49 },      // 5 images: $9.99 all vs $12.45 individual
-  standard: { all: 14.99, individual: 1.99 },  // 10 images: $14.99 all vs $19.90 individual
-  premium: { all: 24.99, individual: 1.49 },   // 20 images: $24.99 all vs $29.80 individual
+  basic: { all: 4.99, individual: 1.99 },      // 5 images: $4.99 all vs $9.95 individual (save $4.96)
+  standard: { all: 9.99, individual: 1.49 },   // 10 images: $9.99 all vs $14.90 individual (save $4.91)
+  premium: { all: 14.99, individual: 1.29 },   // 20 images: $14.99 all vs $25.80 individual (save $10.81)
 };
 
 export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalleryProps) {
@@ -132,9 +132,12 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
         }),
       });
 
-      if (!response.ok) throw new Error("Upscaling failed");
-
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Upscaling failed");
+      }
+
       if (data.images && data.images.length > 0) {
         // Update local images with upscaled versions
         setLocalImages((prev) =>
@@ -150,7 +153,8 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
       }
     } catch (error) {
       console.error("Upscaling failed:", error);
-      alert("Failed to upscale images. Please try again.");
+      const message = error instanceof Error ? error.message : "Failed to upscale images";
+      alert(message);
     } finally {
       setUpscalingAll(false);
     }
@@ -169,9 +173,12 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
         }),
       });
 
-      if (!response.ok) throw new Error("Upscaling failed");
-
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Upscaling failed");
+      }
+
       if (data.images && data.images.length > 0) {
         const upscaled = data.images[0];
         // Update the specific image
@@ -189,7 +196,8 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
       }
     } catch (error) {
       console.error("Upscaling failed:", error);
-      alert("Failed to upscale image. Please try again.");
+      const message = error instanceof Error ? error.message : "Failed to upscale image";
+      alert(message);
     } finally {
       setUpscalingCurrent(false);
     }
@@ -254,6 +262,24 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
           </Button>
         </div>
       </div>
+
+      {/* Upscaling Progress Indicator */}
+      {(upscalingAll || upscalingCurrent) && (
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 flex items-center gap-4">
+          <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
+            <Zap className="h-6 w-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-gray-900">
+              {upscalingAll ? "Upscaling all images to 4K..." : "Upscaling image to 4K..."}
+            </p>
+            <p className="text-sm text-gray-600">
+              This may take a minute. Please don&apos;t close this page.
+            </p>
+          </div>
+          <Loader2 className="h-6 w-6 text-green-600 animate-spin" />
+        </div>
+      )}
 
       {/* Image grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

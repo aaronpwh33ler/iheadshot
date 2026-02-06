@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
       outputFormat: "png",
       faceEnhancement: true,
       faceEnhancementCreativity: 0, // Low creativity for faithful upscaling
+      orderId, // Pass orderId for organizing uploads
     });
 
     if (results.length === 0) {
@@ -61,8 +62,9 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Upscale error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to upscale images";
     return NextResponse.json(
-      { error: "Failed to upscale images" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
