@@ -1,5 +1,6 @@
 // Topaz Labs Bloom API for upscaling
 // Documentation: https://developer.topazlabs.com/premium-models/bloom
+// Using Realism model with low creativity for best headshot results
 
 const TOPAZ_API_URL = "https://api.topazlabs.com/v1";
 const TOPAZ_API_KEY = process.env.TOPAZ_API_KEY;
@@ -15,16 +16,22 @@ export interface UpscaleResult {
 
 export interface UpscaleOptions {
   scale?: 2 | 4 | 8; // Upscale factor
-  creativity?: number; // 0-10, higher = more AI enhancement
+  creativity?: number; // 0-10, lower = more faithful to original (1-2 recommended for headshots)
+  model?: "realism" | "standard" | "low-resolution" | "cgi";
   outputFormat?: "png" | "jpg" | "webp";
 }
 
-// Upscale an image using Topaz Bloom
+// Upscale an image using Topaz Bloom with Realism preset
 export async function upscaleWithBloom(
   imageUrl: string,
   options: UpscaleOptions = {}
 ): Promise<UpscaleResult | null> {
-  const { scale = 4, creativity = 5, outputFormat = "png" } = options;
+  const {
+    scale = 4,
+    creativity = 1, // Low creativity for faithful upscaling
+    model = "realism", // Realism preset for best headshot results
+    outputFormat = "png"
+  } = options;
 
   if (!TOPAZ_API_KEY) {
     console.error("TOPAZ_API_KEY not configured");
@@ -32,6 +39,8 @@ export async function upscaleWithBloom(
   }
 
   try {
+    console.log(`Starting Topaz upscale: ${scale}x, model=${model}, creativity=${creativity}`);
+
     // Start the upscale job
     const response = await fetch(`${TOPAZ_API_URL}/bloom/upscale`, {
       method: "POST",
@@ -42,8 +51,13 @@ export async function upscaleWithBloom(
       body: JSON.stringify({
         image_url: imageUrl,
         scale_factor: scale,
+        model: model,
         creativity: creativity,
         output_format: outputFormat,
+        // Additional options for best quality
+        denoise: 0, // No denoising for AI-generated images
+        sharpen: 0.3, // Slight sharpening
+        face_recovery: true, // Enable face enhancement
       }),
     });
 
@@ -54,6 +68,8 @@ export async function upscaleWithBloom(
     }
 
     const result = await response.json();
+
+    console.log(`Topaz upscale complete: ${result.width}x${result.height}`);
 
     return {
       id: result.id || `upscale-${Date.now()}`,

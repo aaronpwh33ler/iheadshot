@@ -46,6 +46,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
 
   // Upscale modal state
   const [upscaleModalImage, setUpscaleModalImage] = useState<GeneratedImage | null>(null);
+  const [showBulkUpscaleModal, setShowBulkUpscaleModal] = useState(false);
   const [upscalingCurrent, setUpscalingCurrent] = useState(false);
   const [upscalingAll, setUpscalingAll] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(50);
@@ -231,21 +232,11 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
           {/* 4K Upscale All Button */}
           {!allUpscaled && (
             <Button
-              onClick={upscaleAll}
-              disabled={upscalingAll}
+              onClick={() => setShowBulkUpscaleModal(true)}
               className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
             >
-              {upscalingAll ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Upscaling...
-                </>
-              ) : (
-                <>
-                  <Zap className="h-4 w-4 mr-2" />
-                  4K Upscale All — ${pricing.all}
-                </>
-              )}
+              <Zap className="h-4 w-4 mr-2" />
+              4K Upscale All
             </Button>
           )}
 
@@ -263,23 +254,6 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
           </Button>
         </div>
       </div>
-
-      {/* Savings banner - only show if not all upscaled */}
-      {!allUpscaled && (
-        <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-              <Maximize2 className="h-5 w-5 text-green-600" />
-            </div>
-            <div>
-              <p className="font-medium text-gray-900">Upscale all to 4K and save ${savings}!</p>
-              <p className="text-sm text-gray-600">
-                Individual: ${pricing.individual}/image (${totalIndividualCost} total) → Bulk: ${pricing.all}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Image grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -326,13 +300,13 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                 {!isUpscaled && (
                   <Button
                     size="sm"
-                    className="h-8 w-8 p-0 bg-green-500 hover:bg-green-600"
+                    className="h-8 px-2 bg-green-500 hover:bg-green-600 text-xs font-bold"
                     onClick={(e) => {
                       e.stopPropagation();
                       openUpscaleModal(image);
                     }}
                   >
-                    <Zap className="h-4 w-4" />
+                    4K
                   </Button>
                 )}
 
@@ -395,8 +369,9 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                     imageRendering: upscaledIds.has(upscaleModalImage.id) ? "auto" : "pixelated"
                   }}
                 />
-                {/* "Before" label */}
-                <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1 rounded-full text-sm font-medium">
+                {/* "Before" label with resolution */}
+                <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-1.5 rounded-full text-sm font-bold flex items-center gap-2">
+                  <span className="bg-gray-600 px-2 py-0.5 rounded text-xs">720p</span>
                   Standard
                 </div>
               </div>
@@ -474,13 +449,11 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                   </Button>
                 </div>
               ) : (
-                // Not yet upscaled
+                // Not yet upscaled - individual pricing only
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-bold text-lg text-gray-900">${pricing.individual}</p>
-                    <p className="text-sm text-gray-600">
-                      or <span className="text-green-600 font-medium">${pricing.all} for all {localImages.length} images</span>
-                    </p>
+                    <p className="text-sm text-gray-600">per image</p>
                   </div>
                   <div className="flex gap-3">
                     <Button variant="outline" onClick={closeUpscaleModal}>
@@ -499,13 +472,106 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                       ) : (
                         <>
                           <Zap className="h-4 w-4 mr-2" />
-                          Upscale to 4K
+                          Upscale to 4K — ${pricing.individual}
                         </>
                       )}
                     </Button>
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Upscale Modal */}
+      {showBulkUpscaleModal && (
+        <div
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+          onClick={() => setShowBulkUpscaleModal(false)}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+              <div>
+                <h3 className="text-xl font-bold text-gray-900">Upgrade All to 4K Resolution</h3>
+                <p className="text-sm text-gray-600">{localImages.length} images will be processed</p>
+              </div>
+              <button
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                onClick={() => setShowBulkUpscaleModal(false)}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Preview Grid */}
+            <div className="p-4 bg-gray-50">
+              <div className="grid grid-cols-5 gap-2 mb-4">
+                {localImages.slice(0, 5).map((image, i) => (
+                  <div key={image.id} className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-200 relative">
+                    <img src={image.imageUrl} alt={image.styleName} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-green-500/30 to-transparent flex items-end justify-center pb-2">
+                      <span className="text-white text-xs font-bold bg-green-500 px-2 py-0.5 rounded">4K</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {localImages.length > 5 && (
+                <p className="text-center text-sm text-gray-500">+ {localImages.length - 5} more images</p>
+              )}
+            </div>
+
+            {/* Pricing with Discount */}
+            <div className="p-6 border-t">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-4 mb-4">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <Zap className="h-4 w-4 text-white" />
+                    </div>
+                    <span className="font-semibold text-gray-900">Bulk Discount Applied!</span>
+                  </div>
+                  <Badge className="bg-green-500 text-white">Save ${savings}</Badge>
+                </div>
+                <div className="flex items-baseline gap-3">
+                  <span className="text-3xl font-bold text-gray-900">${pricing.all}</span>
+                  <span className="text-lg text-gray-400 line-through">${totalIndividualCost}</span>
+                  <span className="text-sm text-gray-600">for all {localImages.length} images</span>
+                </div>
+                <p className="text-sm text-gray-600 mt-2">
+                  Individual price: ${pricing.individual}/image × {localImages.length} = ${totalIndividualCost}
+                </p>
+              </div>
+
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setShowBulkUpscaleModal(false)} className="flex-1">
+                  Maybe Later
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowBulkUpscaleModal(false);
+                    upscaleAll();
+                  }}
+                  disabled={upscalingAll}
+                  className="flex-[2] bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600"
+                >
+                  {upscalingAll ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Upscaling All...
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="h-4 w-4 mr-2" />
+                      Upscale All {localImages.length} Images to 4K
+                    </>
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
         </div>

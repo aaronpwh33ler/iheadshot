@@ -4,7 +4,7 @@ import { createAdminSupabaseClient } from "@/lib/supabase";
 
 export async function POST(request: NextRequest) {
   try {
-    const { orderId, imageUrls, scale = 4, creativity = 5 } = await request.json();
+    const { orderId, imageUrls, scale = 4, creativity = 1 } = await request.json();
 
     if (!orderId || !imageUrls || !Array.isArray(imageUrls) || imageUrls.length === 0) {
       return NextResponse.json(
@@ -13,12 +13,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`Starting upscale for order ${orderId}: ${imageUrls.length} images at ${scale}x`);
+    console.log(`Starting upscale for order ${orderId}: ${imageUrls.length} images at ${scale}x with Realism preset`);
 
-    // Upscale images
+    // Upscale images using Realism model with low creativity
     const results = await batchUpscale(imageUrls, {
       scale,
-      creativity,
+      creativity, // Low creativity (1) for faithful upscaling
+      model: "realism", // Realism preset for best headshot results
       outputFormat: "png",
     });
 
