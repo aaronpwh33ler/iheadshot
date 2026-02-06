@@ -151,7 +151,7 @@ export async function upscaleWithBloom(
 
     const formData = new FormData();
     formData.append("image", imageBlob, "image.jpg");
-    formData.append("model", "Bloom Realism"); // Closest to desktop "Realism" model
+    formData.append("model", "High Fidelity V2"); // Faithful upscaling - preserves original without AI artifacts
     formData.append("output_width", outputWidth.toString());
     formData.append("output_format", outputFormat);
 
