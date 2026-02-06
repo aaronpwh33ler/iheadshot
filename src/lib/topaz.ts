@@ -151,14 +151,9 @@ export async function upscaleWithBloom(
 
     const formData = new FormData();
     formData.append("image", imageBlob, "image.jpg");
-    formData.append("model", "Realism"); // Realism model for better skin/face detail
+    formData.append("model", "Upscale High Fidelity"); // Best for portrait upscaling
     formData.append("output_width", outputWidth.toString());
     formData.append("output_format", outputFormat);
-    formData.append("creativity", "low"); // Low creativity = more faithful to original
-    formData.append("subject_detection", "Foreground");
-    formData.append("face_enhancement", faceEnhancement.toString());
-    formData.append("face_enhancement_creativity", faceEnhancementCreativity.toString());
-    formData.append("face_enhancement_strength", "0.5"); // Moderate to prevent splotchy skin
 
     console.log("Calling Topaz API for 2x AI enhancement...");
 
