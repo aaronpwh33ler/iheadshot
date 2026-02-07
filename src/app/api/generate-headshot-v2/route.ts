@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
       characterSheetBase64: providedCharacterSheetBase64,
       styleId,
       variant = 1,
+      gender,
     } = await request.json();
 
     if (!orderId || !imageUrl || !styleId) {
@@ -61,12 +62,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate the headshot with identity lock
+    // Generate the headshot with identity lock (gender-aware outfit)
     const headshotBase64 = await generateHeadshotWithIdentityLock(
       referenceBase64,
       characterSheetBase64,
       style,
-      mimeType
+      mimeType,
+      gender
     );
 
     // Save to Supabase storage

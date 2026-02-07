@@ -58,6 +58,7 @@ export function InstantUpload({
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([]);
   const [characterSheetUrl, setCharacterSheetUrl] = useState<string | null>(null);
   const [characterSheetBase64, setCharacterSheetBase64] = useState<string | null>(null);
+  const [detectedGender, setDetectedGender] = useState<"male" | "female">("male");
   const [loadingDemoImages, setLoadingDemoImages] = useState(false);
 
   // Demo mode detection
@@ -148,6 +149,23 @@ export function InstantUpload({
         urls.push(url);
       }
       setUploadedUrls(urls);
+
+      // Detect gender from first uploaded photo (for style thumbnails & outfit prompts)
+      try {
+        const genderResponse = await fetch("/api/detect-gender", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageUrl: urls[0] }),
+        });
+        if (genderResponse.ok) {
+          const { gender } = await genderResponse.json();
+          setDetectedGender(gender || "male");
+        }
+      } catch (genderErr) {
+        console.error("Gender detection failed, defaulting to male:", genderErr);
+        // Keep default "male" — non-blocking error
+      }
+
       setStep("select");
       setSelectedStyles([]); // Start with no styles selected
     } catch (err) {
@@ -226,6 +244,7 @@ export function InstantUpload({
               characterSheetBase64: sheetData.characterSheetBase64,
               styleId: style.id,
               variant,
+              gender: detectedGender,
               // Pass custom style configuration
               customOutfit: style.outfit,
               customLocation: style.location,
@@ -437,11 +456,41 @@ export function InstantUpload({
             </p>
           </div>
 
+          {/* Gender toggle */}
+          {!isDemoMode && (
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-sm text-gray-500">Showing styles for:</span>
+              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                <button
+                  onClick={() => setDetectedGender("male")}
+                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                    detectedGender === "male"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  Male
+                </button>
+                <button
+                  onClick={() => setDetectedGender("female")}
+                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                    detectedGender === "female"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  Female
+                </button>
+              </div>
+            </div>
+          )}
+
           {/* StyleSelector - no scroll container, let it flow */}
           <StyleSelector
             totalImages={totalImages}
             selectedStyles={selectedStyles}
             onStylesChange={setSelectedStyles}
+            gender={detectedGender}
           />
 
           {/* Action buttons */}

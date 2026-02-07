@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus, Minus, Sparkles } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
@@ -73,26 +73,58 @@ const LIGHTING_OPTIONS = [
   { value: "bright, clean clinical lighting", label: "Clean/Bright" },
 ];
 
-// Preset styles
+// Preset styles (20 total — matches HEADSHOT_STYLES in nano-banana.ts)
+// Preview images are served from /style-previews/{gender}/{id}.jpg
 const PRESET_STYLES: StyleConfig[] = [
-  { id: "outdoor-natural", name: "Natural Light", category: "Outdoor", outfit: "a casual but professional light jacket", location: "outdoors in a lush green park with soft bokeh background", lighting: "golden hour warm sunlight", previewEmoji: "🌳", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/5c3330ae-7f62-49e3-99bf-153edfb3572d-outdoor-natural-v1.jpg" },
-  { id: "outdoor-urban", name: "Urban Professional", category: "Outdoor", outfit: "a modern blazer with a casual t-shirt underneath", location: "on a city rooftop with blurred skyline", lighting: "beautiful sunset golden hour light", previewEmoji: "🏙️", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/902349f2-4bc9-4037-b9a7-8e6e1ccba629-outdoor-urban-v1.jpg" },
-  { id: "outdoor-sunset", name: "Golden Hour", category: "Outdoor", outfit: "a smart casual button-up shirt", location: "outdoors with warm sunset colors in the background", lighting: "beautiful sunset golden hour light", previewEmoji: "🌅", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/7b4aa176-f65d-4790-ae21-3546cc20bb70-outdoor-sunset-v1.jpg" },
-  { id: "corporate-navy", name: "Corporate Navy", category: "Corporate", outfit: "a tailored navy blue suit with a crisp white dress shirt", location: "in a modern corporate office with floor-to-ceiling windows", lighting: "soft natural daylight", previewEmoji: "🏢", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/e5f47490-0ae4-483a-b934-b1bc4c3c6b21-corporate-navy-v1.jpg" },
-  { id: "corporate-gray", name: "Corporate Gray", category: "Corporate", outfit: "a charcoal gray business suit with a light blue tie", location: "in front of a clean white studio backdrop", lighting: "professional studio lighting with soft shadows", previewEmoji: "📸", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/d50d9d23-3ce1-48bd-a186-7817052c7802-corporate-gray-v1.jpg" },
-  { id: "executive-black", name: "Executive Black", category: "Corporate", outfit: "a sharp black suit with a white pocket square", location: "in an elegant executive office with dark wood furnishings", lighting: "dramatic side lighting", previewEmoji: "🖤", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/ce8c8be2-2223-4bbb-ac3f-d75d325bf724-executive-black-v1.jpg" },
-  { id: "casual-blue-shirt", name: "Blue Oxford", category: "Casual", outfit: "a light blue oxford button-up shirt with rolled sleeves", location: "in a modern startup office with plants", lighting: "bright natural window light", previewEmoji: "💙", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/29806279-05a5-4e96-93df-a89765d003f4-casual-blue-shirt-v1.jpg" },
-  { id: "tech-startup", name: "Tech Startup", category: "Creative", outfit: "a comfortable gray hoodie", location: "in a modern tech office with exposed brick", lighting: "bright natural window light", previewEmoji: "💻", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/6053feda-8624-43cc-92a8-8417e3be6178-tech-startup-v1.jpg" },
-  { id: "finance-exec", name: "Finance Executive", category: "Industry", outfit: "a charcoal gray business suit with a light blue tie", location: "in an upscale financial office", lighting: "professional studio lighting with soft shadows", previewEmoji: "💼", previewImage: "https://dkboikgtiflcrksjmouo.supabase.co/storage/v1/object/public/headshots/generated/a7387025-e98a-462e-97d8-185f323acaf3/2a6b32e0-4c97-4fd5-966d-375a2c5aa901-finance-exec-v1.jpg" },
+  // === OUTDOOR (3) ===
+  { id: "outdoor-natural", name: "Natural Light", category: "Outdoor", outfit: "a casual but professional light jacket", location: "outdoors in a lush green park with soft bokeh background", lighting: "golden hour warm sunlight", previewEmoji: "🌳" },
+  { id: "outdoor-urban", name: "Urban Professional", category: "Outdoor", outfit: "a modern blazer with a casual t-shirt underneath", location: "on a city rooftop with blurred skyline", lighting: "beautiful sunset golden hour light", previewEmoji: "🏙️" },
+  { id: "outdoor-sunset", name: "Golden Hour", category: "Outdoor", outfit: "a smart casual button-up shirt", location: "outdoors with warm sunset colors in the background", lighting: "beautiful golden sunset backlighting", previewEmoji: "🌅" },
+  // === CORPORATE (3) ===
+  { id: "corporate-navy", name: "Corporate Navy", category: "Corporate", outfit: "a tailored navy blue suit with a crisp white dress shirt", location: "in a modern corporate office with floor-to-ceiling windows", lighting: "soft natural daylight", previewEmoji: "🏢" },
+  { id: "corporate-gray", name: "Corporate Gray", category: "Corporate", outfit: "a charcoal gray business suit with a light blue tie", location: "in front of a clean white studio backdrop", lighting: "professional studio lighting with soft shadows", previewEmoji: "📸" },
+  { id: "executive-black", name: "Executive Black", category: "Corporate", outfit: "a sharp black suit with a white pocket square", location: "in an elegant executive office with dark wood furnishings", lighting: "dramatic side lighting", previewEmoji: "🖤" },
+  // === CASUAL (3) ===
+  { id: "casual-blue-shirt", name: "Blue Oxford", category: "Casual", outfit: "a light blue oxford button-up shirt with rolled sleeves", location: "in a modern startup office with plants", lighting: "bright natural window light", previewEmoji: "💙" },
+  { id: "casual-white-shirt", name: "Business Casual White", category: "Casual", outfit: "a crisp white linen shirt, open collar", location: "in a bright minimalist studio", lighting: "soft diffused natural light", previewEmoji: "🤍" },
+  { id: "smart-casual-sweater", name: "Smart Casual", category: "Casual", outfit: "a navy blue crewneck sweater over a white collared shirt", location: "in a cozy modern office space", lighting: "warm ambient lighting", previewEmoji: "🧶" },
+  // === CREATIVE (3) ===
+  { id: "creative-turtleneck", name: "Creative Turtleneck", category: "Creative", outfit: "a sleek black turtleneck", location: "against a clean minimalist white wall", lighting: "dramatic studio lighting with strong contrast", previewEmoji: "🎨" },
+  { id: "tech-startup", name: "Tech Startup", category: "Creative", outfit: "a comfortable gray hoodie", location: "in a modern tech office with exposed brick", lighting: "natural daylight mixed with cool LED", previewEmoji: "💻" },
+  { id: "creative-neon", name: "Creative Neon", category: "Creative", outfit: "a fitted black crew-neck t-shirt", location: "in a dark studio with colorful neon light projections and geometric patterns cast across the face and background", lighting: "dramatic low-key lighting with vibrant neon pink, blue, and purple color gels creating cinematic color contrast", previewEmoji: "🎆" },
+  // === STUDIO (2) ===
+  { id: "classic-studio", name: "Classic Studio", category: "Studio", outfit: "a classic dark blazer over a clean white shirt", location: "in front of a seamless pure white studio backdrop", lighting: "soft even studio lighting with subtle fill light", previewEmoji: "📷" },
+  { id: "warm-studio", name: "Warm Studio", category: "Studio", outfit: "a soft earth-tone cashmere sweater with a collared shirt underneath", location: "in front of a warm cream and soft beige textured backdrop", lighting: "warm golden studio lighting with gentle fill", previewEmoji: "☀️" },
+  // === ARTISTIC (1) ===
+  { id: "dark-dramatic", name: "Dark & Dramatic", category: "Artistic", outfit: "a dark tailored suit jacket over a black shirt", location: "against a deep charcoal gradient background fading to black", lighting: "dramatic Rembrandt lighting with a single key light from the side", previewEmoji: "🌑" },
+  // === INDUSTRY (5) ===
+  { id: "finance-exec", name: "Finance Executive", category: "Industry", outfit: "a premium pinstripe suit with silk tie", location: "in an upscale financial office", lighting: "professional office lighting", previewEmoji: "💼" },
+  { id: "healthcare-pro", name: "Healthcare Pro", category: "Industry", outfit: "a clean white medical coat over professional attire", location: "in a modern medical facility", lighting: "bright, clean clinical lighting", previewEmoji: "🏥" },
+  { id: "academic-scholar", name: "Academic", category: "Industry", outfit: "a tweed blazer with elbow patches over a button-up", location: "in a distinguished library with bookshelves", lighting: "warm ambient library lighting", previewEmoji: "📚" },
+  { id: "legal-pro", name: "Legal Professional", category: "Industry", outfit: "a traditional dark suit with conservative tie", location: "in a distinguished law office with leather chairs", lighting: "classic office lighting", previewEmoji: "⚖️" },
+  { id: "real-estate", name: "Real Estate Agent", category: "Industry", outfit: "a sharp fitted blazer over a professional button-up shirt", location: "in front of a bright modern home exterior with soft bokeh landscaping", lighting: "warm natural daylight", previewEmoji: "🏡" },
 ];
 
 interface StyleSelectorProps {
   totalImages: number;
   selectedStyles: SelectedStyle[];
   onStylesChange: (styles: SelectedStyle[]) => void;
+  gender?: "male" | "female";
 }
 
-export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: StyleSelectorProps) {
+// Helper to get gender-aware preview image path
+function getPreviewImagePath(styleId: string, gender?: string): string | undefined {
+  const g = gender || "male";
+  return `/style-previews/${g}/${styleId}.jpg`;
+}
+
+export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gender }: StyleSelectorProps) {
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+
+  // Reset failed images when gender changes (new image set to try)
+  useEffect(() => {
+    setFailedImages(new Set());
+  }, [gender]);
   const [editingCustomId, setEditingCustomId] = useState<string | null>(null);
   const [customOutfit, setCustomOutfit] = useState("");
   const [customLocation, setCustomLocation] = useState("");
@@ -122,7 +154,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
         location: preset.location,
         lighting: preset.lighting,
         quantity: 1,
-        previewImage: preset.previewImage,
+        previewImage: getPreviewImagePath(preset.id, gender),
       }]);
     }
   };
@@ -226,13 +258,14 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
                     isSelected ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  {/* Preview image */}
+                  {/* Preview image — gender-aware with emoji fallback */}
                   <div className="w-14 h-[72px] rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 shadow-sm">
-                    {preset.previewImage ? (
+                    {!failedImages.has(preset.id) ? (
                       <img
-                        src={preset.previewImage}
+                        src={getPreviewImagePath(preset.id, gender)}
                         alt={preset.name}
                         className="w-full h-full object-cover"
+                        onError={() => setFailedImages(prev => new Set(prev).add(preset.id))}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl bg-gradient-to-br from-gray-100 to-gray-200">
@@ -318,10 +351,9 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
                     </div>
                   )}
 
-                  {/* Preview image */}
+                  {/* Preview image — gender-aware */}
                   <div className="w-full aspect-[3/4] rounded-md overflow-hidden bg-gray-100 mb-1.5 shadow-sm">
                     {style.isCustom ? (
-                      // Custom card sparkles preview
                       <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
                         <div className="relative">
                           <Sparkles className="h-8 w-8 text-blue-500" />
@@ -329,15 +361,16 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange }: S
                           <Sparkles className="h-3 w-3 text-blue-400 absolute -bottom-1 -left-2" />
                         </div>
                       </div>
-                    ) : style.previewImage ? (
+                    ) : !failedImages.has(style.id) ? (
                       <img
-                        src={style.previewImage}
+                        src={getPreviewImagePath(style.id, gender)}
                         alt={style.name}
                         className="w-full h-full object-cover"
+                        onError={() => setFailedImages(prev => new Set(prev).add(style.id))}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-3xl bg-gradient-to-br from-gray-100 to-gray-200">
-                        ✨
+                        {PRESET_STYLES.find(p => p.id === style.id)?.previewEmoji || "✨"}
                       </div>
                     )}
                   </div>

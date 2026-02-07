@@ -8,90 +8,24 @@ export interface HeadshotStyle {
   id: string;
   name: string;
   outfit: string;
+  outfitFemale?: string; // Female variant (only where clothing differs)
   location: string;
   lighting: string;
   pose: string;
   expression: string;
 }
 
-// Predefined styles with variables
+/**
+ * Get the gender-appropriate outfit for a style
+ */
+export function getOutfitForGender(style: HeadshotStyle, gender?: string): string {
+  if (gender === "female" && style.outfitFemale) return style.outfitFemale;
+  return style.outfit;
+}
+
+// Predefined styles with variables (20 total for Premium tier)
 export const HEADSHOT_STYLES: HeadshotStyle[] = [
-  // Corporate / Business
-  {
-    id: "corporate-navy",
-    name: "Corporate Navy",
-    outfit: "a tailored navy blue suit with a crisp white dress shirt",
-    location: "in a modern corporate office with floor-to-ceiling windows",
-    lighting: "soft natural daylight",
-    pose: "standing confidently with shoulders back",
-    expression: "confident and approachable with a subtle smile",
-  },
-  {
-    id: "corporate-gray",
-    name: "Corporate Gray",
-    outfit: "a charcoal gray business suit with a light blue tie",
-    location: "in front of a clean white studio backdrop",
-    lighting: "professional studio lighting with soft shadows",
-    pose: "seated professionally",
-    expression: "warm and professional",
-  },
-  {
-    id: "executive-black",
-    name: "Executive Black",
-    outfit: "a sharp black suit with a white pocket square",
-    location: "in an elegant executive office with dark wood furnishings",
-    lighting: "dramatic side lighting",
-    pose: "standing with arms crossed confidently",
-    expression: "authoritative yet approachable",
-  },
-  // Business Casual
-  {
-    id: "casual-blue-shirt",
-    name: "Business Casual Blue",
-    outfit: "a light blue oxford button-up shirt with rolled sleeves",
-    location: "in a modern startup office with plants",
-    lighting: "bright natural window light",
-    pose: "leaning casually against a desk",
-    expression: "friendly and relaxed",
-  },
-  {
-    id: "casual-white-shirt",
-    name: "Business Casual White",
-    outfit: "a crisp white linen shirt, open collar",
-    location: "in a bright minimalist studio",
-    lighting: "soft diffused natural light",
-    pose: "standing relaxed",
-    expression: "warm and genuine smile",
-  },
-  {
-    id: "smart-casual-sweater",
-    name: "Smart Casual Sweater",
-    outfit: "a navy blue crewneck sweater over a white collared shirt",
-    location: "in a cozy modern office space",
-    lighting: "warm ambient lighting",
-    pose: "sitting comfortably",
-    expression: "thoughtful and engaged",
-  },
-  // Creative / Modern
-  {
-    id: "creative-turtleneck",
-    name: "Creative Turtleneck",
-    outfit: "a sleek black turtleneck",
-    location: "against a clean minimalist white wall",
-    lighting: "dramatic studio lighting with strong contrast",
-    pose: "standing with a slight head tilt",
-    expression: "confident and creative",
-  },
-  {
-    id: "tech-startup",
-    name: "Tech Startup",
-    outfit: "a comfortable gray hoodie",
-    location: "in a modern tech office with exposed brick",
-    lighting: "natural daylight mixed with cool LED",
-    pose: "casual standing pose",
-    expression: "innovative and friendly",
-  },
-  // Outdoor / Natural
+  // === OUTDOOR (3) ===
   {
     id: "outdoor-natural",
     name: "Natural Light",
@@ -119,7 +53,133 @@ export const HEADSHOT_STYLES: HeadshotStyle[] = [
     pose: "natural standing pose",
     expression: "warm and inviting smile",
   },
-  // Industry Specific
+  // === CORPORATE (3) ===
+  {
+    id: "corporate-navy",
+    name: "Corporate Navy",
+    outfit: "a tailored navy blue suit with a crisp white dress shirt",
+    outfitFemale: "a tailored navy blue blazer with a crisp white blouse",
+    location: "in a modern corporate office with floor-to-ceiling windows",
+    lighting: "soft natural daylight",
+    pose: "standing confidently with shoulders back",
+    expression: "confident and approachable with a subtle smile",
+  },
+  {
+    id: "corporate-gray",
+    name: "Corporate Gray",
+    outfit: "a charcoal gray business suit with a light blue tie",
+    outfitFemale: "a tailored charcoal gray blazer with a silk blouse",
+    location: "in front of a clean white studio backdrop",
+    lighting: "professional studio lighting with soft shadows",
+    pose: "seated professionally",
+    expression: "warm and professional",
+  },
+  {
+    id: "executive-black",
+    name: "Executive Black",
+    outfit: "a sharp black suit with a white pocket square",
+    outfitFemale: "a sharp black suit with a structured white top",
+    location: "in an elegant executive office with dark wood furnishings",
+    lighting: "dramatic side lighting",
+    pose: "standing with arms crossed confidently",
+    expression: "authoritative yet approachable",
+  },
+  // === CASUAL (3) ===
+  {
+    id: "casual-blue-shirt",
+    name: "Blue Oxford",
+    outfit: "a light blue oxford button-up shirt with rolled sleeves",
+    location: "in a modern startup office with plants",
+    lighting: "bright natural window light",
+    pose: "leaning casually against a desk",
+    expression: "friendly and relaxed",
+  },
+  {
+    id: "casual-white-shirt",
+    name: "Business Casual White",
+    outfit: "a crisp white linen shirt, open collar",
+    location: "in a bright minimalist studio",
+    lighting: "soft diffused natural light",
+    pose: "standing relaxed",
+    expression: "warm and genuine smile",
+  },
+  {
+    id: "smart-casual-sweater",
+    name: "Smart Casual",
+    outfit: "a navy blue crewneck sweater over a white collared shirt",
+    location: "in a cozy modern office space",
+    lighting: "warm ambient lighting",
+    pose: "sitting comfortably",
+    expression: "thoughtful and engaged",
+  },
+  // === CREATIVE (3) ===
+  {
+    id: "creative-turtleneck",
+    name: "Creative Turtleneck",
+    outfit: "a sleek black turtleneck",
+    location: "against a clean minimalist white wall",
+    lighting: "dramatic studio lighting with strong contrast",
+    pose: "standing with a slight head tilt",
+    expression: "confident and creative",
+  },
+  {
+    id: "tech-startup",
+    name: "Tech Startup",
+    outfit: "a comfortable gray hoodie",
+    location: "in a modern tech office with exposed brick",
+    lighting: "natural daylight mixed with cool LED",
+    pose: "casual standing pose",
+    expression: "innovative and friendly",
+  },
+  {
+    id: "creative-neon",
+    name: "Creative Neon",
+    outfit: "a fitted black crew-neck t-shirt",
+    location: "in a dark studio with colorful neon light projections and geometric patterns cast across the face and background",
+    lighting: "dramatic low-key lighting with vibrant neon pink, blue, and purple color gels creating cinematic color contrast",
+    pose: "slight three-quarter angle with a relaxed confident stance",
+    expression: "cool and self-assured with a subtle knowing look",
+  },
+  // === STUDIO (2) ===
+  {
+    id: "classic-studio",
+    name: "Classic Studio",
+    outfit: "a classic dark blazer over a clean white shirt",
+    location: "in front of a seamless pure white studio backdrop",
+    lighting: "soft even studio lighting with subtle fill light",
+    pose: "standing straight with shoulders slightly angled",
+    expression: "polished and confident with a natural smile",
+  },
+  {
+    id: "warm-studio",
+    name: "Warm Studio",
+    outfit: "a soft earth-tone cashmere sweater with a collared shirt underneath",
+    location: "in front of a warm cream and soft beige textured backdrop",
+    lighting: "warm golden studio lighting with gentle fill",
+    pose: "relaxed natural pose with shoulders at ease",
+    expression: "genuinely warm and approachable with a kind smile",
+  },
+  // === ARTISTIC (1) ===
+  {
+    id: "dark-dramatic",
+    name: "Dark & Dramatic",
+    outfit: "a dark tailored suit jacket over a black shirt",
+    location: "against a deep charcoal gradient background fading to black",
+    lighting: "dramatic Rembrandt lighting with a single key light from the side",
+    pose: "three-quarter face angle with chin slightly raised",
+    expression: "intense and commanding with quiet confidence",
+  },
+  // === INDUSTRY (5) ===
+  {
+    id: "finance-exec",
+    name: "Finance Executive",
+    outfit: "a premium pinstripe suit with silk tie",
+    outfitFemale: "a premium pinstripe suit with a silk camisole",
+    location: "in an upscale financial office",
+    lighting: "professional office lighting",
+    pose: "seated at an executive desk",
+    expression: "confident and trustworthy",
+  },
   {
     id: "healthcare-pro",
     name: "Healthcare Professional",
@@ -139,22 +199,23 @@ export const HEADSHOT_STYLES: HeadshotStyle[] = [
     expression: "scholarly and approachable",
   },
   {
-    id: "finance-exec",
-    name: "Finance Executive",
-    outfit: "a premium pinstripe suit with silk tie",
-    location: "in an upscale financial office",
-    lighting: "professional office lighting",
-    pose: "seated at an executive desk",
-    expression: "confident and trustworthy",
-  },
-  {
     id: "legal-pro",
     name: "Legal Professional",
     outfit: "a traditional dark suit with conservative tie",
+    outfitFemale: "a traditional dark suit with a tailored blouse",
     location: "in a distinguished law office with leather chairs",
     lighting: "classic office lighting",
     pose: "standing authoritatively",
     expression: "professional and composed",
+  },
+  {
+    id: "real-estate",
+    name: "Real Estate Agent",
+    outfit: "a sharp fitted blazer over a professional button-up shirt",
+    location: "in front of a bright modern home exterior with soft bokeh landscaping",
+    lighting: "warm natural daylight",
+    pose: "standing with open welcoming body language",
+    expression: "big trustworthy smile radiating warmth and confidence",
   },
 ];
 
@@ -221,9 +282,13 @@ export async function generateHeadshotWithIdentityLock(
   referenceImageBase64: string,
   characterSheetBase64: string,
   style: HeadshotStyle,
-  mimeType: string = "image/jpeg"
+  mimeType: string = "image/jpeg",
+  gender?: string
 ): Promise<string> {
   const model = genAI.models;
+
+  // Use gender-appropriate outfit
+  const outfit = getOutfitForGender(style, gender);
 
   const identityLockPrompt = `STRICT IDENTITY LOCK USING REFERENCE IMAGES:
 
@@ -233,7 +298,7 @@ Use ALL attached reference images as the absolute ground truth for this characte
 
 Preserve 100% identical facial features, bone structure, exact face shape, exact eye placement & color, nose shape, lip shape, skin texture/details, hair texture/density/parting, age/youth appearance — NO changes, NO morphing, NO aging, NO plastic look, NO blending with other faces.
 
-Only modify: Professional headshot, for business profiles, profile pictures, and respectable contact images. To be used solely in the business sphere. Wearing ${style.outfit}, standing ${style.location} at ${style.lighting}, ${style.pose}, ${style.expression}.
+Only modify: Professional headshot, for business profiles, profile pictures, and respectable contact images. To be used solely in the business sphere. Wearing ${outfit}, standing ${style.location} at ${style.lighting}, ${style.pose}, ${style.expression}.
 
 Ultra-photorealistic, high-fidelity identity preservation, sharp facial details, consistent lighting on face matching references where possible.`;
 
@@ -292,6 +357,14 @@ Ultra-photorealistic, high-fidelity identity preservation, sharp facial details,
 export function getStyleCategories() {
   return [
     {
+      name: "🌿 Outdoor & Natural",
+      description: "Beautiful natural settings",
+      recommended: true,
+      styles: HEADSHOT_STYLES.filter((s) =>
+        ["outdoor-natural", "outdoor-urban", "outdoor-sunset"].includes(s.id)
+      ),
+    },
+    {
       name: "👔 Corporate & Business",
       description: "Traditional professional looks",
       styles: HEADSHOT_STYLES.filter((s) =>
@@ -309,22 +382,21 @@ export function getStyleCategories() {
       name: "🎨 Creative & Modern",
       description: "Contemporary looks",
       styles: HEADSHOT_STYLES.filter((s) =>
-        ["creative-turtleneck", "tech-startup"].includes(s.id)
+        ["creative-turtleneck", "tech-startup", "creative-neon"].includes(s.id)
       ),
     },
     {
-      name: "🌿 Outdoor & Natural",
-      description: "Beautiful natural settings",
-      recommended: true,
+      name: "📸 Studio",
+      description: "Classic studio portraits",
       styles: HEADSHOT_STYLES.filter((s) =>
-        ["outdoor-natural", "outdoor-urban", "outdoor-sunset"].includes(s.id)
+        ["classic-studio", "warm-studio", "dark-dramatic"].includes(s.id)
       ),
     },
     {
       name: "🏥 Industry Specific",
       description: "Profession-focused looks",
       styles: HEADSHOT_STYLES.filter((s) =>
-        ["healthcare-pro", "academic-scholar", "finance-exec", "legal-pro"].includes(s.id)
+        ["finance-exec", "healthcare-pro", "academic-scholar", "legal-pro", "real-estate"].includes(s.id)
       ),
     },
   ];
