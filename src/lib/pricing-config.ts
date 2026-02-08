@@ -9,9 +9,10 @@ export const PRICING_TIERS = {
     headshots: 5,
     features: [
       "5 professional headshots",
-      "5 different styles",
-      "High-resolution downloads",
-      "Instant delivery",
+      "All 20 style options",
+      "HD resolution",
+      "4K upscale option",
+      "Instant download",
     ],
   },
   standard: {
@@ -21,10 +22,10 @@ export const PRICING_TIERS = {
     popular: true,
     features: [
       "10 professional headshots",
-      "10 different styles",
-      "High-resolution downloads",
-      "Instant delivery",
-      "Priority processing",
+      "All 20 style options",
+      "HD resolution",
+      "4K upscale option",
+      "Instant download",
     ],
   },
   premium: {
@@ -33,11 +34,10 @@ export const PRICING_TIERS = {
     headshots: 20,
     features: [
       "20 professional headshots",
-      "All 15 styles included",
-      "High-resolution downloads",
-      "Instant delivery",
-      "Priority processing",
-      "Best value per headshot",
+      "All 20 style options",
+      "HD resolution",
+      "4K upscale option",
+      "Instant download",
     ],
   },
 } as const;
