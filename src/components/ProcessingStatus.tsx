@@ -30,22 +30,22 @@ const STATUS_CONFIG = {
   },
   paid: {
     icon: Clock,
-    color: "text-blue-500",
-    bgColor: "bg-blue-100",
+    color: "text-brand-500",
+    bgColor: "bg-brand-100",
     label: "Paid",
     message: "Payment received! Waiting for photo upload...",
   },
   training: {
     icon: Loader2,
-    color: "text-blue-600",
-    bgColor: "bg-blue-100",
+    color: "text-brand-600",
+    bgColor: "bg-brand-100",
     label: "Training AI",
     message: "Our AI is learning your unique features...",
   },
   generating: {
     icon: Sparkles,
-    color: "text-purple-600",
-    bgColor: "bg-purple-100",
+    color: "text-brand-600",
+    bgColor: "bg-brand-100",
     label: "Generating",
     message: "Creating your professional headshots...",
   },
@@ -222,7 +222,7 @@ function StatusStep({
             completed
               ? "bg-green-600 text-white"
               : active
-              ? "bg-blue-600 text-white"
+              ? "bg-brand-600 text-white"
               : "bg-gray-200 text-gray-500"
           }
         `}
@@ -231,12 +231,12 @@ function StatusStep({
       </div>
       <span
         className={`text-sm ${
-          completed ? "text-green-700 font-medium" : active ? "text-blue-700 font-medium" : "text-gray-500"
+          completed ? "text-green-700 font-medium" : active ? "text-brand-700 font-medium" : "text-gray-500"
         }`}
       >
         {label}
       </span>
-      {active && <Loader2 className="w-4 h-4 text-blue-600 animate-spin ml-auto" />}
+      {active && <Loader2 className="w-4 h-4 text-brand-600 animate-spin ml-auto" />}
     </div>
   );
 }

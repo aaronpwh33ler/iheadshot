@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-blue-600 text-white shadow hover:bg-blue-700 focus-visible:ring-blue-500",
+          "bg-brand-600 text-white shadow hover:bg-brand-700 focus-visible:ring-brand-500",
         destructive:
           "bg-red-600 text-white shadow-sm hover:bg-red-700 focus-visible:ring-red-500",
         outline:
@@ -17,7 +17,7 @@ const buttonVariants = cva(
         secondary:
           "bg-gray-100 text-gray-900 shadow-sm hover:bg-gray-200 focus-visible:ring-gray-400",
         ghost: "hover:bg-gray-100 hover:text-gray-900",
-        link: "text-blue-600 underline-offset-4 hover:underline",
+        link: "text-brand-600 underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",

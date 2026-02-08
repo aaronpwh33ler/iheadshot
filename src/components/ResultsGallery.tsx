@@ -317,7 +317,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
 
               {/* Quality badge */}
               {image.quality === "premium" && !isUpscaled && (
-                <Badge className="absolute top-2 left-2 bg-purple-600">
+                <Badge className="absolute top-2 left-2 bg-brand-600">
                   <Sparkles className="h-3 w-3 mr-1" />
                   Premium
                 </Badge>
@@ -698,7 +698,7 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                 </Badge>
               )}
               {localImages[selectedIndex].quality === "premium" && !upscaledIds.has(localImages[selectedIndex].id) && (
-                <Badge className="absolute top-4 left-4 bg-purple-600">
+                <Badge className="absolute top-4 left-4 bg-brand-600">
                   <Sparkles className="h-3 w-3 mr-1" />
                   Premium Quality
                 </Badge>

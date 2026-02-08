@@ -191,7 +191,7 @@ export function StyleSelector({ maxStyles, selectedStyles, onStylesChange, gende
           <span className="text-xl">{config.emoji}</span>
           <h3 className="font-bold text-gray-900">{categoryName}</h3>
           {config.isRecommended && (
-            <span className="ml-auto text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">
+            <span className="ml-auto text-xs font-semibold text-brand-600 bg-brand-50 px-2 py-1 rounded-full">
               Recommended
             </span>
           )}

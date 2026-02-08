@@ -329,16 +329,16 @@ export function InstantUpload({
 
   // Tier styling
   const tierGradient = isPremium
-    ? "from-amber-500 to-orange-600"
+    ? "from-amber-500 to-brand-600"
     : isStandard
-    ? "from-purple-500 to-blue-600"
-    : "from-blue-500 to-purple-600";
+    ? "from-brand-500 to-brand-600"
+    : "from-brand-400 to-brand-600";
 
   const tierBg = isPremium
-    ? "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200"
+    ? "bg-gradient-to-br from-amber-50 to-brand-50 border-amber-200"
     : isStandard
-    ? "bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200"
-    : "bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200";
+    ? "bg-gradient-to-br from-brand-50 to-warm-50 border-brand-200"
+    : "bg-gradient-to-br from-brand-50 to-warm-50 border-brand-200";
 
   return (
     <div className="min-h-screen bg-white">
@@ -347,7 +347,7 @@ export function InstantUpload({
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <Camera className="h-6 w-6 text-cyan-500" />
+            <img src="/logo/logo-white-on-orange.png" alt="iHeadshot" className="w-8 h-8 rounded-lg" />
             <span className="font-bold text-lg text-gray-900">iHeadshot</span>
           </div>
 
@@ -355,7 +355,7 @@ export function InstantUpload({
           <div className="flex items-center gap-4">
             {/* Step 1: Upload */}
             <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step === "upload" ? "bg-cyan-500 text-white" : "bg-green-500 text-white"}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step === "upload" ? "bg-brand-600 text-white" : "bg-green-500 text-white"}`}>
                 {step === "upload" ? "1" : "✓"}
               </div>
               <span className="hidden sm:inline text-xs text-gray-600">Upload</span>
@@ -366,7 +366,7 @@ export function InstantUpload({
 
             {/* Step 2: Select */}
             <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step === "select" ? "bg-cyan-500 text-white" : step === "generate" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step === "select" ? "bg-brand-600 text-white" : step === "generate" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"}`}>
                 {step === "generate" ? "✓" : "2"}
               </div>
               <span className="hidden sm:inline text-xs text-gray-600">Styles</span>
@@ -377,7 +377,7 @@ export function InstantUpload({
 
             {/* Step 3: Generate */}
             <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step === "generate" ? "bg-cyan-500 text-white" : "bg-gray-200 text-gray-600"}`}>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step === "generate" ? "bg-brand-600 text-white" : "bg-gray-200 text-gray-600"}`}>
                 3
               </div>
               <span className="hidden sm:inline text-xs text-gray-600">Results</span>
@@ -408,7 +408,7 @@ export function InstantUpload({
                     onClick={() => setDetectedGender("male")}
                     className={`p-6 rounded-2xl border-2 transition-all cursor-pointer ${
                       detectedGender === "male"
-                        ? "border-cyan-500 bg-cyan-50 shadow-md"
+                        ? "border-brand-600 bg-brand-50 shadow-md"
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
@@ -419,7 +419,7 @@ export function InstantUpload({
                     onClick={() => setDetectedGender("female")}
                     className={`p-6 rounded-2xl border-2 transition-all cursor-pointer ${
                       detectedGender === "female"
-                        ? "border-cyan-500 bg-cyan-50 shadow-md"
+                        ? "border-brand-600 bg-brand-50 shadow-md"
                         : "border-gray-200 bg-white hover:border-gray-300"
                     }`}
                   >
@@ -434,7 +434,7 @@ export function InstantUpload({
                     setSelectedStyles([]);
                   }}
                   size="lg"
-                  className="w-full py-6 text-lg bg-cyan-500 hover:bg-cyan-600 text-white cursor-pointer rounded-xl"
+                  className="w-full py-6 text-lg bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl"
                 >
                   Continue to Styles <ChevronRight className="h-5 w-5 ml-2" />
                 </Button>
@@ -447,7 +447,7 @@ export function InstantUpload({
                     <div
                       {...getRootProps()}
                       className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
-                        isDragActive ? "border-cyan-500 bg-cyan-50" : "border-gray-300 hover:border-cyan-400 hover:bg-gray-50"
+                        isDragActive ? "border-brand-600 bg-brand-50" : "border-gray-300 hover:border-brand-400 hover:bg-gray-50"
                       }`}
                     >
                       <input {...getInputProps()} />
@@ -461,7 +461,7 @@ export function InstantUpload({
                     <Button
                       {...getRootProps()}
                       asChild
-                      className="w-full py-6 text-base bg-cyan-500 hover:bg-cyan-600 text-white cursor-pointer rounded-xl"
+                      className="w-full py-6 text-base bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl"
                     >
                       <label>
                         <input {...getInputProps()} style={{ display: "none" }} />
@@ -480,7 +480,7 @@ export function InstantUpload({
                       <p className="text-sm text-green-600 font-medium">Photo uploaded!</p>
                       <button
                         onClick={() => setFiles([])}
-                        className="mt-2 text-sm text-cyan-600 hover:text-cyan-700 font-medium"
+                        className="mt-2 text-sm text-brand-700 hover:text-brand-800 font-medium"
                       >
                         Change
                       </button>
@@ -518,7 +518,7 @@ export function InstantUpload({
                       <Button
                         onClick={handleUploadComplete}
                         disabled={uploading}
-                        className="flex-1 py-6 text-base bg-cyan-500 hover:bg-cyan-600 text-white cursor-pointer rounded-xl"
+                        className="flex-1 py-6 text-base bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl"
                       >
                         {uploading ? (
                           <>
@@ -567,7 +567,7 @@ export function InstantUpload({
                       <p className="text-xs text-gray-600 truncate">{files[0].name}</p>
                       <button
                         onClick={() => setStep("upload")}
-                        className="mt-1 text-sm text-cyan-600 hover:text-cyan-700 font-medium"
+                        className="mt-1 text-sm text-brand-700 hover:text-brand-800 font-medium"
                       >
                         Change
                       </button>
@@ -588,7 +588,7 @@ export function InstantUpload({
                     onClick={() => setDetectedGender("male")}
                     className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
                       detectedGender === "male"
-                        ? "bg-cyan-500 text-white"
+                        ? "bg-brand-600 text-white"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
@@ -598,7 +598,7 @@ export function InstantUpload({
                     onClick={() => setDetectedGender("female")}
                     className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
                       detectedGender === "female"
-                        ? "bg-cyan-500 text-white"
+                        ? "bg-brand-600 text-white"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
@@ -614,7 +614,7 @@ export function InstantUpload({
                 </h3>
                 <div className="grid grid-cols-5 gap-2">
                   {selectedStyles.map((style) => (
-                    <div key={style.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200 hover:border-cyan-400 transition-colors group cursor-pointer">
+                    <div key={style.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200 hover:border-brand-400 transition-colors group cursor-pointer">
                       <img
                         src={getPreviewImagePath(style.id, detectedGender)}
                         alt={style.name}
@@ -663,7 +663,7 @@ export function InstantUpload({
 
             {/* Phase indicator during generation */}
             {generating && generationPhase !== "idle" && (
-              <div className="bg-cyan-50 border border-cyan-200 rounded-2xl p-6">
+              <div className="bg-brand-50 border border-brand-200 rounded-2xl p-6">
                 <div className="flex items-center justify-between mb-4">
                   <span className="font-semibold text-gray-900">
                     {generationPhase === "character-sheet" ? "🔍 Analyzing your face..." : "✨ Creating headshots..."}
@@ -720,14 +720,14 @@ export function InstantUpload({
             {/* Initial loading state */}
             {generating && generatedImages.length === 0 && generationPhase === "character-sheet" && (
               <div className="text-center py-20">
-                <Loader2 className="h-12 w-12 text-cyan-500 animate-spin mx-auto mb-4" />
+                <Loader2 className="h-12 w-12 text-brand-600 animate-spin mx-auto mb-4" />
                 <p className="text-gray-600 font-medium">Analyzing your photo...</p>
               </div>
             )}
 
             {generating && generatedImages.length === 0 && generationPhase === "generating" && (
               <div className="text-center py-20">
-                <Loader2 className="h-12 w-12 text-cyan-500 animate-spin mx-auto mb-4" />
+                <Loader2 className="h-12 w-12 text-brand-600 animate-spin mx-auto mb-4" />
                 <p className="text-gray-600 font-medium">Creating your headshots...</p>
               </div>
             )}

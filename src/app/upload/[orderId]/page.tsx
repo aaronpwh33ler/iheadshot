@@ -60,7 +60,7 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600" />
       </div>
     );
   }
@@ -104,16 +104,16 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
 
   // Tier-specific styling
   const tierGradient = isPremium
-    ? "from-amber-500 to-orange-600"
+    ? "from-amber-500 to-brand-600"
     : isStandard
-    ? "from-purple-500 to-blue-600"
-    : "from-blue-500 to-purple-600";
+    ? "from-brand-500 to-brand-600"
+    : "from-brand-400 to-brand-600";
 
   const tierBgGradient = isPremium
-    ? "from-amber-50 to-orange-50"
+    ? "from-amber-50 to-brand-50"
     : isStandard
-    ? "from-purple-50 to-blue-50"
-    : "from-gray-50 to-white";
+    ? "from-brand-50 to-warm-50"
+    : "from-warm-50 to-white";
 
   // Show upload interface
   return (
