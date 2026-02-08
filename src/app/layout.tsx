@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
+import { LayoutShell } from "@/components/LayoutShell";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -10,9 +9,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "iHeadshot - Professional AI Headshots in Seconds",
+  title: "iHeadshot - Professional AI Headshots in Minutes",
   description:
-    "Get stunning professional headshots without a photographer. Upload a selfie and get 10-20 professional photos instantly. Starting at just $4.99.",
+    "Get stunning professional headshots without a photographer. Upload a selfie and get professional photos in minutes. Starting at just $9.99.",
   keywords: [
     "AI headshots",
     "professional headshots",
@@ -21,8 +20,16 @@ export const metadata: Metadata = {
     "headshot generator",
     "iHeadshot",
   ],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+      { url: "/logo/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/logo/favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/logo/apple-touch-icon.png",
+  },
   openGraph: {
-    title: "iHeadshot - Professional AI Headshots in Seconds",
+    title: "iHeadshot - Professional AI Headshots in Minutes",
     description:
       "Get stunning professional headshots without a photographer. Upload a selfie and get instant results.",
     type: "website",
@@ -37,9 +44,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <Header />
-        <main className="min-h-screen">{children}</main>
-        <Footer />
+        <LayoutShell>{children}</LayoutShell>
       </body>
     </html>
   );
