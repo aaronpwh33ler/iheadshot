@@ -2,64 +2,39 @@ import Link from "next/link";
 
 export function Footer() {
   return (
-    <footer className="border-t border-gray-200 bg-gray-50">
-      <div className="container mx-auto px-4 py-12">
+    <footer className="bg-white border-t border-brand-100 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="col-span-1 md:col-span-2">
-            <Link href="/" className="flex items-center space-x-2 mb-4">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
-                <svg
-                  className="h-5 w-5 text-white"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </div>
+          <div>
+            <Link href="/" className="flex items-center gap-2 mb-4">
+              <img src="/logo/logo-white-on-orange.png" alt="iHeadshot logo" className="w-9 h-9 rounded-xl" />
               <span className="text-xl font-bold text-gray-900">iHeadshot</span>
             </Link>
-            <p className="text-gray-600 text-sm max-w-md">
-              Professional AI-generated headshots in 30 minutes. No photographer,
-              no studio, just upload selfies and get stunning professional photos.
+            <p className="text-gray-500 text-sm">
+              Professional AI headshots in minutes. No studio, no hassle.
             </p>
           </div>
 
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Product</h3>
-            <ul className="space-y-2">
+            <h4 className="font-semibold text-gray-900 mb-4">Product</h4>
+            <ul className="space-y-2 text-sm text-gray-500">
               <li>
-                <Link
-                  href="/#how-it-works"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
+                <Link href="/#how-it-works" className="hover:text-brand-600 transition-colors">
                   How It Works
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/pricing"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
+                <Link href="/pricing" className="hover:text-brand-600 transition-colors">
                   Pricing
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/#faq"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
+                <Link href="/#examples" className="hover:text-brand-600 transition-colors">
+                  Our Styles
+                </Link>
+              </li>
+              <li>
+                <Link href="/#faq" className="hover:text-brand-600 transition-colors">
                   FAQ
                 </Link>
               </li>
@@ -67,57 +42,63 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-gray-900 mb-4">Legal</h3>
-            <ul className="space-y-2">
+            <h4 className="font-semibold text-gray-900 mb-4">Legal</h4>
+            <ul className="space-y-2 text-sm text-gray-500">
               <li>
-                <Link
-                  href="/privacy"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
+                <Link href="/privacy" className="hover:text-brand-600 transition-colors">
                   Privacy Policy
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/terms"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
+                <Link href="/terms" className="hover:text-brand-600 transition-colors">
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link
-                  href="/refund"
-                  className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-                >
+                <Link href="/refund" className="hover:text-brand-600 transition-colors">
                   Refund Policy
                 </Link>
               </li>
             </ul>
           </div>
+
+          <div>
+            <h4 className="font-semibold text-gray-900 mb-4">Company</h4>
+            <ul className="space-y-2 text-sm text-gray-500">
+              <li>
+                <a href="#" className="hover:text-brand-600 transition-colors">About</a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-brand-600 transition-colors">Blog</a>
+              </li>
+              <li>
+                <a href="#" className="hover:text-brand-600 transition-colors">Contact</a>
+              </li>
+            </ul>
+          </div>
         </div>
 
-        <div className="border-t border-gray-200 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <div className="border-t border-brand-100 mt-12 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-500">
             &copy; {new Date().getFullYear()} iHeadshot. All rights reserved.
           </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
+          <div className="flex gap-4">
             <a
               href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-brand-500 transition-colors"
             >
               <span className="sr-only">Twitter</span>
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
+                <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
               </svg>
             </a>
             <a
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-brand-500 transition-colors"
             >
               <span className="sr-only">LinkedIn</span>
               <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
