@@ -206,18 +206,36 @@ export function InstantUpload({
     try {
       const urls: string[] = [];
       for (const file of files) {
-        // Compress/resize to stay under Vercel's 4.5MB body limit
+        // Compress/resize for optimal AI processing
         const compressed = await compressImage(file);
-        const formData = new FormData();
-        formData.append("file", compressed);
-        formData.append("orderId", orderId);
-        const response = await fetch("/api/upload", { method: "POST", body: formData });
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Upload failed (${response.status})`);
+
+        // Step 1: Get a signed upload URL (small JSON request — no file data through Vercel)
+        const urlResponse = await fetch("/api/upload-url", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId,
+            fileName: file.name,
+            contentType: compressed.type,
+          }),
+        });
+        if (!urlResponse.ok) {
+          const errorData = await urlResponse.json().catch(() => ({}));
+          throw new Error(errorData.error || `Upload failed (${urlResponse.status})`);
         }
-        const { url } = await response.json();
-        urls.push(url);
+        const { signedUrl, token, publicUrl } = await urlResponse.json();
+
+        // Step 2: Upload directly to Supabase Storage (bypasses Vercel body limit)
+        const uploadResponse = await fetch(signedUrl, {
+          method: "PUT",
+          headers: { "Content-Type": compressed.type || "image/jpeg" },
+          body: compressed,
+        });
+        if (!uploadResponse.ok) {
+          throw new Error(`Direct upload failed (${uploadResponse.status})`);
+        }
+
+        urls.push(publicUrl);
       }
       setUploadedUrls(urls);
 
