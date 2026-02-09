@@ -33,6 +33,23 @@ export const metadata: Metadata = {
     description:
       "Get stunning professional headshots without a photographer. Upload a selfie and get instant results.",
     type: "website",
+    url: "https://www.iheadshot.co",
+    siteName: "iHeadshot",
+    images: [
+      {
+        url: "https://www.iheadshot.co/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "iHeadshot - Professional AI headshots powered by AI",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "iHeadshot - Professional AI Headshots in Minutes",
+    description:
+      "Get stunning professional headshots without a photographer. Upload a selfie and get instant results.",
+    images: ["https://www.iheadshot.co/og-image.png"],
   },
 };
 
