@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
   stripe_session_id TEXT UNIQUE,
   stripe_payment_intent TEXT,
   amount INTEGER NOT NULL, -- in cents
-  tier TEXT NOT NULL CHECK (tier IN ('basic', 'pro', 'premium')),
+  tier TEXT NOT NULL CHECK (tier IN ('basic', 'standard', 'premium')),
   headshot_count INTEGER NOT NULL,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'training', 'generating', 'completed', 'failed')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()),
