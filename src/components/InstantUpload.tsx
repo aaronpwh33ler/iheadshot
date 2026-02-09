@@ -342,50 +342,50 @@ export function InstantUpload({
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Navigation bar */}
-      <nav className="sticky top-0 z-40 bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <img src="/logo/logo-white-on-orange.png" alt="iHeadshot" className="w-8 h-8 rounded-lg" />
-            <span className="font-bold text-lg text-gray-900">iHeadshot</span>
-          </div>
+      {/* App header — minimal, focused on the workflow */}
+      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-brand-100/50">
+        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+          {/* Logo — links home */}
+          <a href="/" className="flex items-center gap-2">
+            <img src="/logo/logo-white-on-orange.png" alt="iHeadshot" className="w-7 h-7 rounded-lg" />
+            <span className="font-bold text-gray-900">iHeadshot</span>
+          </a>
 
-          {/* Step indicators */}
-          <div className="flex items-center gap-4">
-            {/* Step 1: Upload */}
-            <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step === "upload" ? "bg-brand-600 text-white" : "bg-green-500 text-white"}`}>
+          {/* Step progress — centered */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Step 1 */}
+            <div className="flex items-center gap-1.5">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${step === "upload" ? "bg-brand-600 text-white" : "bg-green-500 text-white"}`}>
                 {step === "upload" ? "1" : "✓"}
               </div>
-              <span className="hidden sm:inline text-xs text-gray-600">Upload</span>
+              <span className={`hidden sm:inline text-xs font-medium ${step === "upload" ? "text-brand-700" : "text-green-600"}`}>Upload</span>
             </div>
 
-            {/* Line */}
-            <div className={`w-8 h-0.5 ${(step === "select" || step === "generate") ? "bg-green-500" : "bg-gray-200"}`}></div>
+            <div className={`w-6 sm:w-10 h-0.5 rounded ${(step === "select" || step === "generate") ? "bg-green-400" : "bg-gray-200"}`} />
 
-            {/* Step 2: Select */}
-            <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step === "select" ? "bg-brand-600 text-white" : step === "generate" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-600"}`}>
+            {/* Step 2 */}
+            <div className="flex items-center gap-1.5">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${step === "select" ? "bg-brand-600 text-white" : step === "generate" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"}`}>
                 {step === "generate" ? "✓" : "2"}
               </div>
-              <span className="hidden sm:inline text-xs text-gray-600">Styles</span>
+              <span className={`hidden sm:inline text-xs font-medium ${step === "select" ? "text-brand-700" : step === "generate" ? "text-green-600" : "text-gray-400"}`}>Styles</span>
             </div>
 
-            {/* Line */}
-            <div className={`w-8 h-0.5 ${step === "generate" ? "bg-green-500" : "bg-gray-200"}`}></div>
+            <div className={`w-6 sm:w-10 h-0.5 rounded ${step === "generate" ? "bg-green-400" : "bg-gray-200"}`} />
 
-            {/* Step 3: Generate */}
-            <div className="flex items-center gap-2">
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold ${step === "generate" ? "bg-brand-600 text-white" : "bg-gray-200 text-gray-600"}`}>
+            {/* Step 3 */}
+            <div className="flex items-center gap-1.5">
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${step === "generate" ? "bg-brand-600 text-white" : "bg-gray-200 text-gray-500"}`}>
                 3
               </div>
-              <span className="hidden sm:inline text-xs text-gray-600">Results</span>
+              <span className={`hidden sm:inline text-xs font-medium ${step === "generate" ? "text-brand-700" : "text-gray-400"}`}>Results</span>
             </div>
           </div>
 
-          {/* Right spacer */}
-          <div className="w-20"></div>
+          {/* Help link */}
+          <a href="/#faq" className="text-xs text-gray-400 hover:text-brand-600 transition-colors">
+            Need help?
+          </a>
         </div>
       </nav>
 
