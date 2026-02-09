@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminSupabaseClient, getOrderByStripeSession } from "@/lib/supabase";
+import { getCheckoutSession, PRICING_TIERS, type PricingTier } from "@/lib/stripe";
 import { v4 as uuidv4 } from "uuid";
 
 // Returns a signed upload URL so the client can upload directly to Supabase Storage,
@@ -24,8 +25,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Look up the real order by stripe session ID
-    const order = await getOrderByStripeSession(stripeSessionId);
+    // Look up the order by stripe session ID
+    let order = await getOrderByStripeSession(stripeSessionId);
+
+    // Fallback: if webhook hasn't fired yet, verify with Stripe and create the order
+    if (!order) {
+      console.log("Order not found via webhook, checking Stripe directly:", stripeSessionId);
+      try {
+        const session = await getCheckoutSession(stripeSessionId);
+
+        if (session.payment_status !== "paid") {
+          return NextResponse.json(
+            { error: "Payment not completed. Please complete checkout first." },
+            { status: 402 }
+          );
+        }
+
+        // Create the order that the webhook would have created
+        const tier = (session.metadata?.tier || "basic") as PricingTier;
+        const tierConfig = PRICING_TIERS[tier];
+
+        const supabase = createAdminSupabaseClient();
+        const { data: newOrder, error: insertError } = await supabase
+          .from("orders")
+          .insert({
+            email: session.customer_email || session.customer_details?.email || "",
+            stripe_session_id: session.id,
+            stripe_payment_intent: session.payment_intent as string,
+            amount: session.amount_total || tierConfig.price,
+            tier: tier,
+            headshot_count: tierConfig.headshots,
+            status: "paid",
+          })
+          .select()
+          .single();
+
+        if (insertError) {
+          // Could be a duplicate if webhook fired in the meantime — try fetching again
+          console.log("Insert failed (likely duplicate), retrying fetch:", insertError.message);
+          order = await getOrderByStripeSession(stripeSessionId);
+        } else if (newOrder) {
+          order = newOrder;
+          console.log("Order created via fallback:", newOrder.id);
+        }
+      } catch (stripeError) {
+        console.error("Stripe session verification failed:", stripeError);
+        return NextResponse.json(
+          { error: "Could not verify payment. Please try refreshing the page." },
+          { status: 404 }
+        );
+      }
+    }
+
     if (!order) {
       return NextResponse.json(
         { error: "Order not found. Please ensure payment was completed." },
