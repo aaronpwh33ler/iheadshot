@@ -37,15 +37,10 @@ interface FileWithPreview extends File {
 type Step = "upload" | "select" | "generate";
 type GenerationPhase = "idle" | "uploading" | "character-sheet" | "generating";
 
-// Compress/resize image client-side to stay under Vercel's 4.5MB body limit
-function compressImage(file: File, maxDimension = 1536, quality = 0.85): Promise<File> {
-  return new Promise((resolve, reject) => {
-    // If already small enough, skip compression
-    if (file.size <= 3 * 1024 * 1024) {
-      resolve(file);
-      return;
-    }
-
+// Always compress/resize images client-side before upload.
+// AI headshot generation only needs ~1024px; this keeps uploads well under Vercel's 4.5MB limit.
+function compressImage(file: File, maxDimension = 1024, quality = 0.80): Promise<File> {
+  return new Promise((resolve) => {
     const img = new window.Image();
     const url = URL.createObjectURL(file);
 
@@ -54,7 +49,7 @@ function compressImage(file: File, maxDimension = 1536, quality = 0.85): Promise
 
       let { width, height } = img;
 
-      // Scale down if larger than maxDimension
+      // Scale down to maxDimension on longest side
       if (width > maxDimension || height > maxDimension) {
         if (width > height) {
           height = Math.round((height * maxDimension) / width);
