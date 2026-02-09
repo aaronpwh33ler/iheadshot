@@ -57,17 +57,23 @@ export async function POST(request: NextRequest) {
         throw error;
       }
 
-      // Send confirmation email
-      if (order.email) {
-        await sendOrderConfirmation(
-          order.email,
-          order.id,
-          tier,
-          tierConfig.headshots
-        );
-      }
-
       console.log("Order created:", order.id);
+
+      // Send confirmation email (non-blocking — don't fail the webhook if email fails)
+      if (order.email) {
+        try {
+          await sendOrderConfirmation(
+            order.email,
+            order.id,
+            tier,
+            tierConfig.headshots
+          );
+          console.log("Confirmation email sent to:", order.email);
+        } catch (emailError) {
+          console.error("Failed to send confirmation email (order still created):", emailError);
+          // Don't throw — order is already in DB, email failure is non-critical
+        }
+      }
     } catch (error) {
       console.error("Failed to process checkout:", error);
       return NextResponse.json(

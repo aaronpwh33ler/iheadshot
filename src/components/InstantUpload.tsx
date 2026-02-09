@@ -156,7 +156,10 @@ export function InstantUpload({
         formData.append("file", file);
         formData.append("orderId", orderId);
         const response = await fetch("/api/upload", { method: "POST", body: formData });
-        if (!response.ok) throw new Error("Failed to upload photo");
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Upload failed (${response.status})`);
+        }
         const { url } = await response.json();
         urls.push(url);
       }
