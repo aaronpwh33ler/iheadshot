@@ -27,59 +27,86 @@ export async function POST(request: NextRequest) {
 
     // Look up the order by stripe session ID
     let order = await getOrderByStripeSession(stripeSessionId);
+    let debugInfo = { step: "initial-lookup", found: !!order };
 
     // Fallback: if webhook hasn't fired yet, verify with Stripe and create the order
     if (!order) {
       console.log("Order not found via webhook, checking Stripe directly:", stripeSessionId);
       try {
         const session = await getCheckoutSession(stripeSessionId);
+        debugInfo = { ...debugInfo, step: "stripe-verified", found: false } as typeof debugInfo;
+
+        console.log("Stripe session:", {
+          id: session.id,
+          payment_status: session.payment_status,
+          tier: session.metadata?.tier,
+          email: session.customer_email || session.customer_details?.email,
+        });
 
         if (session.payment_status !== "paid") {
           return NextResponse.json(
-            { error: "Payment not completed. Please complete checkout first." },
+            { error: `Payment status is "${session.payment_status}", not "paid". Please complete checkout first.` },
             { status: 402 }
           );
         }
 
         // Create the order that the webhook would have created
-        const tier = (session.metadata?.tier || "basic") as PricingTier;
+        const tier = (session.metadata?.tier || "standard") as PricingTier;
         const tierConfig = PRICING_TIERS[tier];
 
+        if (!tierConfig) {
+          return NextResponse.json(
+            { error: `Unknown tier "${tier}" from Stripe metadata. Available: ${Object.keys(PRICING_TIERS).join(", ")}` },
+            { status: 500 }
+          );
+        }
+
         const supabase = createAdminSupabaseClient();
+        const orderData = {
+          email: session.customer_email || session.customer_details?.email || "",
+          stripe_session_id: session.id,
+          stripe_payment_intent: (session.payment_intent as string) || "",
+          amount: session.amount_total || tierConfig.price,
+          tier: tier,
+          headshot_count: tierConfig.headshots,
+          status: "paid" as const,
+        };
+
+        console.log("Attempting order insert:", orderData);
+
         const { data: newOrder, error: insertError } = await supabase
           .from("orders")
-          .insert({
-            email: session.customer_email || session.customer_details?.email || "",
-            stripe_session_id: session.id,
-            stripe_payment_intent: session.payment_intent as string,
-            amount: session.amount_total || tierConfig.price,
-            tier: tier,
-            headshot_count: tierConfig.headshots,
-            status: "paid",
-          })
+          .insert(orderData)
           .select()
           .single();
 
         if (insertError) {
+          console.error("Insert error details:", JSON.stringify(insertError));
           // Could be a duplicate if webhook fired in the meantime — try fetching again
-          console.log("Insert failed (likely duplicate), retrying fetch:", insertError.message);
           order = await getOrderByStripeSession(stripeSessionId);
+          if (!order) {
+            return NextResponse.json(
+              { error: `Failed to create order: ${insertError.message}. Retry fetch also failed.` },
+              { status: 500 }
+            );
+          }
         } else if (newOrder) {
           order = newOrder;
           console.log("Order created via fallback:", newOrder.id);
         }
-      } catch (stripeError) {
-        console.error("Stripe session verification failed:", stripeError);
+      } catch (stripeError: unknown) {
+        const msg = stripeError instanceof Error ? stripeError.message : String(stripeError);
+        console.error("Stripe session verification failed:", msg);
         return NextResponse.json(
-          { error: "Could not verify payment. Please try refreshing the page." },
-          { status: 404 }
+          { error: `Stripe verification failed: ${msg}` },
+          { status: 500 }
         );
       }
     }
 
     if (!order) {
       return NextResponse.json(
-        { error: "Order not found. Please ensure payment was completed." },
+        { error: "Order could not be created or found. Please contact support.", debug: debugInfo },
         { status: 404 }
       );
     }
