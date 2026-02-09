@@ -395,8 +395,8 @@ export function InstantUpload({
           <div className="space-y-8">
             {/* Header */}
             <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Your Photo</h1>
-              <p className="text-gray-600">Start with a clear, front-facing headshot</p>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Your Photos</h1>
+              <p className="text-gray-600">Upload 1–5 clear, front-facing photos for best results</p>
             </div>
 
             {isDemoMode ? (
@@ -453,9 +453,9 @@ export function InstantUpload({
                       <input {...getInputProps()} />
                       <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                       <p className="text-lg font-semibold text-gray-900 mb-2">
-                        {isDragActive ? "Drop your photo here" : "Drag & drop your photo here"}
+                        {isDragActive ? "Drop your photos here" : "Drag & drop your photos here"}
                       </p>
-                      <p className="text-sm text-gray-600 mb-4">or click to browse</p>
+                      <p className="text-sm text-gray-600 mb-4">or click to browse • up to 5 photos</p>
                     </div>
 
                     <Button
@@ -465,26 +465,42 @@ export function InstantUpload({
                     >
                       <label>
                         <input {...getInputProps()} style={{ display: "none" }} />
-                        Choose Photo
+                        Choose Photos
                       </label>
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {/* Photo preview */}
-                    <div className="flex flex-col items-center">
-                      <div className="w-32 h-32 rounded-2xl overflow-hidden bg-gray-100 shadow-md border-4 border-green-400">
-                        <img src={files[0].preview} alt="Selected photo" className="w-full h-full object-cover" />
-                      </div>
-                      <p className="mt-4 text-sm font-medium text-gray-900">{files[0].name}</p>
-                      <p className="text-sm text-green-600 font-medium">Photo uploaded!</p>
-                      <button
-                        onClick={() => setFiles([])}
-                        className="mt-2 text-sm text-brand-700 hover:text-brand-800 font-medium"
-                      >
-                        Change
-                      </button>
+                    {/* Photo grid */}
+                    <div className="grid grid-cols-5 gap-3 max-w-md mx-auto">
+                      {files.map((file, index) => (
+                        <div key={file.name} className="relative group">
+                          <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-md border-2 border-green-400">
+                            <img src={file.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                          </div>
+                          <button
+                            onClick={() => removeFile(index)}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      {files.length < 5 && (
+                        <div
+                          {...getRootProps()}
+                          className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-brand-400 flex flex-col items-center justify-center cursor-pointer transition-colors"
+                        >
+                          <input {...getInputProps()} />
+                          <Upload className="h-5 w-5 text-gray-400 mb-1" />
+                          <span className="text-xs text-gray-400">Add</span>
+                        </div>
+                      )}
                     </div>
+                    <p className="text-center text-sm text-green-600 font-medium">
+                      {files.length} photo{files.length !== 1 ? "s" : ""} selected
+                      <span className="text-gray-400 font-normal"> • {5 - files.length} more allowed</span>
+                    </p>
                   </div>
                 )}
 
@@ -512,8 +528,17 @@ export function InstantUpload({
                 {files.length > 0 && (
                   <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
                     <div className="max-w-2xl mx-auto flex items-center gap-4">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
-                        <img src={files[0].preview} alt="Photo" className="w-full h-full object-cover" />
+                      <div className="flex gap-2">
+                        {files.slice(0, 3).map((file, i) => (
+                          <div key={file.name} className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+                            <img src={file.preview} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                        {files.length > 3 && (
+                          <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                            <span className="text-xs font-semibold text-gray-500">+{files.length - 3}</span>
+                          </div>
+                        )}
                       </div>
                       <Button
                         onClick={handleUploadComplete}
@@ -522,11 +547,11 @@ export function InstantUpload({
                       >
                         {uploading ? (
                           <>
-                            <Loader2 className="h-5 w-5 mr-2 animate-spin" /> Uploading...
+                            <Loader2 className="h-5 w-5 mr-2 animate-spin" /> Uploading {files.length} photo{files.length !== 1 ? "s" : ""}...
                           </>
                         ) : (
                           <>
-                            Continue to Styles <ChevronRight className="h-5 w-5 ml-2" />
+                            Continue with {files.length} photo{files.length !== 1 ? "s" : ""} <ChevronRight className="h-5 w-5 ml-2" />
                           </>
                         )}
                       </Button>
@@ -555,23 +580,24 @@ export function InstantUpload({
 
             {/* Right 1/3: Sticky sidebar */}
             <div className="sticky top-20 h-fit space-y-6">
-              {/* Your Photo section */}
+              {/* Your Photos section */}
               <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Your Photo</h3>
+                <h3 className="font-semibold text-gray-900 mb-4">Your Photos <span className="text-gray-400 font-normal text-sm">{files.length}/5</span></h3>
                 {files.length > 0 ? (
                   <div className="space-y-3">
-                    <div className="w-full aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-md">
-                      <img src={files[0].preview} alt="Your photo" className="w-full h-full object-cover" />
+                    <div className="grid grid-cols-3 gap-2">
+                      {files.map((file, i) => (
+                        <div key={file.name} className="aspect-square rounded-lg overflow-hidden bg-gray-100 shadow-sm">
+                          <img src={file.preview} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                        </div>
+                      ))}
                     </div>
-                    <div>
-                      <p className="text-xs text-gray-600 truncate">{files[0].name}</p>
-                      <button
-                        onClick={() => setStep("upload")}
-                        className="mt-1 text-sm text-brand-700 hover:text-brand-800 font-medium"
-                      >
-                        Change
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => setStep("upload")}
+                      className="text-sm text-brand-700 hover:text-brand-800 font-medium"
+                    >
+                      Change photos
+                    </button>
                   </div>
                 ) : (
                   <div className="w-full aspect-square rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
