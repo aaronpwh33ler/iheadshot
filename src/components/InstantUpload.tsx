@@ -37,6 +37,65 @@ interface FileWithPreview extends File {
 type Step = "upload" | "select" | "generate";
 type GenerationPhase = "idle" | "uploading" | "character-sheet" | "generating";
 
+// Compress/resize image client-side to stay under Vercel's 4.5MB body limit
+function compressImage(file: File, maxDimension = 1536, quality = 0.85): Promise<File> {
+  return new Promise((resolve, reject) => {
+    // If already small enough, skip compression
+    if (file.size <= 3 * 1024 * 1024) {
+      resolve(file);
+      return;
+    }
+
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+
+      let { width, height } = img;
+
+      // Scale down if larger than maxDimension
+      if (width > maxDimension || height > maxDimension) {
+        if (width > height) {
+          height = Math.round((height * maxDimension) / width);
+          width = maxDimension;
+        } else {
+          width = Math.round((width * maxDimension) / height);
+          height = maxDimension;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) { resolve(file); return; }
+
+      ctx.drawImage(img, 0, 0, width, height);
+
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) { resolve(file); return; }
+          const compressed = new File([blob], file.name, {
+            type: "image/jpeg",
+            lastModified: Date.now(),
+          });
+          resolve(compressed);
+        },
+        "image/jpeg",
+        quality
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file); // Fall back to original on error
+    };
+
+    img.src = url;
+  });
+}
+
 export function InstantUpload({
   orderId,
   tier = "basic",
@@ -152,8 +211,10 @@ export function InstantUpload({
     try {
       const urls: string[] = [];
       for (const file of files) {
+        // Compress/resize to stay under Vercel's 4.5MB body limit
+        const compressed = await compressImage(file);
         const formData = new FormData();
-        formData.append("file", file);
+        formData.append("file", compressed);
         formData.append("orderId", orderId);
         const response = await fetch("/api/upload", { method: "POST", body: formData });
         if (!response.ok) {
