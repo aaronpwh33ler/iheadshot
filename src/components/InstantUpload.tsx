@@ -386,18 +386,18 @@ export function InstantUpload({
     return { name: styleId, desc: "", preview: "📷" };
   };
 
-  // Tier styling
+  // Tier styling — consistent orange brand
   const tierGradient = isPremium
-    ? "from-amber-500 to-orange-600"
+    ? "from-amber-500 to-brand-600"
     : isStandard
-    ? "from-purple-500 to-blue-600"
-    : "from-blue-500 to-purple-600";
+    ? "from-brand-500 to-brand-600"
+    : "from-brand-400 to-brand-600";
 
   const tierBg = isPremium
-    ? "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200"
+    ? "bg-gradient-to-br from-amber-50 to-brand-50 border-amber-200"
     : isStandard
-    ? "bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200"
-    : "bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200";
+    ? "bg-gradient-to-br from-brand-50 to-white border-brand-200"
+    : "bg-gradient-to-br from-brand-50 to-white border-brand-200";
 
   return (
     <div className="space-y-6">
@@ -410,22 +410,22 @@ export function InstantUpload({
 
         {/* Step indicator */}
         <div className="flex items-center justify-center gap-2 text-sm">
-          <div className={`flex items-center gap-1.5 ${step === "upload" ? "text-blue-600 font-medium" : "text-gray-400"}`}>
-            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${step === "upload" ? "bg-blue-600 text-white" : "bg-green-500 text-white"}`}>
+          <div className={`flex items-center gap-1.5 ${step === "upload" ? "text-brand-600 font-medium" : "text-gray-400"}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${step === "upload" ? "bg-brand-600 text-white" : "bg-green-500 text-white"}`}>
               {step === "upload" ? "1" : "✓"}
             </span>
             Upload
           </div>
           <ChevronRight className="h-4 w-4 text-gray-300" />
-          <div className={`flex items-center gap-1.5 ${step === "select" ? "text-blue-600 font-medium" : "text-gray-400"}`}>
-            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${step === "select" ? "bg-blue-600 text-white" : step === "generate" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"}`}>
+          <div className={`flex items-center gap-1.5 ${step === "select" ? "text-brand-600 font-medium" : "text-gray-400"}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${step === "select" ? "bg-brand-600 text-white" : step === "generate" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"}`}>
               {step === "generate" ? "✓" : "2"}
             </span>
             Choose Styles
           </div>
           <ChevronRight className="h-4 w-4 text-gray-300" />
-          <div className={`flex items-center gap-1.5 ${step === "generate" ? "text-blue-600 font-medium" : "text-gray-400"}`}>
-            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${step === "generate" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-500"}`}>3</span>
+          <div className={`flex items-center gap-1.5 ${step === "generate" ? "text-brand-600 font-medium" : "text-gray-400"}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${step === "generate" ? "bg-brand-600 text-white" : "bg-gray-200 text-gray-500"}`}>3</span>
             Generate
           </div>
         </div>
@@ -439,7 +439,7 @@ export function InstantUpload({
               <div className="space-y-4">
                 <div
                   {...getRootProps()}
-                  className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${isDragActive ? "border-blue-500 bg-blue-50 scale-[1.02]" : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"}`}
+                  className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${isDragActive ? "border-brand-500 bg-brand-50 scale-[1.02]" : "border-gray-300 hover:border-brand-400 hover:bg-gray-50"}`}
                 >
                   <input {...getInputProps()} />
                   <div className={`w-20 h-20 bg-gradient-to-br ${tierGradient} rounded-full flex items-center justify-center mx-auto mb-6`}>
@@ -483,7 +483,7 @@ export function InstantUpload({
                     </div>
                   ))}
                   {files.length < 5 && !uploading && (
-                    <div {...getRootProps()} className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-gray-50">
+                    <div {...getRootProps()} className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-brand-400 hover:bg-gray-50">
                       <input {...getInputProps()} />
                       <ImageIcon className="h-6 w-6 text-gray-400 mb-1" />
                       <span className="text-xs text-gray-400">Add more</span>
@@ -542,7 +542,7 @@ export function InstantUpload({
                   onClick={() => setDetectedGender("male")}
                   className={`px-4 py-1.5 text-sm font-medium transition-colors ${
                     detectedGender === "male"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-brand-600 text-white"
                       : "bg-white text-gray-600 hover:bg-gray-50"
                   }`}
                 >
@@ -552,7 +552,7 @@ export function InstantUpload({
                   onClick={() => setDetectedGender("female")}
                   className={`px-4 py-1.5 text-sm font-medium transition-colors ${
                     detectedGender === "female"
-                      ? "bg-blue-600 text-white"
+                      ? "bg-brand-600 text-white"
                       : "bg-white text-gray-600 hover:bg-gray-50"
                   }`}
                 >
@@ -602,8 +602,8 @@ export function InstantUpload({
             <Progress value={generationPhase === "character-sheet" ? 5 : (generatedImages.length / totalImages) * 100} className="h-2" />
 
             {generationPhase === "character-sheet" && (
-              <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
-                <p className="text-sm text-purple-800 flex items-center gap-2">
+              <div className="mt-3 p-3 bg-brand-50 rounded-lg border border-brand-200">
+                <p className="text-sm text-brand-800 flex items-center gap-2">
                   <Wand2 className="h-4 w-4 animate-pulse" />
                   <strong>Creating identity profile...</strong> This captures your face from multiple angles for perfect consistency.
                 </p>
@@ -620,8 +620,8 @@ export function InstantUpload({
 
           {/* Character sheet preview */}
           {characterSheetUrl && (
-            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-200">
-              <p className="text-sm font-medium text-purple-800 mb-2 flex items-center gap-2">
+            <div className="bg-gradient-to-r from-brand-50 to-brand-100 p-4 rounded-xl border border-brand-200">
+              <p className="text-sm font-medium text-brand-800 mb-2 flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4" /> Identity profile created
               </p>
               <div className="w-32 h-32 rounded-lg overflow-hidden bg-white shadow-md mx-auto">
@@ -658,7 +658,7 @@ export function InstantUpload({
 
           {generating && generatedImages.length === 0 && generationPhase !== "character-sheet" && (
             <div className="text-center py-12">
-              <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+              <Loader2 className="h-12 w-12 text-brand-500 animate-spin mx-auto mb-4" />
               <p className="text-gray-600">Starting generation...</p>
             </div>
           )}
@@ -666,7 +666,7 @@ export function InstantUpload({
           {/* Demo mode loading */}
           {loadingDemoImages && (
             <div className="text-center py-12">
-              <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+              <Loader2 className="h-12 w-12 text-brand-500 animate-spin mx-auto mb-4" />
               <p className="text-gray-600">Loading demo images...</p>
             </div>
           )}

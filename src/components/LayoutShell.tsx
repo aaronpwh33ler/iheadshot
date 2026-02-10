@@ -7,16 +7,12 @@ import { Footer } from "@/components/Footer";
 export function LayoutShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isLanding = pathname === "/";
-  const isAppRoute =
-    pathname.startsWith("/upload") ||
-    pathname.startsWith("/gallery") ||
-    pathname.startsWith("/processing");
 
   return (
     <>
-      {!isLanding && !isAppRoute && <Header />}
+      {!isLanding && <Header />}
       <main className="min-h-screen">{children}</main>
-      {!isLanding && !isAppRoute && <Footer />}
+      {!isLanding && <Footer />}
     </>
   );
 }

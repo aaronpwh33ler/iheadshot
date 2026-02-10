@@ -255,7 +255,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
                 <div
                   key={preset.id}
                   className={`bg-white rounded-lg border-2 p-2 flex items-center gap-3 transition-all ${
-                    isSelected ? "border-blue-300 bg-blue-50/50" : "border-gray-200 hover:border-gray-300"
+                    isSelected ? "border-brand-300 bg-brand-50/50" : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
                   {/* Preview image — gender-aware with emoji fallback */}
@@ -286,7 +286,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
                     disabled={remainingImages <= 0}
                     className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                       remainingImages > 0
-                        ? "bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 shadow-md"
+                        ? "bg-brand-500 text-white hover:bg-brand-600 hover:scale-110 shadow-md"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }`}
                   >
@@ -297,13 +297,13 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
             })}
 
             {/* Custom card at the bottom */}
-            <div className="bg-white rounded-lg border-2 border-dashed border-blue-300 p-2 flex items-center gap-3 transition-all hover:border-blue-400 hover:bg-blue-50/50">
+            <div className="bg-white rounded-lg border-2 border-dashed border-brand-300 p-2 flex items-center gap-3 transition-all hover:border-brand-400 hover:bg-brand-50/50">
               {/* Custom preview - sparkles on light bg */}
-              <div className="w-14 h-[72px] rounded-lg bg-gradient-to-br from-blue-50 to-blue-100 flex-shrink-0 flex items-center justify-center shadow-sm">
+              <div className="w-14 h-[72px] rounded-lg bg-gradient-to-br from-brand-50 to-brand-100 flex-shrink-0 flex items-center justify-center shadow-sm">
                 <div className="relative">
-                  <Sparkles className="h-6 w-6 text-blue-500" />
-                  <Sparkles className="h-3 w-3 text-blue-300 absolute -top-1 -right-0.5" />
-                  <Sparkles className="h-2 w-2 text-blue-400 absolute -bottom-0.5 -left-1" />
+                  <Sparkles className="h-6 w-6 text-brand-500" />
+                  <Sparkles className="h-3 w-3 text-brand-300 absolute -top-1 -right-0.5" />
+                  <Sparkles className="h-2 w-2 text-brand-400 absolute -bottom-0.5 -left-1" />
                 </div>
               </div>
 
@@ -319,7 +319,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
                 disabled={remainingImages <= 0}
                 className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
                   remainingImages > 0
-                    ? "bg-blue-500 text-white hover:bg-blue-600 hover:scale-110 shadow-md"
+                    ? "bg-brand-500 text-white hover:bg-brand-600 hover:scale-110 shadow-md"
                     : "bg-gray-200 text-gray-400 cursor-not-allowed"
                 }`}
               >
@@ -330,7 +330,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
         </div>
 
         {/* Right: Selected Styles (2/3 width) */}
-        <div className="bg-blue-50 rounded-2xl p-3 border border-blue-200 lg:col-span-2">
+        <div className="bg-brand-50 rounded-2xl p-3 border border-brand-200 lg:col-span-2">
           <h3 className="text-base font-semibold text-gray-700 mb-3 px-1">Selected Styles</h3>
           {selectedStyles.length === 0 ? (
             <div className="bg-white rounded-xl border-2 border-dashed border-gray-300 p-6 text-center h-[440px] flex flex-col items-center justify-center">
@@ -342,11 +342,11 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
               {selectedStyles.map(style => (
                 <div
                   key={style.id}
-                  className="bg-white rounded-lg border-2 border-blue-400 p-2 shadow-md relative"
+                  className="bg-white rounded-lg border-2 border-brand-400 p-2 shadow-md relative"
                 >
                   {/* Quantity badge - only for presets */}
                   {!style.isCustom && (
-                    <div className="absolute -top-2 -right-2 bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-md shadow-md z-10">
+                    <div className="absolute -top-2 -right-2 bg-brand-600 text-white text-xs font-bold px-2 py-0.5 rounded-md shadow-md z-10">
                       x{style.quantity}
                     </div>
                   )}
@@ -354,11 +354,11 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
                   {/* Preview image — gender-aware */}
                   <div className="w-full aspect-[3/4] rounded-md overflow-hidden bg-gray-100 mb-1.5 shadow-sm">
                     {style.isCustom ? (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100">
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-brand-50 to-brand-100">
                         <div className="relative">
-                          <Sparkles className="h-8 w-8 text-blue-500" />
-                          <Sparkles className="h-4 w-4 text-blue-300 absolute -top-2 -right-1" />
-                          <Sparkles className="h-3 w-3 text-blue-400 absolute -bottom-1 -left-2" />
+                          <Sparkles className="h-8 w-8 text-brand-500" />
+                          <Sparkles className="h-4 w-4 text-brand-300 absolute -top-2 -right-1" />
+                          <Sparkles className="h-3 w-3 text-brand-400 absolute -bottom-1 -left-2" />
                         </div>
                       </div>
                     ) : !failedImages.has(style.id) ? (
@@ -384,7 +384,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
                     <div className="flex items-center justify-center gap-1.5">
                       <button
                         onClick={() => editCustomStyle(style)}
-                        className="flex-1 py-1.5 px-2 bg-blue-500 text-white text-xs font-medium rounded-md hover:bg-blue-600 transition-colors"
+                        className="flex-1 py-1.5 px-2 bg-brand-500 text-white text-xs font-medium rounded-md hover:bg-brand-600 transition-colors"
                       >
                         Edit
                       </button>
@@ -409,7 +409,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
                         disabled={remainingImages <= 0}
                         className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${
                           remainingImages > 0
-                            ? "border-2 border-blue-400 text-blue-600 hover:bg-blue-50"
+                            ? "border-2 border-brand-400 text-brand-600 hover:bg-brand-50"
                             : "border-2 border-gray-200 text-gray-300 cursor-not-allowed"
                         }`}
                       >
@@ -429,7 +429,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
             <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-blue-500" />
+              <Sparkles className="h-5 w-5 text-brand-500" />
               Customize Your Style
             </h3>
 
@@ -439,7 +439,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
                 <select
                   value={customOutfit}
                   onChange={(e) => setCustomOutfit(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 >
                   {OUTFIT_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -452,7 +452,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
                 <select
                   value={customLocation}
                   onChange={(e) => setCustomLocation(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 >
                   {LOCATION_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -465,7 +465,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
                 <select
                   value={customLighting}
                   onChange={(e) => setCustomLighting(e.target.value)}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 >
                   {LIGHTING_OPTIONS.map(opt => (
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -483,7 +483,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
               </button>
               <button
                 onClick={saveCustomEdits}
-                className="flex-1 py-2 px-4 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600 transition-colors"
+                className="flex-1 py-2 px-4 bg-brand-500 text-white font-medium rounded-lg hover:bg-brand-600 transition-colors"
               >
                 Save
               </button>

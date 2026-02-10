@@ -111,16 +111,9 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
     );
   }
 
-  // Tier-specific background gradient
-  const tierBgGradient = isPremium
-    ? "from-amber-50 to-brand-50"
-    : isStandard
-    ? "from-brand-50 to-warm-50"
-    : "from-warm-50 to-white";
-
   // Show upload interface
   return (
-    <div className={`py-8 min-h-screen bg-gradient-to-b ${tierBgGradient}`}>
+    <div className="py-8 min-h-screen bg-white">
       {/* Full-width container for the upload flow */}
       <div className="container mx-auto px-4">
         <InstantUpload
