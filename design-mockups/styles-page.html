@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Choose Your Styles - iHeadshot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            },
+            accent: {
+              coral: '#FF6B6B',
+              mint: '#4ECDC4',
+              gold: '#FFE66D',
+              purple: '#A855F7',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .style-card {
+      transition: all 0.2s ease;
+    }
+    .style-card:hover {
+      transform: translateY(-2px);
+    }
+    .style-card.selected {
+      box-shadow: 0 0 0 3px #0ea5e9;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased text-gray-900 bg-gray-50 min-h-screen">
+
+  <!-- Navigation -->
+  <nav class="bg-white border-b border-gray-100 sticky top-0 z-40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="landing-page.html" class="flex items-center gap-2">
+          <div class="w-9 h-9 bg-gradient-to-br from-brand-500 to-accent-purple rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </div>
+          <span class="text-xl font-bold">iHeadshot</span>
+        </a>
+
+        <!-- Progress Steps -->
+        <div class="hidden sm:flex items-center gap-2">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <span class="text-sm font-medium text-gray-400">Upload</span>
+          </div>
+          <div class="w-8 h-px bg-green-500"></div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-brand-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">2</div>
+            <span class="text-sm font-medium text-gray-900">Styles</span>
+          </div>
+          <div class="w-8 h-px bg-gray-300"></div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-sm font-semibold">3</div>
+            <span class="text-sm font-medium text-gray-400">Generate</span>
+          </div>
+        </div>
+
+        <!-- Back button -->
+        <a href="upload-page.html" class="text-sm font-medium text-gray-500 hover:text-gray-900 flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+          </svg>
+          Back
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto px-4 py-8 pb-32">
+    <div class="grid lg:grid-cols-3 gap-8">
+
+      <!-- Left Column: Style Selection -->
+      <div class="lg:col-span-2 space-y-6">
+        <div>
+          <h1 class="text-2xl font-bold mb-1">Choose your styles</h1>
+          <p class="text-gray-600">Select up to <span class="font-semibold text-brand-600" id="maxStyles">10</span> styles for your headshots</p>
+        </div>
+
+        <!-- Style Categories -->
+        <div class="space-y-8">
+
+          <!-- Corporate & Business -->
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <span class="text-xl">👔</span>
+              <h2 class="font-semibold text-gray-900">Corporate & Business</h2>
+              <span class="text-xs text-gray-400">Professional looks</span>
+            </div>
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200 selected" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=200&h=267&fit=crop" alt="Corporate Navy" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full flex items-center justify-center checkmark">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Corporate Navy</p>
+                </div>
+              </div>
+
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&h=267&fit=crop" alt="Corporate Gray" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full items-center justify-center checkmark hidden">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Corporate Gray</p>
+                </div>
+              </div>
+
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200 selected" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=267&fit=crop" alt="Executive Black" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full flex items-center justify-center checkmark">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Executive Black</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Business Casual -->
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <span class="text-xl">👕</span>
+              <h2 class="font-semibold text-gray-900">Business Casual</h2>
+              <span class="text-xs text-gray-400">Relaxed professional</span>
+            </div>
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200 selected" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=267&fit=crop" alt="Blue Oxford" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full flex items-center justify-center checkmark">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Blue Oxford</p>
+                </div>
+              </div>
+
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&h=267&fit=crop" alt="White Shirt" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full items-center justify-center checkmark hidden">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">White Shirt</p>
+                </div>
+              </div>
+
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?w=200&h=267&fit=crop" alt="Smart Sweater" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full items-center justify-center checkmark hidden">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Smart Sweater</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Outdoor & Natural -->
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <span class="text-xl">🌿</span>
+              <h2 class="font-semibold text-gray-900">Outdoor & Natural</h2>
+              <span class="text-xs bg-accent-mint/20 text-accent-mint px-2 py-0.5 rounded-full font-medium">Recommended</span>
+            </div>
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200 selected" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&h=267&fit=crop" alt="Natural Light" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full flex items-center justify-center checkmark">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Natural Light</p>
+                </div>
+              </div>
+
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200 selected" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=200&h=267&fit=crop" alt="Urban Pro" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full flex items-center justify-center checkmark">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Urban Pro</p>
+                </div>
+              </div>
+
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&h=267&fit=crop" alt="Golden Hour" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full items-center justify-center checkmark hidden">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Golden Hour</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Creative & Modern -->
+          <div>
+            <div class="flex items-center gap-2 mb-4">
+              <span class="text-xl">🎨</span>
+              <h2 class="font-semibold text-gray-900">Creative & Modern</h2>
+              <span class="text-xs text-gray-400">Contemporary looks</span>
+            </div>
+            <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&h=267&fit=crop" alt="Turtleneck" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full items-center justify-center checkmark hidden">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Turtleneck</p>
+                </div>
+              </div>
+
+              <div class="style-card rounded-xl overflow-hidden cursor-pointer bg-white border-2 border-transparent hover:border-gray-200" onclick="toggleStyle(this)">
+                <div class="aspect-[3/4] bg-gray-100 relative">
+                  <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&h=267&fit=crop" alt="Tech Startup" class="w-full h-full object-cover">
+                  <div class="absolute top-2 right-2 w-6 h-6 bg-brand-500 rounded-full items-center justify-center checkmark hidden">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                  </div>
+                </div>
+                <div class="p-2">
+                  <p class="text-xs font-medium text-gray-900 truncate">Tech Startup</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Right Column: Selected Styles & Summary -->
+      <div class="lg:col-span-1">
+        <div class="sticky top-24 space-y-6">
+
+          <!-- Your Photo -->
+          <div class="bg-white rounded-2xl p-4 border border-gray-100">
+            <p class="text-sm font-medium text-gray-500 mb-3">Your photo</p>
+            <div class="flex items-center gap-3">
+              <div class="w-16 h-16 rounded-xl overflow-hidden bg-gray-100">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop" alt="Your photo" class="w-full h-full object-cover">
+              </div>
+              <div>
+                <p class="font-medium text-gray-900">photo.jpg</p>
+                <a href="upload-page.html" class="text-sm text-brand-600 hover:underline">Change</a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Styles -->
+          <div class="bg-white rounded-2xl p-4 border border-gray-100">
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-sm font-medium text-gray-500">Selected styles</p>
+              <span class="text-sm font-semibold text-brand-600" id="selectedCount">5 / 10</span>
+            </div>
+            <div class="grid grid-cols-5 gap-2" id="selectedGrid">
+              <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=80&h=80&fit=crop" class="w-full h-full object-cover">
+              </div>
+              <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop" class="w-full h-full object-cover">
+              </div>
+              <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=80&h=80&fit=crop" class="w-full h-full object-cover">
+              </div>
+              <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=80&h=80&fit=crop" class="w-full h-full object-cover">
+              </div>
+              <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <img src="https://images.unsplash.com/photo-1519345182560-3f2917c472ef?w=80&h=80&fit=crop" class="w-full h-full object-cover">
+              </div>
+            </div>
+          </div>
+
+          <!-- Package Selection -->
+          <div class="bg-white rounded-2xl p-4 border border-gray-100">
+            <p class="text-sm font-medium text-gray-500 mb-3">Select package</p>
+            <div class="space-y-2">
+              <label class="flex items-center justify-between p-3 rounded-xl border-2 border-gray-200 cursor-pointer hover:border-gray-300 transition-colors">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="package" class="w-4 h-4 text-brand-500">
+                  <div>
+                    <p class="font-medium text-gray-900">Basic</p>
+                    <p class="text-xs text-gray-500">5 headshots</p>
+                  </div>
+                </div>
+                <span class="font-semibold">$9.99</span>
+              </label>
+
+              <label class="flex items-center justify-between p-3 rounded-xl border-2 border-brand-500 bg-brand-50 cursor-pointer">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="package" class="w-4 h-4 text-brand-500" checked>
+                  <div>
+                    <p class="font-medium text-gray-900">Standard</p>
+                    <p class="text-xs text-gray-500">10 headshots</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <span class="font-semibold">$14.99</span>
+                  <span class="block text-xs text-brand-600">Most popular</span>
+                </div>
+              </label>
+
+              <label class="flex items-center justify-between p-3 rounded-xl border-2 border-gray-200 cursor-pointer hover:border-gray-300 transition-colors">
+                <div class="flex items-center gap-3">
+                  <input type="radio" name="package" class="w-4 h-4 text-brand-500">
+                  <div>
+                    <p class="font-medium text-gray-900">Premium</p>
+                    <p class="text-xs text-gray-500">20 headshots</p>
+                  </div>
+                </div>
+                <span class="font-semibold">$24.99</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Order Summary -->
+          <div class="bg-gray-900 text-white rounded-2xl p-6">
+            <h3 class="font-semibold mb-4">Order Summary</h3>
+            <div class="space-y-2 text-sm mb-4">
+              <div class="flex justify-between">
+                <span class="text-gray-400">Standard Package</span>
+                <span>$14.99</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-400">10 headshots</span>
+                <span class="text-gray-400">5 selected</span>
+              </div>
+            </div>
+            <div class="border-t border-gray-700 pt-4 mb-6">
+              <div class="flex justify-between text-lg font-semibold">
+                <span>Total</span>
+                <span>$14.99</span>
+              </div>
+            </div>
+            <button class="w-full bg-white text-gray-900 py-4 rounded-full font-semibold hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
+              Continue to Payment
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+              </svg>
+            </button>
+            <p class="text-xs text-gray-500 text-center mt-4">
+              <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+              </svg>
+              Secure payment via Stripe
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    function toggleStyle(card) {
+      card.classList.toggle('selected');
+      const checkmark = card.querySelector('.checkmark');
+      if (card.classList.contains('selected')) {
+        checkmark.classList.remove('hidden');
+        checkmark.classList.add('flex');
+      } else {
+        checkmark.classList.add('hidden');
+        checkmark.classList.remove('flex');
+      }
+      updateCount();
+    }
+
+    function updateCount() {
+      const count = document.querySelectorAll('.style-card.selected').length;
+      document.getElementById('selectedCount').textContent = `${count} / 10`;
+    }
+  </script>
+
+</body>
+</html>

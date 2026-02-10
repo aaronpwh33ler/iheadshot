@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload Your Photo - iHeadshot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              300: '#7dd3fc',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+            },
+            accent: {
+              coral: '#FF6B6B',
+              mint: '#4ECDC4',
+              gold: '#FFE66D',
+              purple: '#A855F7',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .gradient-text {
+      background: linear-gradient(135deg, #0ea5e9 0%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .upload-zone {
+      background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%23CBD5E1' stroke-width='3' stroke-dasharray='12%2c 8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
+    }
+    .upload-zone.drag-over {
+      background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' rx='24' ry='24' stroke='%230EA5E9' stroke-width='3' stroke-dasharray='12%2c 8' stroke-dashoffset='0' stroke-linecap='round'/%3e%3c/svg%3e");
+    }
+    .style-card {
+      transition: all 0.2s ease;
+    }
+    .style-card:hover {
+      transform: scale(1.02);
+    }
+    .style-card.selected {
+      ring: 3px solid #0ea5e9;
+    }
+  </style>
+</head>
+<body class="font-sans antialiased text-gray-900 bg-gray-50 min-h-screen">
+
+  <!-- Navigation -->
+  <nav class="bg-white border-b border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <!-- Logo -->
+        <a href="landing-page.html" class="flex items-center gap-2">
+          <div class="w-9 h-9 bg-gradient-to-br from-brand-500 to-accent-purple rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+          </div>
+          <span class="text-xl font-bold">iHeadshot</span>
+        </a>
+
+        <!-- Progress Steps -->
+        <div class="hidden sm:flex items-center gap-2">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-brand-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">1</div>
+            <span class="text-sm font-medium text-gray-900">Upload</span>
+          </div>
+          <div class="w-8 h-px bg-gray-300"></div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-sm font-semibold">2</div>
+            <span class="text-sm font-medium text-gray-400">Styles</span>
+          </div>
+          <div class="w-8 h-px bg-gray-300"></div>
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-gray-200 text-gray-500 rounded-full flex items-center justify-center text-sm font-semibold">3</div>
+            <span class="text-sm font-medium text-gray-400">Generate</span>
+          </div>
+        </div>
+
+        <!-- Help -->
+        <a href="#" class="text-sm font-medium text-gray-500 hover:text-gray-900 flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Help
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-4xl mx-auto px-4 py-12">
+    <!-- Step 1: Upload Photo -->
+    <div id="step-upload" class="space-y-8">
+      <div class="text-center">
+        <h1 class="text-3xl font-bold mb-2">Upload your photo</h1>
+        <p class="text-gray-600">We'll use this to create your professional headshots</p>
+      </div>
+
+      <!-- Upload Zone -->
+      <div class="upload-zone rounded-3xl p-8 sm:p-12 bg-white hover:bg-brand-50/30 transition-colors cursor-pointer" id="uploadZone">
+        <div class="text-center">
+          <div class="w-20 h-20 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+          </div>
+          <p class="text-lg font-semibold text-gray-900 mb-2">Drag & drop your photo here</p>
+          <p class="text-gray-500 mb-6">or click to browse</p>
+          <button class="bg-gray-900 text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors inline-flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+            </svg>
+            Choose Photo
+          </button>
+          <input type="file" class="hidden" accept="image/*" id="fileInput">
+        </div>
+      </div>
+
+      <!-- Photo Guidelines -->
+      <div class="bg-white rounded-2xl p-6 border border-gray-100">
+        <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          Photo tips for best results
+        </h3>
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900 text-sm">Good lighting</p>
+              <p class="text-gray-500 text-sm">Face clearly lit, minimal shadows</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900 text-sm">Face visible</p>
+              <p class="text-gray-500 text-sm">No sunglasses or obstructions</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900 text-sm">Neutral expression</p>
+              <p class="text-gray-500 text-sm">Natural smile or relaxed look</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center shrink-0">
+              <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </div>
+            <div>
+              <p class="font-medium text-gray-900 text-sm">Avoid heavy filters</p>
+              <p class="text-gray-500 text-sm">No beauty mode or extreme edits</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Example Images -->
+      <div class="grid grid-cols-4 gap-4">
+        <div class="text-center">
+          <div class="aspect-square rounded-xl overflow-hidden border-2 border-green-400 mb-2 relative">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop" alt="Good example" class="w-full h-full object-cover">
+            <div class="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500">Good lighting</p>
+        </div>
+        <div class="text-center">
+          <div class="aspect-square rounded-xl overflow-hidden border-2 border-green-400 mb-2 relative">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop" alt="Good example" class="w-full h-full object-cover">
+            <div class="absolute bottom-1 right-1 w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500">Clear face</p>
+        </div>
+        <div class="text-center">
+          <div class="aspect-square rounded-xl overflow-hidden border-2 border-red-400 mb-2 relative opacity-60">
+            <img src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&h=150&fit=crop" alt="Bad example" class="w-full h-full object-cover filter blur-[1px]">
+            <div class="absolute bottom-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500">Too blurry</p>
+        </div>
+        <div class="text-center">
+          <div class="aspect-square rounded-xl overflow-hidden border-2 border-red-400 mb-2 relative opacity-60">
+            <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop" alt="Bad example" class="w-full h-full object-cover brightness-50">
+            <div class="absolute bottom-1 right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500">Too dark</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom Bar (shown after upload) -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 hidden" id="bottomBar">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="w-14 h-14 rounded-xl overflow-hidden bg-gray-100">
+          <img src="" alt="Preview" class="w-full h-full object-cover" id="previewImage">
+        </div>
+        <div>
+          <p class="font-medium text-gray-900">Photo uploaded</p>
+          <p class="text-sm text-gray-500">Ready to continue</p>
+        </div>
+      </div>
+      <a href="styles-page.html" class="bg-gray-900 text-white px-8 py-3 rounded-full font-semibold hover:bg-gray-800 transition-colors inline-flex items-center gap-2">
+        Continue to Styles
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+
+  <script>
+    // Simple upload interaction
+    const uploadZone = document.getElementById('uploadZone');
+    const fileInput = document.getElementById('fileInput');
+    const bottomBar = document.getElementById('bottomBar');
+    const previewImage = document.getElementById('previewImage');
+
+    uploadZone.addEventListener('click', () => fileInput.click());
+    uploadZone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      uploadZone.classList.add('drag-over', 'bg-brand-50');
+    });
+    uploadZone.addEventListener('dragleave', () => {
+      uploadZone.classList.remove('drag-over', 'bg-brand-50');
+    });
+    uploadZone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      uploadZone.classList.remove('drag-over', 'bg-brand-50');
+      handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+      if (e.target.files[0]) handleFile(e.target.files[0]);
+    });
+
+    function handleFile(file) {
+      if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          previewImage.src = e.target.result;
+          bottomBar.classList.remove('hidden');
+          uploadZone.innerHTML = `
+            <div class="text-center">
+              <div class="w-32 h-32 rounded-2xl overflow-hidden mx-auto mb-4 ring-4 ring-green-500 ring-offset-4">
+                <img src="${e.target.result}" class="w-full h-full object-cover" alt="Preview">
+              </div>
+              <p class="text-lg font-semibold text-gray-900 mb-1">Photo uploaded!</p>
+              <p class="text-gray-500 text-sm mb-4">${file.name}</p>
+              <button class="text-brand-600 font-medium text-sm hover:underline">Change photo</button>
+            </div>
+          `;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  </script>
+
+</body>
+</html>

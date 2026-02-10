@@ -1,6 +1,21 @@
 # iHeadshot Project State Document
 **Last Updated:** February 6, 2026
 **Domain:** https://www.iheadshot.co
+**Local Path:** `~/Dropbox/Claude/Replication Framework/prospects/AI Headshot Generator/headshot-ai`
+
+---
+
+## User Preferences
+
+**CRITICAL:** Aaron prefers complete terminal commands that can be copy/pasted directly without needing to `cd` first. Always provide full paths:
+
+```bash
+# Always do this:
+cd ~/Dropbox/Claude/Replication\ Framework/prospects/AI\ Headshot\ Generator/headshot-ai && git push
+
+# Never just this:
+git push
+```
 
 ---
 
@@ -202,24 +217,48 @@ The upscale modal is now responsive with:
 
 ---
 
-## Development Commands
+## Development Commands (Full Paths - Ready to Copy/Paste)
 
 ```bash
 # Install dependencies
-npm install
+cd ~/Dropbox/Claude/Replication\ Framework/prospects/AI\ Headshot\ Generator/headshot-ai && npm install
 
 # Run development server
-npm run dev
+cd ~/Dropbox/Claude/Replication\ Framework/prospects/AI\ Headshot\ Generator/headshot-ai && npm run dev
 
 # Build for production
-npm run build
+cd ~/Dropbox/Claude/Replication\ Framework/prospects/AI\ Headshot\ Generator/headshot-ai && npm run build
 
 # Type check
-npx tsc --noEmit
+cd ~/Dropbox/Claude/Replication\ Framework/prospects/AI\ Headshot\ Generator/headshot-ai && npx tsc --noEmit
 
-# Deploy (auto via Vercel on push to main)
-git push
+# Deploy (commit and push)
+cd ~/Dropbox/Claude/Replication\ Framework/prospects/AI\ Headshot\ Generator/headshot-ai && git add -A && git commit -m "Your message" && git push
+
+# Open design mockups in browser
+cd ~/Dropbox/Claude/Replication\ Framework/prospects/AI\ Headshot\ Generator/headshot-ai/design-mockups && open landing-page.html
 ```
+
+---
+
+## Design Mockups (Feb 6, 2026)
+
+Located in `/design-mockups/` folder - standalone HTML files using Tailwind CDN:
+
+| File | Description |
+|------|-------------|
+| `landing-page.html` | Full marketing homepage with hero, how-it-works, pricing, testimonials, FAQ |
+| `upload-page.html` | Photo upload flow with drag & drop, photo tips, example images |
+| `styles-page.html` | Style selection grid with package picker and order summary |
+| `results-page.html` | Results gallery with 4K upgrade banner, hover actions, share options |
+
+**Design Direction:**
+- Modern, clean, approachable
+- Light mode with white backgrounds
+- Pops of color: Sky blue (`#0ea5e9`), Mint (`#4ECDC4`), Coral (`#FF6B6B`), Purple (`#A855F7`)
+- Rounded corners (2xl-3xl), subtle shadows, smooth hover transitions
+- Inter font family
+- Trust indicators and social proof throughout
 
 ---
 

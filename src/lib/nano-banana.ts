@@ -5,7 +5,7 @@ import { GoogleGenAI } from "@google/genai";
 //   "gemini-2.5-flash-image" — Nano Banana (stable, production)
 //   "gemini-3-pro-image-preview" — Nano Banana Pro (preview, highest quality)
 const genAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY || "" });
-const IMAGE_MODEL = "gemini-2.5-flash-image";
+const IMAGE_MODEL = "gemini-3-pro-image-preview";
 
 // Style variables for headshot generation
 export interface HeadshotStyle {

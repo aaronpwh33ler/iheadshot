@@ -1,0 +1,18 @@
+Style: Natural Light
+ID: outdoor-natural
+Category: Outdoor
+Aspect Ratio: 3:4 portrait (1536x2048)
+
+STRICT IDENTITY LOCK USING REFERENCE IMAGES:
+
+Use ALL attached reference images as the absolute ground truth for this character's identity.
+- Main reference: exact face, skin tone/texture/details, eye shape/color, nose, mouth, jawline, hairline, freckles/marks, age appearance.
+- Character sheet: full multi-angle confirmation of proportions, head shape from side/profile/3/4 views, expressions range, no alterations allowed.
+
+Preserve 100% identical facial features, bone structure, exact face shape, exact eye placement & color, nose shape, lip shape, skin texture/details, hair texture/density/parting, age/youth appearance — NO changes, NO morphing, NO aging, NO plastic look, NO blending with other faces.
+
+Only modify: Professional headshot, for business profiles, profile pictures, and respectable contact images. To be used solely in the business sphere. Wearing a casual but professional light jacket, standing outdoors in a lush green park with soft bokeh background at golden hour warm sunlight, standing naturally, approachable and genuine.
+
+Output image must be 3:4 portrait orientation (1536x2048 pixels).
+
+Ultra-photorealistic, high-fidelity identity preservation, sharp facial details, consistent lighting on face matching references where possible.

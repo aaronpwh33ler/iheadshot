@@ -215,3 +215,50 @@ This ensures the comparison works correctly even after the image URL is updated 
 | Main generation API | `/src/app/api/generate-headshot-v2/route.ts` |
 | Upscale API | `/src/app/api/upscale/route.ts` |
 | Environment vars | `.env.local` (local) / Vercel dashboard (prod) |
+| Design mockups | `/design-mockups/*.html` |
+
+---
+
+## 11. Design Mockups
+
+Located in `/design-mockups/` - standalone HTML files with Tailwind CDN:
+
+```
+design-mockups/
+├── landing-page.html    # Marketing homepage
+├── upload-page.html     # Photo upload flow
+├── styles-page.html     # Style selection + package picker
+└── results-page.html    # Results gallery with 4K upgrade
+```
+
+**Color Palette:**
+```javascript
+brand: {
+  500: '#0ea5e9',  // Sky blue - primary
+  600: '#0284c7',
+  700: '#0369a1',
+}
+accent: {
+  coral: '#FF6B6B',   // Errors, warnings
+  mint: '#4ECDC4',    // 4K/upscale features
+  gold: '#FFE66D',    // Highlights
+  purple: '#A855F7',  // Premium/gradient accent
+}
+```
+
+**Design tokens:**
+- Font: Inter
+- Border radius: `rounded-2xl` to `rounded-3xl`
+- Shadows: Subtle (`shadow-sm` to `shadow-lg`)
+- Transitions: `transition-all 0.2s ease`
+
+---
+
+## 12. User Preferences
+
+**IMPORTANT:** Aaron prefers full terminal commands. Never ask to `cd` first:
+
+```bash
+# ALWAYS provide full commands like this:
+cd ~/Dropbox/Claude/Replication\ Framework/prospects/AI\ Headshot\ Generator/headshot-ai && git push
+```
