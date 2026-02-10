@@ -1,10 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize the Nano Banana Pro API (Gemini image generation)
-// NOTE: gemini-2.0-flash-exp-image-generation produces the best identity-locked results.
-// Do NOT change this model without testing — newer models produce inferior identity preservation.
+// Initialize the Nano Banana Pro API (Gemini 3 Pro Image)
+// WORKING MODEL: gemini-3-pro-image-preview - produces incredible identity-locked results
+// This was the model used when results were "freaking incredible" on Feb 4, 2026
 const genAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY || "" });
-const IMAGE_MODEL = "gemini-2.0-flash-exp-image-generation";
+const IMAGE_MODEL = "gemini-3-pro-image-preview";
 
 // Style variables for headshot generation
 export interface HeadshotStyle {
