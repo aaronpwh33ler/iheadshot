@@ -466,182 +466,177 @@ export function InstantUpload({
         </div>
       </nav>
 
-      {/* STEP 1: Upload - Two-column layout matching style selection */}
+      {/* STEP 1: Upload - Gender selection for demo, file upload for real */}
       {step === "upload" && (
-        <div className="px-6 py-12">
-          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Left 2/3: Upload area */}
-            <div className="lg:col-span-2 space-y-6">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Your Photos</h1>
-                <p className="text-gray-600">Upload 1–5 clear, front-facing photos for best results</p>
-              </div>
-
-              {isDemoMode ? (
-                // Demo mode: Gender selection cards
-                <div className="space-y-6">
-                  <p className="text-gray-600 font-medium">Select your gender to view demo styles:</p>
-                  <div className="grid grid-cols-2 gap-4 max-w-sm">
-                    <button
-                      onClick={() => setDetectedGender("male")}
-                      className={`p-6 rounded-2xl border-2 transition-all cursor-pointer ${
-                        detectedGender === "male"
-                          ? "border-brand-600 bg-brand-50 shadow-md"
-                          : "border-gray-200 bg-white hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="text-2xl mb-2">👨</div>
-                      <p className="font-semibold text-gray-900">Male</p>
-                    </button>
-                    <button
-                      onClick={() => setDetectedGender("female")}
-                      className={`p-6 rounded-2xl border-2 transition-all cursor-pointer ${
-                        detectedGender === "female"
-                          ? "border-brand-600 bg-brand-50 shadow-md"
-                          : "border-gray-200 bg-white hover:border-gray-300"
-                      }`}
-                    >
-                      <div className="text-2xl mb-2">👩</div>
-                      <p className="font-semibold text-gray-900">Female</p>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                // Real mode: File upload
-                <div className="space-y-6">
-                  {/* Dropzone */}
-                  <div
-                    {...getRootProps()}
-                    className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
-                      isDragActive ? "border-brand-600 bg-brand-50" : "border-gray-300 hover:border-brand-400 hover:bg-gray-50"
-                    }`}
-                  >
-                    <input {...getInputProps()} />
-                    <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-lg font-semibold text-gray-900 mb-2">
-                      {isDragActive ? "Drop your photos here" : "Drag & drop your photos here"}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-4">or click to browse • up to 5 photos</p>
-                    <Button asChild className="bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl px-8 py-3">
-                      <span>Choose Photos</span>
-                    </Button>
-                  </div>
-
-                  {/* Photo grid (shown when photos are selected) */}
-                  {files.length > 0 && (
-                    <div className="space-y-4">
-                      <div className="grid grid-cols-5 gap-3">
-                        {files.map((file, index) => (
-                          <div key={file.name} className="relative group">
-                            <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-md border-2 border-green-400">
-                              <img src={file.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
-                            </div>
-                            <button
-                              onClick={() => removeFile(index)}
-                              className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
-                          </div>
-                        ))}
-                        {files.length < 5 && (
-                          <div
-                            {...getRootProps()}
-                            className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-brand-400 flex flex-col items-center justify-center cursor-pointer transition-colors"
-                          >
-                            <input {...getInputProps()} />
-                            <Upload className="h-5 w-5 text-gray-400 mb-1" />
-                            <span className="text-xs text-gray-400">Add</span>
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-sm text-green-600 font-medium">
-                        {files.length} photo{files.length !== 1 ? "s" : ""} selected
-                        <span className="text-gray-400 font-normal"> • {5 - files.length} more allowed</span>
-                      </p>
-                    </div>
-                  )}
-                </div>
-              )}
+        <div className="max-w-2xl mx-auto px-6 py-12">
+          <div className="space-y-8">
+            {/* Header */}
+            <div className="text-center">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Your Photos</h1>
+              <p className="text-gray-600">Upload 1–5 clear, front-facing photos for best results</p>
             </div>
 
-            {/* Right 1/3: Sticky sidebar */}
-            <div className="sticky top-20 h-fit space-y-6">
-              {/* Photo tips */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Photo Tips</h3>
-                <div className="space-y-3">
+            {isDemoMode ? (
+              // Demo mode: Gender selection cards
+              <div className="space-y-6">
+                <p className="text-center text-gray-600 font-medium">Select your gender to view demo styles:</p>
+                <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
+                  <button
+                    onClick={() => setDetectedGender("male")}
+                    className={`p-6 rounded-2xl border-2 transition-all cursor-pointer ${
+                      detectedGender === "male"
+                        ? "border-brand-600 bg-brand-50 shadow-md"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">👨</div>
+                    <p className="font-semibold text-gray-900">Male</p>
+                  </button>
+                  <button
+                    onClick={() => setDetectedGender("female")}
+                    className={`p-6 rounded-2xl border-2 transition-all cursor-pointer ${
+                      detectedGender === "female"
+                        ? "border-brand-600 bg-brand-50 shadow-md"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="text-2xl mb-2">👩</div>
+                    <p className="font-semibold text-gray-900">Female</p>
+                  </button>
+                </div>
+
+                <Button
+                  onClick={() => {
+                    setStep("select");
+                    setSelectedStyles([]);
+                  }}
+                  size="lg"
+                  className="w-full py-6 text-lg bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl"
+                >
+                  Continue to Styles <ChevronRight className="h-5 w-5 ml-2" />
+                </Button>
+              </div>
+            ) : (
+              // Real mode: File upload
+              <div className="space-y-6">
+                {files.length === 0 ? (
+                  <div className="space-y-4">
+                    <div
+                      {...getRootProps()}
+                      className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
+                        isDragActive ? "border-brand-600 bg-brand-50" : "border-gray-300 hover:border-brand-400 hover:bg-gray-50"
+                      }`}
+                    >
+                      <input {...getInputProps()} />
+                      <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <p className="text-lg font-semibold text-gray-900 mb-2">
+                        {isDragActive ? "Drop your photos here" : "Drag & drop your photos here"}
+                      </p>
+                      <p className="text-sm text-gray-600 mb-4">or click to browse • up to 5 photos</p>
+                    </div>
+
+                    <Button
+                      {...getRootProps()}
+                      asChild
+                      className="w-full py-6 text-base bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl"
+                    >
+                      <label>
+                        <input {...getInputProps()} style={{ display: "none" }} />
+                        Choose Photos
+                      </label>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Photo grid */}
+                    <div className="grid grid-cols-5 gap-3 max-w-md mx-auto">
+                      {files.map((file, index) => (
+                        <div key={file.name} className="relative group">
+                          <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-md border-2 border-green-400">
+                            <img src={file.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                          </div>
+                          <button
+                            onClick={() => removeFile(index)}
+                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                      {files.length < 5 && (
+                        <div
+                          {...getRootProps()}
+                          className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-brand-400 flex flex-col items-center justify-center cursor-pointer transition-colors"
+                        >
+                          <input {...getInputProps()} />
+                          <Upload className="h-5 w-5 text-gray-400 mb-1" />
+                          <span className="text-xs text-gray-400">Add</span>
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-center text-sm text-green-600 font-medium">
+                      {files.length} photo{files.length !== 1 ? "s" : ""} selected
+                      <span className="text-gray-400 font-normal"> • {5 - files.length} more allowed</span>
+                    </p>
+                  </div>
+                )}
+
+                {/* Photo tips */}
+                <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">Good, even lighting</span>
+                    <span className="text-sm text-gray-700">Good lighting</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">Face clearly visible</span>
+                    <span className="text-sm text-gray-700">Face visible</span>
                   </div>
                   <div className="flex items-start gap-2">
                     <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                     <span className="text-sm text-gray-700">Neutral expression</span>
                   </div>
                   <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">Front-facing angle</span>
-                  </div>
-                  <div className="flex items-start gap-2">
                     <X className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
                     <span className="text-sm text-gray-700">Avoid heavy filters</span>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <X className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">Avoid sunglasses / hats</span>
-                  </div>
                 </div>
-              </div>
 
-              {/* Your Photos preview */}
-              {files.length > 0 && (
-                <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                  <h3 className="font-semibold text-gray-900 mb-4">Your Photos <span className="text-gray-400 font-normal text-sm">{files.length}/5</span></h3>
-                  <div className="grid grid-cols-3 gap-2 mb-4">
-                    {files.map((file, i) => (
-                      <div key={file.name} className="aspect-square rounded-lg overflow-hidden bg-gray-100 shadow-sm">
-                        <img src={file.preview} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                {/* Sticky bottom bar */}
+                {files.length > 0 && (
+                  <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
+                    <div className="max-w-2xl mx-auto flex items-center gap-4">
+                      <div className="flex gap-2">
+                        {files.slice(0, 3).map((file, i) => (
+                          <div key={file.name} className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+                            <img src={file.preview} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                        {files.length > 3 && (
+                          <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
+                            <span className="text-xs font-semibold text-gray-500">+{files.length - 3}</span>
+                          </div>
+                        )}
                       </div>
-                    ))}
+                      <Button
+                        onClick={handleUploadComplete}
+                        disabled={uploading}
+                        className="flex-1 py-6 text-base bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl"
+                      >
+                        {uploading ? (
+                          <>
+                            <Loader2 className="h-5 w-5 mr-2 animate-spin" /> Uploading {files.length} photo{files.length !== 1 ? "s" : ""}...
+                          </>
+                        ) : (
+                          <>
+                            Continue with {files.length} photo{files.length !== 1 ? "s" : ""} <ChevronRight className="h-5 w-5 ml-2" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              )}
-
-              {/* Package info */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-2">Your Package</h3>
-                <p className="text-sm text-gray-500 mb-1">{tier.charAt(0).toUpperCase() + tier.slice(1)} — {totalImages} headshots</p>
+                )}
               </div>
-
-              {/* Continue button */}
-              <div className="bg-gray-900 text-white rounded-2xl p-6 space-y-4">
-                <Button
-                  onClick={isDemoMode ? () => { setStep("select"); setSelectedStyles([]); } : handleUploadComplete}
-                  disabled={(!isDemoMode && files.length === 0) || uploading}
-                  className="w-full py-6 bg-white text-gray-900 hover:bg-gray-100 font-semibold rounded-xl cursor-pointer"
-                >
-                  {uploading ? (
-                    <>
-                      <Loader2 className="h-5 w-5 mr-2 animate-spin" /> Uploading...
-                    </>
-                  ) : (
-                    <>
-                      Continue to Styles <ChevronRight className="h-5 w-5 ml-2" />
-                    </>
-                  )}
-                </Button>
-
-                <div className="flex items-center justify-center gap-2 text-xs text-gray-400 pt-2 border-t border-gray-800">
-                  <Lock className="h-3.5 w-3.5" />
-                  <span>Your photos are secure</span>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
