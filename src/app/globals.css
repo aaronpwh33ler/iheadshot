@@ -11,16 +11,16 @@
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
 
-  /* Brand colors */
-  --color-brand-50: #FFF7ED;
-  --color-brand-100: #FFEDD5;
-  --color-brand-200: #FED7AA;
-  --color-brand-300: #FDBA74;
-  --color-brand-400: #FB923C;
-  --color-brand-500: #F97316;
-  --color-brand-600: #EA580C;
-  --color-brand-700: #C2410C;
-  --color-brand-800: #9A3412;
+  /* Brand colors — based on #ff3955 (red-coral) and #ff744f (orange-coral) */
+  --color-brand-50: #FFF1F2;
+  --color-brand-100: #FFE4E6;
+  --color-brand-200: #FECDD3;
+  --color-brand-300: #FDA4AF;
+  --color-brand-400: #FF744F;
+  --color-brand-500: #FF3955;
+  --color-brand-600: #E11D48;
+  --color-brand-700: #BE123C;
+  --color-brand-800: #9F1239;
 
   --color-warm-50: #FFFBF7;
   --color-warm-100: #FFF5EE;
@@ -34,14 +34,14 @@ body {
 
 /* Landing page custom styles */
 .gradient-text {
-  background: linear-gradient(135deg, #F97316 0%, #EA580C 50%, #DC2626 100%);
+  background: linear-gradient(135deg, #FF744F 0%, #FF3955 50%, #E11D48 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .hero-gradient {
-  background: linear-gradient(180deg, #FFF7ED 0%, #ffffff 100%);
+  background: linear-gradient(180deg, #FFF1F2 0%, #ffffff 100%);
 }
 
 .card-hover {
@@ -50,7 +50,7 @@ body {
 
 .card-hover:hover {
   transform: translateY(-4px);
-  box-shadow: 0 20px 40px -12px rgba(249, 115, 22, 0.15);
+  box-shadow: 0 20px 40px -12px rgba(255, 57, 85, 0.15);
 }
 
 .blob {
@@ -64,11 +64,11 @@ body {
 }
 
 .orange-section {
-  background: linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%);
+  background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%);
 }
 
 .dark-orange-section {
-  background: linear-gradient(135deg, #EA580C 0%, #F97316 50%, #FB923C 100%);
+  background: linear-gradient(135deg, #E11D48 0%, #FF3955 50%, #FF744F 100%);
 }
 
 /* Animation for progressive image loading */

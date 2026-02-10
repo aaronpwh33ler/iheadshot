@@ -102,13 +102,7 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
     );
   }
 
-  // Tier-specific styling
-  const tierGradient = isPremium
-    ? "from-amber-500 to-brand-600"
-    : isStandard
-    ? "from-brand-500 to-brand-600"
-    : "from-brand-400 to-brand-600";
-
+  // Tier-specific background gradient
   const tierBgGradient = isPremium
     ? "from-amber-50 to-brand-50"
     : isStandard
