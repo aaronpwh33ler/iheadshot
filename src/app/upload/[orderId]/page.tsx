@@ -8,16 +8,25 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, Sparkles, Camera, Crown, Zap } from "lucide-react";
 
+// Demo mode order ID — skips API calls, uses default tier/count
+const DEMO_ORDER_ID = "cs_test_a10w4eDn4CKk4FR9IgZh6bhHoaQpgMVuXjLs35oUdR6xC6wnA96VUPLTUP";
+
 export default function UploadPage({ params }: { params: Promise<{ orderId: string }> }) {
   const router = useRouter();
   const resolvedParams = use(params);
   const orderId = resolvedParams.orderId;
-  const [order, setOrder] = useState<{ tier: string; headshot_count: number } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const isDemoMode = orderId === DEMO_ORDER_ID;
+  const [order, setOrder] = useState<{ tier: string; headshot_count: number } | null>(
+    isDemoMode ? { tier: "standard", headshot_count: 10 } : null
+  );
+  const [loading, setLoading] = useState(!isDemoMode);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // Demo mode: skip API call entirely
+    if (isDemoMode) return;
+
     async function fetchOrder() {
       try {
         const response = await fetch(`/api/status/${orderId}`);
@@ -46,7 +55,7 @@ export default function UploadPage({ params }: { params: Promise<{ orderId: stri
     }
 
     fetchOrder();
-  }, [orderId]);
+  }, [orderId, isDemoMode]);
 
   const handleGenerationComplete = (images: GeneratedImage[]) => {
     setGeneratedImages(images);
