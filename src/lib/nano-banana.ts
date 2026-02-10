@@ -322,9 +322,19 @@ Use ALL attached reference images as the absolute ground truth for this characte
 
 Preserve 100% identical facial features, bone structure, exact face shape, exact eye placement & color, nose shape, lip shape, skin texture/details, hair texture/density/parting, age/youth appearance — NO changes, NO morphing, NO aging, NO plastic look, NO blending with other faces.
 
-Only modify: Professional headshot, for business profiles, profile pictures, and respectable contact images. To be used solely in the business sphere. Wearing ${outfit}, standing ${style.location} at ${style.lighting}, ${style.pose}, ${style.expression}.
+CRITICAL - DO NOT AGE THE SUBJECT:
+- Do NOT add crow's feet, wrinkles, or lines that aren't clearly visible in the reference photos
+- Do NOT make skin look more weathered or aged than in the references
+- Do NOT deepen existing wrinkles or make them more pronounced
+- Preserve the EXACT skin smoothness and texture from the reference images
+- If the person looks youthful in the references, they must look equally youthful in the output
+- Match the exact level of skin detail - no more, no less
 
-Ultra-photorealistic, high-fidelity identity preservation, sharp facial details, consistent lighting on face matching references where possible.`;
+OUTPUT FORMAT: Portrait orientation (2:3 aspect ratio), professional headshot crop showing head and shoulders.
+
+Scene: Professional headshot for business profiles. Wearing ${outfit}, ${style.location}, ${style.lighting}, ${style.pose}, ${style.expression}.
+
+Ultra-photorealistic, high-fidelity identity preservation, sharp facial details, natural skin texture matching references exactly.`;
 
   let response;
   try {
@@ -354,6 +364,8 @@ Ultra-photorealistic, high-fidelity identity preservation, sharp facial details,
       ],
       config: {
         responseModalities: ["image", "text"],
+        // Request 2:3 portrait aspect ratio for professional headshots
+        aspectRatio: "2:3",
       },
     });
   } catch (apiError) {
