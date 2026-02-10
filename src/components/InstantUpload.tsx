@@ -280,7 +280,7 @@ export function InstantUpload({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId,
-          imageUrls: uploadedUrls, // Send ALL uploaded images for best identity lock
+          imageUrl: uploadedUrls[0], // Use first/best image only - multiple images cause blending
         }),
       });
 

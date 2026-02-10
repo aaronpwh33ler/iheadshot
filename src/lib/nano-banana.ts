@@ -223,33 +223,18 @@ export const HEADSHOT_STYLES: HeadshotStyle[] = [
 ];
 
 /**
- * Step 1: Generate a character reference sheet from uploaded images
+ * Step 1: Generate a character reference sheet from uploaded image
  * This creates multi-angle views to lock in the person's identity.
- * Accepts multiple reference images for better identity capture.
+ * IMPORTANT: Use only ONE clear reference image for best results.
+ * Multiple images cause averaging/blending which degrades identity lock.
  */
 export async function generateCharacterSheet(
-  referenceImagesBase64: string | string[],
+  referenceImageBase64: string,
   mimeType: string = "image/jpeg"
 ): Promise<string> {
   const model = genAI.models;
 
-  // Normalize to array
-  const images = Array.isArray(referenceImagesBase64)
-    ? referenceImagesBase64
-    : [referenceImagesBase64];
-
-  const imageCount = images.length;
-  const prompt = imageCount > 1
-    ? `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in ALL of the attached reference images (use every photo to build the most accurate identity), ultra-detailed facial features, consistent identity across all angles.`
-    : `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image, ultra-detailed facial features, consistent identity.`;
-
-  // Build image parts for ALL reference images
-  const imageParts = images.map((imgBase64) => ({
-    inlineData: {
-      mimeType,
-      data: imgBase64,
-    },
-  }));
+  const prompt = `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image, ultra-detailed facial features, consistent identity.`;
 
   let response;
   try {
@@ -259,7 +244,12 @@ export async function generateCharacterSheet(
         {
           role: "user",
           parts: [
-            ...imageParts,
+            {
+              inlineData: {
+                mimeType,
+                data: referenceImageBase64,
+              },
+            },
             { text: prompt },
           ],
         },

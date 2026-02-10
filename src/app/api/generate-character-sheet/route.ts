@@ -4,20 +4,17 @@ import { createAdminSupabaseClient, getOrderByStripeSession } from "@/lib/supaba
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * Generate a character reference sheet from uploaded images
+ * Generate a character reference sheet from uploaded image
  * This creates a multi-angle view (front, profiles, 3/4) to lock in identity.
- * Accepts multiple imageUrls for better identity capture.
+ * IMPORTANT: Uses only ONE image for best results - multiple images cause blending.
  */
 export async function POST(request: NextRequest) {
   try {
-    const { orderId, imageUrl, imageUrls } = await request.json();
+    const { orderId, imageUrl } = await request.json();
 
-    // Support single imageUrl or array of imageUrls
-    const urls: string[] = imageUrls || (imageUrl ? [imageUrl] : []);
-
-    if (!orderId || urls.length === 0) {
+    if (!orderId || !imageUrl) {
       return NextResponse.json(
-        { error: "Missing orderId or imageUrl(s)" },
+        { error: "Missing orderId or imageUrl" },
         { status: 400 }
       );
     }
@@ -26,15 +23,13 @@ export async function POST(request: NextRequest) {
     const order = await getOrderByStripeSession(orderId);
     const realOrderId = order?.id || orderId;
 
-    console.log(`Generating character sheet for order ${realOrderId} with ${urls.length} reference image(s)...`);
+    console.log(`Generating character sheet for order ${realOrderId}...`);
 
-    // Convert ALL image URLs to base64
-    const imageResults = await Promise.all(urls.map((url: string) => imageUrlToBase64(url)));
-    const base64Images = imageResults.map((r) => r.base64);
-    const mimeType = imageResults[0].mimeType;
+    // Convert image URL to base64
+    const { base64, mimeType } = await imageUrlToBase64(imageUrl);
 
-    // Generate the character sheet using Nano Banana Pro with ALL reference images
-    const characterSheetBase64 = await generateCharacterSheet(base64Images, mimeType);
+    // Generate the character sheet using Nano Banana Pro
+    const characterSheetBase64 = await generateCharacterSheet(base64, mimeType);
 
     // Save to Supabase storage
     const supabase = createAdminSupabaseClient();
