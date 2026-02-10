@@ -540,68 +540,114 @@ export function InstantUpload({
         </div>
       )}
 
-      {/* STEP 2: Select Styles - Full width for style cards */}
+      {/* STEP 2: Select Styles - Two-column: all styles on left, selected styles on right */}
       {step === "select" && (
-        <div className="max-w-6xl mx-auto space-y-6">
+        <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="text-center">
+          <div className="text-center mb-6">
             <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Headshot Styles</h2>
             <p className="text-gray-600">
               Select styles and customize outfits, locations, and lighting.
             </p>
+
+            {/* Gender toggle */}
+            {!isDemoMode && (
+              <div className="flex items-center justify-center gap-3 mt-4">
+                <span className="text-sm text-gray-500">Showing styles for:</span>
+                <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                  <button
+                    onClick={() => setDetectedGender("male")}
+                    className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                      detectedGender === "male"
+                        ? "bg-brand-600 text-white"
+                        : "bg-white text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    Male
+                  </button>
+                  <button
+                    onClick={() => setDetectedGender("female")}
+                    className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                      detectedGender === "female"
+                        ? "bg-brand-600 text-white"
+                        : "bg-white text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
+                    Female
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
-          {/* Gender toggle */}
-          {!isDemoMode && (
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-sm text-gray-500">Showing styles for:</span>
-              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
-                <button
-                  onClick={() => setDetectedGender("male")}
-                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                    detectedGender === "male"
-                      ? "bg-brand-600 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
-                  }`}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Left: All styles (scrollable) */}
+            <div className="lg:col-span-2 lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto lg:pr-4">
+              <StyleSelector
+                maxStyles={totalImages}
+                selectedStyles={selectedStyles}
+                onStylesChange={setSelectedStyles}
+                gender={detectedGender}
+              />
+            </div>
+
+            {/* Right: Selected styles panel (sticky) */}
+            <div className="lg:sticky lg:top-24 lg:h-fit space-y-4">
+              <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  Selected Styles
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  {getAllocatedImages()} of {totalImages} headshots chosen
+                </p>
+
+                {selectedStyles.length === 0 ? (
+                  <div className="text-center py-8 text-gray-400">
+                    <ImageIcon className="h-10 w-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">Click styles on the left to add them here</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-3 gap-2 max-h-[360px] overflow-y-auto">
+                    {selectedStyles.map((style) => (
+                      <div key={style.id} className="relative group">
+                        <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+                          <img
+                            src={getPreviewImagePath(style.id, detectedGender) || ""}
+                            alt={style.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <button
+                          onClick={() => {
+                            setSelectedStyles(selectedStyles.filter(s => s.id !== style.id));
+                          }}
+                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                        <p className="text-[10px] text-gray-700 text-center mt-1 line-clamp-1">{style.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3">
+                <Button variant="outline" onClick={() => setStep("upload")} className="flex-1 cursor-pointer">
+                  <ChevronLeft className="h-4 w-4 mr-1" />Back
+                </Button>
+                <Button
+                  onClick={generateHeadshots}
+                  disabled={!isDemoMode && (selectedStyles.length === 0 || getAllocatedImages() === 0)}
+                  size="lg"
+                  className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}
                 >
-                  Male
-                </button>
-                <button
-                  onClick={() => setDetectedGender("female")}
-                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                    detectedGender === "female"
-                      ? "bg-brand-600 text-white"
-                      : "bg-white text-gray-600 hover:bg-gray-50"
-                  }`}
-                >
-                  Female
-                </button>
+                  <Sparkles className="h-5 w-5 mr-2" />
+                  {isDemoMode ? "View Demo Results" : `Generate ${getAllocatedImages()} Headshots`}
+                </Button>
               </div>
             </div>
-          )}
-
-          {/* StyleSelector - no scroll container, let it flow */}
-          <StyleSelector
-            maxStyles={totalImages}
-            selectedStyles={selectedStyles}
-            onStylesChange={setSelectedStyles}
-            gender={detectedGender}
-          />
-
-          {/* Action buttons */}
-          <div className="flex gap-3 max-w-xl mx-auto">
-            <Button variant="outline" onClick={() => setStep("upload")} className="flex-1 cursor-pointer">
-              <ChevronLeft className="h-4 w-4 mr-1" />Back
-            </Button>
-            <Button
-              onClick={generateHeadshots}
-              disabled={!isDemoMode && (selectedStyles.length === 0 || getAllocatedImages() === 0)}
-              size="lg"
-              className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}
-            >
-              <Sparkles className="h-5 w-5 mr-2" />
-              {isDemoMode ? "View Demo Results" : `Generate ${getAllocatedImages()} Headshots`}
-            </Button>
           </div>
         </div>
       )}

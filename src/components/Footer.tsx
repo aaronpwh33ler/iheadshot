@@ -7,7 +7,7 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <Link href="/" className="flex items-center gap-2 mb-4">
-              <img src="/logo/iHeadshot_Logo_v2.png" alt="iHeadshot logo" className="w-9 h-9 rounded-xl" />
+              <img src="/logo/logo-white-on-orange.png" alt="iHeadshot logo" className="w-9 h-9 rounded-xl" />
               <span className="text-xl font-bold text-gray-900">iHeadshot</span>
             </Link>
             <p className="text-gray-500 text-sm">

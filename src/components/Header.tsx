@@ -7,7 +7,7 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full bg-white/80 backdrop-blur-lg border-b border-brand-100/50">
       <div className="max-w-7xl mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link href="/" className="flex items-center gap-2">
-          <img src="/logo/iHeadshot_Logo_v2.png" alt="iHeadshot logo" className="w-9 h-9 rounded-xl" />
+          <img src="/logo/logo-white-on-orange.png" alt="iHeadshot logo" className="w-9 h-9 rounded-xl" />
           <span className="text-xl font-bold text-gray-900">iHeadshot</span>
         </Link>
 

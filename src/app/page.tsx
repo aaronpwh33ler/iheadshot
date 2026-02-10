@@ -8,7 +8,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2">
-              <img src="/logo/iHeadshot_Logo_v2.png" alt="iHeadshot logo" className="w-9 h-9 rounded-xl" />
+              <img src="/logo/logo-white-on-orange.png" alt="iHeadshot logo" className="w-9 h-9 rounded-xl" />
               <span className="text-xl font-bold">iHeadshot</span>
             </Link>
             <div className="hidden md:flex items-center gap-8">
@@ -337,7 +337,7 @@ export default function HomePage() {
               <div className="p-6 bg-gray-50 border-b border-r border-gray-200" />
               <div className="p-6 bg-brand-50 border-b border-r border-gray-200 text-center">
                 <div className="flex items-center justify-center gap-2">
-                  <img src="/logo/iHeadshot_Logo_v2.png" alt="iHeadshot" className="w-7 h-7 rounded-lg" />
+                  <img src="/logo/logo-white-on-orange.png" alt="iHeadshot" className="w-7 h-7 rounded-lg" />
                   <span className="font-bold text-brand-800">iHeadshot</span>
                 </div>
               </div>
@@ -419,7 +419,7 @@ export default function HomePage() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src="/logo/iHeadshot_Logo_v2.png" alt="iHeadshot logo" className="w-9 h-9 rounded-xl" />
+                <img src="/logo/logo-white-on-orange.png" alt="iHeadshot logo" className="w-9 h-9 rounded-xl" />
                 <span className="text-xl font-bold">iHeadshot</span>
               </div>
               <p className="text-gray-500 text-sm">Professional AI headshots in minutes. No studio, no hassle.</p>
