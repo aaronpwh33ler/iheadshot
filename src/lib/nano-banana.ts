@@ -364,8 +364,6 @@ Ultra-photorealistic, high-fidelity identity preservation, sharp facial details,
       ],
       config: {
         responseModalities: ["image", "text"],
-        // Request 2:3 portrait aspect ratio for professional headshots
-        aspectRatio: "2:3",
       },
     });
   } catch (apiError) {
