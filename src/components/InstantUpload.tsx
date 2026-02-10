@@ -280,7 +280,7 @@ export function InstantUpload({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId,
-          imageUrl: uploadedUrls[0], // Use first/best image only - multiple images cause blending
+          imageUrls: uploadedUrls, // Send ALL images for cross-referencing eye color, features, etc.
         }),
       });
 

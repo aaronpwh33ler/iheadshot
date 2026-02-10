@@ -223,18 +223,42 @@ export const HEADSHOT_STYLES: HeadshotStyle[] = [
 ];
 
 /**
- * Step 1: Generate a character reference sheet from uploaded image
+ * Step 1: Generate a character reference sheet from uploaded images
  * This creates multi-angle views to lock in the person's identity.
- * IMPORTANT: Use only ONE clear reference image for best results.
- * Multiple images cause averaging/blending which degrades identity lock.
+ * Multiple images help cross-reference details like eye color, skin tone, features.
  */
 export async function generateCharacterSheet(
-  referenceImageBase64: string,
+  referenceImagesBase64: string | string[],
   mimeType: string = "image/jpeg"
 ): Promise<string> {
   const model = genAI.models;
 
-  const prompt = `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image, ultra-detailed facial features, consistent identity.`;
+  // Normalize to array
+  const images = Array.isArray(referenceImagesBase64)
+    ? referenceImagesBase64
+    : [referenceImagesBase64];
+
+  // Multi-image prompt emphasizes CROSS-REFERENCING, not blending
+  const prompt = images.length > 1
+    ? `IMPORTANT: The attached ${images.length} photos are ALL of the SAME PERSON from different angles/lighting.
+
+Cross-reference ALL photos to identify the TRUE, CONSISTENT features:
+- Eye color: Look at ALL photos to determine the ACTUAL eye color (lighting can distort this)
+- Face shape: Identify the consistent bone structure across all angles
+- Skin tone and texture: Find the true skin color accounting for different lighting
+- Hair: Texture, color, hairline consistency
+- Unique features: Freckles, marks, wrinkles that appear in MULTIPLE photos
+
+Create a character reference sheet showing this SAME person: front view, left profile, right profile, 3/4 view. Plain white background, neutral expression. The reference sheet must be 100% consistent with ALL provided photos - this is the SAME individual.`
+    : `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image, ultra-detailed facial features, consistent identity.`;
+
+  // Build image parts for all reference images
+  const imageParts = images.map((imgBase64) => ({
+    inlineData: {
+      mimeType,
+      data: imgBase64,
+    },
+  }));
 
   let response;
   try {
@@ -244,12 +268,7 @@ export async function generateCharacterSheet(
         {
           role: "user",
           parts: [
-            {
-              inlineData: {
-                mimeType,
-                data: referenceImageBase64,
-              },
-            },
+            ...imageParts,
             { text: prompt },
           ],
         },
