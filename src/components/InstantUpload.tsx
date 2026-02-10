@@ -117,6 +117,7 @@ export function InstantUpload({
 
   // Demo mode detection
   const isDemoMode = orderId === DEMO_ORDER_ID;
+  const isTestMode = orderId.startsWith("cs_test_"); // Show debug info for Stripe test sessions
 
   const isPremium = tier === "premium";
   const isStandard = tier === "standard";
@@ -279,7 +280,7 @@ export function InstantUpload({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           orderId,
-          imageUrl: uploadedUrls[0], // Use best/first image
+          imageUrls: uploadedUrls, // Send ALL uploaded images for best identity lock
         }),
       });
 
@@ -618,16 +619,22 @@ export function InstantUpload({
             )}
           </div>
 
-          {/* Character sheet preview */}
-          {characterSheetUrl && (
+          {/* Character sheet preview — visible for test/debug sessions only */}
+          {characterSheetUrl && isTestMode && (
             <div className="bg-gradient-to-r from-brand-50 to-brand-100 p-4 rounded-xl border border-brand-200">
               <p className="text-sm font-medium text-brand-800 mb-2 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" /> Identity profile created
+                <CheckCircle2 className="h-4 w-4" /> Identity profile created (test mode)
               </p>
-              <div className="w-32 h-32 rounded-lg overflow-hidden bg-white shadow-md mx-auto">
+              <div className="w-64 h-64 rounded-lg overflow-hidden bg-white shadow-md mx-auto">
                 <img src={characterSheetUrl} alt="Character sheet" className="w-full h-full object-cover" />
               </div>
             </div>
+          )}
+          {/* For real customers, just show a subtle confirmation */}
+          {characterSheetUrl && !isTestMode && (
+            <p className="text-sm text-brand-600 flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" /> Identity profile created — generating your headshots...
+            </p>
           )}
 
           {/* Generated images grid */}

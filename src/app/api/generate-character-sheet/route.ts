@@ -5,15 +5,19 @@ import { v4 as uuidv4 } from "uuid";
 
 /**
  * Generate a character reference sheet from uploaded images
- * This creates a multi-angle view (front, profiles, 3/4) to lock in identity
+ * This creates a multi-angle view (front, profiles, 3/4) to lock in identity.
+ * Accepts multiple imageUrls for better identity capture.
  */
 export async function POST(request: NextRequest) {
   try {
-    const { orderId, imageUrl } = await request.json();
+    const { orderId, imageUrl, imageUrls } = await request.json();
 
-    if (!orderId || !imageUrl) {
+    // Support single imageUrl or array of imageUrls
+    const urls: string[] = imageUrls || (imageUrl ? [imageUrl] : []);
+
+    if (!orderId || urls.length === 0) {
       return NextResponse.json(
-        { error: "Missing orderId or imageUrl" },
+        { error: "Missing orderId or imageUrl(s)" },
         { status: 400 }
       );
     }
@@ -22,13 +26,15 @@ export async function POST(request: NextRequest) {
     const order = await getOrderByStripeSession(orderId);
     const realOrderId = order?.id || orderId;
 
-    console.log(`Generating character sheet for order ${realOrderId}...`);
+    console.log(`Generating character sheet for order ${realOrderId} with ${urls.length} reference image(s)...`);
 
-    // Convert image URL to base64
-    const { base64, mimeType } = await imageUrlToBase64(imageUrl);
+    // Convert ALL image URLs to base64
+    const imageResults = await Promise.all(urls.map((url: string) => imageUrlToBase64(url)));
+    const base64Images = imageResults.map((r) => r.base64);
+    const mimeType = imageResults[0].mimeType;
 
-    // Generate the character sheet using Nano Banana Pro
-    const characterSheetBase64 = await generateCharacterSheet(base64, mimeType);
+    // Generate the character sheet using Nano Banana Pro with ALL reference images
+    const characterSheetBase64 = await generateCharacterSheet(base64Images, mimeType);
 
     // Save to Supabase storage
     const supabase = createAdminSupabaseClient();

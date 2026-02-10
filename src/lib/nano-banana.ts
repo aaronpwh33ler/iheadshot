@@ -1,11 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize the Nano Banana Pro API
-// Model options:
-//   "gemini-2.5-flash-image" — Nano Banana (stable, production)
-//   "gemini-3-pro-image-preview" — Nano Banana Pro (preview, highest quality)
+// Initialize the Nano Banana Pro API (Gemini image generation)
+// NOTE: gemini-2.0-flash-exp-image-generation produces the best identity-locked results.
+// Do NOT change this model without testing — newer models produce inferior identity preservation.
 const genAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY || "" });
-const IMAGE_MODEL = "gemini-3-pro-image-preview";
+const IMAGE_MODEL = "gemini-2.0-flash-exp-image-generation";
 
 // Style variables for headshot generation
 export interface HeadshotStyle {
@@ -225,15 +224,32 @@ export const HEADSHOT_STYLES: HeadshotStyle[] = [
 
 /**
  * Step 1: Generate a character reference sheet from uploaded images
- * This creates multi-angle views to lock in the person's identity
+ * This creates multi-angle views to lock in the person's identity.
+ * Accepts multiple reference images for better identity capture.
  */
 export async function generateCharacterSheet(
-  referenceImageBase64: string,
+  referenceImagesBase64: string | string[],
   mimeType: string = "image/jpeg"
 ): Promise<string> {
   const model = genAI.models;
 
-  const prompt = `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image, ultra-detailed facial features, consistent identity.`;
+  // Normalize to array
+  const images = Array.isArray(referenceImagesBase64)
+    ? referenceImagesBase64
+    : [referenceImagesBase64];
+
+  const imageCount = images.length;
+  const prompt = imageCount > 1
+    ? `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in ALL of the attached reference images (use every photo to build the most accurate identity), ultra-detailed facial features, consistent identity across all angles.`
+    : `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image, ultra-detailed facial features, consistent identity.`;
+
+  // Build image parts for ALL reference images
+  const imageParts = images.map((imgBase64) => ({
+    inlineData: {
+      mimeType,
+      data: imgBase64,
+    },
+  }));
 
   let response;
   try {
@@ -243,12 +259,7 @@ export async function generateCharacterSheet(
         {
           role: "user",
           parts: [
-            {
-              inlineData: {
-                mimeType,
-                data: referenceImageBase64,
-              },
-            },
+            ...imageParts,
             { text: prompt },
           ],
         },
