@@ -1,7 +1,11 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Initialize the Nano Banana Pro API (Gemini 3 Pro Image)
+// Initialize the Nano Banana Pro API
+// Model options:
+//   "gemini-2.5-flash-image" — Nano Banana (stable, production)
+//   "gemini-3-pro-image-preview" — Nano Banana Pro (preview, highest quality)
 const genAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_AI_API_KEY || "" });
+const IMAGE_MODEL = "gemini-2.5-flash-image";
 
 // Style variables for headshot generation
 export interface HeadshotStyle {
@@ -234,7 +238,7 @@ export async function generateCharacterSheet(
   let response;
   try {
     response = await model.generateContent({
-      model: "gemini-2.0-flash-exp-image-generation",
+      model: IMAGE_MODEL,
       contents: [
         {
           role: "user",
@@ -305,7 +309,7 @@ Ultra-photorealistic, high-fidelity identity preservation, sharp facial details,
   let response;
   try {
     response = await model.generateContent({
-      model: "gemini-2.0-flash-exp-image-generation",
+      model: IMAGE_MODEL,
       contents: [
         {
           role: "user",

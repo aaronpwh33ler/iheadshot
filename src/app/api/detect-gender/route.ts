@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     // Ask Gemini to classify gender
     const model = genAI.models;
     const response = await model.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-2.5-flash",
       contents: [
         {
           role: "user",

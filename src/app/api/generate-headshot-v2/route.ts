@@ -21,6 +21,12 @@ export async function POST(request: NextRequest) {
       styleId,
       variant = 1,
       gender,
+      // Custom style overrides from frontend StyleSelector
+      customOutfit,
+      customLocation,
+      customLighting,
+      isCustomStyle,
+      customPrompt,
     } = await request.json();
 
     if (!orderId || !imageUrl || !styleId) {
@@ -30,20 +36,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find the style configuration
-    const style = HEADSHOT_STYLES.find((s) => s.id === styleId);
-    if (!style) {
+    // Find the style configuration (or build one for custom styles)
+    let style = HEADSHOT_STYLES.find((s) => s.id === styleId);
+    if (!style && !isCustomStyle) {
       return NextResponse.json(
         { error: `Unknown style: ${styleId}` },
         { status: 400 }
       );
     }
 
+    // Build effective style with custom overrides
+    if (isCustomStyle || !style) {
+      // Fully custom style
+      style = {
+        id: styleId,
+        name: "Custom Style",
+        outfit: customOutfit || "professional business attire",
+        location: customLocation || "in a professional studio",
+        lighting: customLighting || "soft natural light",
+        pose: "standing naturally",
+        expression: "confident and approachable",
+      };
+    } else if (customOutfit || customLocation || customLighting) {
+      // Preset style with user overrides
+      style = {
+        ...style,
+        outfit: customOutfit || style.outfit,
+        location: customLocation || style.location,
+        lighting: customLighting || style.lighting,
+      };
+    }
+
     // Get real order ID from stripe session
     const order = await getOrderByStripeSession(orderId);
     const realOrderId = order?.id || orderId;
 
-    console.log(`Generating ${style.name} (variant ${variant}) for order ${realOrderId}...`);
+    const styleName = isCustomStyle ? "Custom Style" : style.name;
+    console.log(`Generating ${styleName} (variant ${variant}) for order ${realOrderId}...`);
 
     // Convert reference image to base64
     const { base64: referenceBase64, mimeType } = await imageUrlToBase64(imageUrl);
