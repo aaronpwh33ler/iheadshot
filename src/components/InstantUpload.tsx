@@ -2,11 +2,11 @@
 
 import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, AlertTriangle, Crown, ChevronRight, ChevronLeft, Wand2 } from "lucide-react";
+import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, AlertTriangle, Crown, ChevronRight, ChevronLeft, Wand2, Plus, Minus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { StyleSelector, SelectedStyle, PRESET_STYLES, getPreviewImagePath } from "./StyleSelector";
+import { StyleSelector, SelectedStyle, PRESET_STYLES, getPreviewImagePath, OUTFIT_OPTIONS, LOCATION_OPTIONS, LIGHTING_OPTIONS } from "./StyleSelector";
 
 // Demo mode: Skip generation and show existing images for testing
 const DEMO_ORDER_ID = "cs_test_a10w4eDn4CKk4FR9IgZh6bhHoaQpgMVuXjLs35oUdR6xC6wnA96VUPLTUP";
@@ -540,100 +540,211 @@ export function InstantUpload({
         </div>
       )}
 
-      {/* STEP 2: Select Styles - Two-column: all styles on left, selected styles on right */}
+      {/* STEP 2: Select Styles — Two-panel: presets left, selected right */}
       {step === "select" && (
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Headshot Styles</h2>
+          <div className="text-center mb-4">
+            <h2 className="text-2xl font-bold text-gray-900 mb-1">Choose Your Headshot Styles</h2>
             <p className="text-gray-600">
-              Select styles and customize outfits, locations, and lighting.
+              Select styles and customize <strong>outfits</strong>, <strong>locations</strong>, and <strong>lighting</strong>.
+              {" "}Allocate your <strong>{totalImages}</strong> headshots across different styles.
             </p>
-
-            {/* Gender toggle */}
-            {!isDemoMode && (
-              <div className="flex items-center justify-center gap-3 mt-4">
-                <span className="text-sm text-gray-500">Showing styles for:</span>
-                <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
-                  <button
-                    onClick={() => setDetectedGender("male")}
-                    className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                      detectedGender === "male"
-                        ? "bg-brand-600 text-white"
-                        : "bg-white text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    Male
-                  </button>
-                  <button
-                    onClick={() => setDetectedGender("female")}
-                    className={`px-4 py-1.5 text-sm font-medium transition-colors ${
-                      detectedGender === "female"
-                        ? "bg-brand-600 text-white"
-                        : "bg-white text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    Female
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Left: All styles (scrollable) */}
-            <div className="lg:col-span-2 lg:max-h-[calc(100vh-220px)] lg:overflow-y-auto lg:pr-4">
-              <StyleSelector
-                maxStyles={totalImages}
-                selectedStyles={selectedStyles}
-                onStylesChange={setSelectedStyles}
-                gender={detectedGender}
-              />
+          {/* Image Allocation bar */}
+          <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 mb-6 flex flex-wrap items-center gap-x-6 gap-y-2">
+            <span className="text-sm font-medium text-gray-700">
+              Image Allocation{" "}
+              <span className={`font-bold ${getAllocatedImages() === totalImages ? "text-green-600" : getAllocatedImages() > totalImages ? "text-red-600" : "text-brand-600"}`}>
+                {getAllocatedImages()} / {totalImages} assigned
+              </span>
+            </span>
+            {selectedStyles.map(s => (
+              <span key={s.id} className="text-xs bg-gray-100 px-2 py-1 rounded-md text-gray-600">
+                {s.name} <span className="font-semibold text-gray-900">×{s.quantity}</span>
+              </span>
+            ))}
+          </div>
+
+          {/* Gender toggle */}
+          {!isDemoMode && (
+            <div className="flex items-center gap-3 mb-6">
+              <span className="text-sm text-gray-500">Showing styles for:</span>
+              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                <button
+                  onClick={() => setDetectedGender("male")}
+                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                    detectedGender === "male"
+                      ? "bg-brand-600 text-white"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  Male
+                </button>
+                <button
+                  onClick={() => setDetectedGender("female")}
+                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                    detectedGender === "female"
+                      ? "bg-brand-600 text-white"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  Female
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+            {/* Left: Style Presets browser (scrollable) */}
+            <div className="lg:col-span-2 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Style Presets</h3>
+              <div className="lg:max-h-[calc(100vh-300px)] lg:overflow-y-auto lg:pr-2 space-y-6">
+                <StyleSelector
+                  maxStyles={totalImages}
+                  selectedStyles={selectedStyles}
+                  onStylesChange={setSelectedStyles}
+                  gender={detectedGender}
+                />
+              </div>
             </div>
 
-            {/* Right: Selected styles panel (sticky) */}
-            <div className="lg:sticky lg:top-24 lg:h-fit space-y-4">
-              <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                <h3 className="font-semibold text-gray-900 mb-1">
-                  Selected Styles
-                </h3>
-                <p className="text-sm text-gray-500 mb-4">
-                  {getAllocatedImages()} of {totalImages} headshots chosen
-                </p>
+            {/* Right: Selected Styles with customization (3-card wide, scrollable) */}
+            <div className="lg:col-span-3 space-y-3">
+              <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Selected Styles</h3>
 
-                {selectedStyles.length === 0 ? (
-                  <div className="text-center py-8 text-gray-400">
-                    <ImageIcon className="h-10 w-10 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">Click styles on the left to add them here</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-3 gap-2 max-h-[360px] overflow-y-auto">
+              {selectedStyles.length === 0 ? (
+                <div className="bg-white rounded-2xl border-2 border-dashed border-gray-200 p-12 text-center">
+                  <ImageIcon className="h-12 w-12 mx-auto mb-3 text-gray-300" />
+                  <p className="text-gray-400 text-sm">Click styles on the left to add them here</p>
+                </div>
+              ) : (
+                <div className="lg:max-h-[calc(100vh-300px)] lg:overflow-y-auto lg:pr-2">
+                  <div className="grid grid-cols-2 xl:grid-cols-3 gap-4">
                     {selectedStyles.map((style) => (
-                      <div key={style.id} className="relative group">
-                        <div className="aspect-[3/4] rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
+                      <div key={style.id} className="bg-white rounded-xl border-2 border-sky-500 overflow-hidden shadow-sm">
+                        {/* Image */}
+                        <div className="relative aspect-[3/4] bg-gray-100">
                           <img
                             src={getPreviewImagePath(style.id, detectedGender) || ""}
                             alt={style.name}
                             className="w-full h-full object-cover"
                           />
+                          {/* Remove button */}
+                          <button
+                            onClick={() => setSelectedStyles(selectedStyles.filter(s => s.id !== style.id))}
+                            className="absolute top-2 right-2 w-6 h-6 bg-white/90 text-gray-500 rounded-full flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                          {/* Quantity badge */}
+                          <div className="absolute bottom-2 right-2 bg-sky-600 text-white text-xs font-bold px-2 py-1 rounded-md shadow">
+                            ×{style.quantity}
+                          </div>
                         </div>
-                        <button
-                          onClick={() => {
-                            setSelectedStyles(selectedStyles.filter(s => s.id !== style.id));
-                          }}
-                          className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                        <p className="text-[10px] text-gray-700 text-center mt-1 line-clamp-1">{style.name}</p>
+
+                        {/* Card body */}
+                        <div className="p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-semibold text-gray-900 text-sm truncate">{style.name}</h4>
+                            <CheckCircle2 className="h-5 w-5 text-sky-500 shrink-0" />
+                          </div>
+
+                          {/* Outfit dropdown */}
+                          <div>
+                            <label className="text-[10px] text-gray-400 uppercase tracking-wide">Outfit</label>
+                            <select
+                              value={style.outfit}
+                              onChange={(e) => {
+                                setSelectedStyles(selectedStyles.map(s =>
+                                  s.id === style.id ? { ...s, outfit: e.target.value } : s
+                                ));
+                              }}
+                              className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none"
+                            >
+                              {OUTFIT_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Location dropdown */}
+                          <div>
+                            <label className="text-[10px] text-gray-400 uppercase tracking-wide">Location</label>
+                            <select
+                              value={style.location}
+                              onChange={(e) => {
+                                setSelectedStyles(selectedStyles.map(s =>
+                                  s.id === style.id ? { ...s, location: e.target.value } : s
+                                ));
+                              }}
+                              className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none"
+                            >
+                              {LOCATION_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Lighting dropdown */}
+                          <div>
+                            <label className="text-[10px] text-gray-400 uppercase tracking-wide">Lighting</label>
+                            <select
+                              value={style.lighting}
+                              onChange={(e) => {
+                                setSelectedStyles(selectedStyles.map(s =>
+                                  s.id === style.id ? { ...s, lighting: e.target.value } : s
+                                ));
+                              }}
+                              className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white text-gray-700 focus:border-sky-500 focus:ring-1 focus:ring-sky-500 outline-none"
+                            >
+                              {LIGHTING_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {/* Quantity controls */}
+                          <div className="flex items-center justify-center gap-3 pt-1">
+                            <button
+                              onClick={() => {
+                                if (style.quantity <= 1) {
+                                  setSelectedStyles(selectedStyles.filter(s => s.id !== style.id));
+                                } else {
+                                  setSelectedStyles(selectedStyles.map(s =>
+                                    s.id === style.id ? { ...s, quantity: s.quantity - 1 } : s
+                                  ));
+                                }
+                              }}
+                              className="w-7 h-7 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100 transition-colors"
+                            >
+                              <Minus className="h-3 w-3 text-gray-600" />
+                            </button>
+                            <span className="text-sm font-bold text-gray-900 min-w-[2rem] text-center">×{style.quantity}</span>
+                            <button
+                              onClick={() => {
+                                if (getAllocatedImages() < totalImages) {
+                                  setSelectedStyles(selectedStyles.map(s =>
+                                    s.id === style.id ? { ...s, quantity: s.quantity + 1 } : s
+                                  ));
+                                }
+                              }}
+                              disabled={getAllocatedImages() >= totalImages}
+                              className="w-7 h-7 rounded-full border border-sky-500 bg-sky-500 text-white flex items-center justify-center hover:bg-sky-600 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              <Plus className="h-3 w-3" />
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Action buttons */}
-              <div className="flex gap-3">
+              <div className="flex gap-3 pt-2">
                 <Button variant="outline" onClick={() => setStep("upload")} className="flex-1 cursor-pointer">
                   <ChevronLeft className="h-4 w-4 mr-1" />Back
                 </Button>
