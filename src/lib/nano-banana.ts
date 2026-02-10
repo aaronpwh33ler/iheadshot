@@ -238,7 +238,7 @@ export async function generateCharacterSheet(
     ? referenceImagesBase64
     : [referenceImagesBase64];
 
-  // Multi-image prompt emphasizes CROSS-REFERENCING, not blending
+  // Multi-image prompt emphasizes CROSS-REFERENCING and PHOTOREALISM
   const prompt = images.length > 1
     ? `IMPORTANT: The attached ${images.length} photos are ALL of the SAME PERSON from different angles/lighting.
 
@@ -249,8 +249,19 @@ Cross-reference ALL photos to identify the TRUE, CONSISTENT features:
 - Hair: Texture, color, hairline consistency
 - Unique features: Freckles, marks, wrinkles that appear in MULTIPLE photos
 
-Create a character reference sheet showing this SAME person: front view, left profile, right profile, 3/4 view. Plain white background, neutral expression. The reference sheet must be 100% consistent with ALL provided photos - this is the SAME individual.`
-    : `Create a character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image, ultra-detailed facial features, consistent identity.`;
+Create a PHOTOREALISTIC character reference sheet showing this SAME person: front view, left profile, right profile, 3/4 view. Plain white background, neutral expression.
+
+CRITICAL STYLE REQUIREMENTS:
+- PHOTOREALISTIC only - like a real photograph, NOT a cartoon, illustration, drawing, or digital art
+- Real skin texture with pores, natural lighting on skin
+- Photo-quality detail matching the input photos
+- NO cartoon style, NO illustration style, NO artistic rendering
+- Output must look like actual photographs of the person
+
+The reference sheet must be 100% consistent with ALL provided photos - this is the SAME individual.`
+    : `Create a PHOTOREALISTIC character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image.
+
+CRITICAL: Output must be PHOTOREALISTIC - like real photographs, NOT cartoon, NOT illustration, NOT digital art. Real skin texture, photo-quality detail, natural lighting. Must look like actual photos of this person.`;
 
   // Build image parts for all reference images
   const imageParts = images.map((imgBase64) => ({
