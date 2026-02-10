@@ -2,11 +2,11 @@
 
 import { useCallback, useState, useEffect } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, AlertTriangle, Crown, ChevronRight, ChevronLeft, Wand2, Camera, Download, Lock } from "lucide-react";
+import { Upload, X, Sparkles, AlertCircle, Loader2, CheckCircle2, Image as ImageIcon, AlertTriangle, Crown, ChevronRight, ChevronLeft, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { StyleSelector, SelectedStyle, PRESET_STYLES, getPreviewImagePath } from "./StyleSelector";
+import { StyleSelector, SelectedStyle, PRESET_STYLES } from "./StyleSelector";
 
 // Demo mode: Skip generation and show existing images for testing
 const DEMO_ORDER_ID = "cs_test_a10w4eDn4CKk4FR9IgZh6bhHoaQpgMVuXjLs35oUdR6xC6wnA96VUPLTUP";
@@ -122,18 +122,6 @@ export function InstantUpload({
   const isStandard = tier === "standard";
   const totalImages = headshotCount;
 
-  // Demo mode: Create fake GeneratedImage[] from selected styles using preview images
-  const generateDemoImages = () => {
-    const demoImages: GeneratedImage[] = selectedStyles.map((style) => ({
-      id: style.id,
-      style: style.id,
-      styleName: style.name,
-      imageUrl: getPreviewImagePath(style.id, detectedGender) || `/style-previews/male/${style.id}.jpg`,
-      quality: "standard" as const,
-    }));
-    return demoImages;
-  };
-
   // In demo mode, fetch existing images from database
   const loadDemoImages = async () => {
     setLoadingDemoImages(true);
@@ -223,7 +211,7 @@ export function InstantUpload({
           const errorData = await urlResponse.json().catch(() => ({}));
           throw new Error(errorData.error || `Upload failed (${urlResponse.status})`);
         }
-        const { signedUrl, token, publicUrl } = await urlResponse.json();
+        const { signedUrl, publicUrl } = await urlResponse.json();
 
         // Step 2: Upload directly to Supabase Storage (bypasses Vercel body limit)
         const uploadResponse = await fetch(signedUrl, {
@@ -266,17 +254,11 @@ export function InstantUpload({
 
   // Main generation workflow with character sheet
   const generateHeadshots = async () => {
-    // Demo mode: create fake GeneratedImage[] from selected styles using preview images
+    // Demo mode: skip generation, load existing images
     if (isDemoMode) {
       setStep("generate");
-      setGenerating(true);
-      try {
-        const demoImages = generateDemoImages();
-        setGeneratedImages(demoImages);
-        setTimeout(() => onGenerationComplete(demoImages), 500);
-      } finally {
-        setGenerating(false);
-      }
+      setLoadingDemoImages(true);
+      await loadDemoImages();
       return;
     }
 
@@ -406,446 +388,296 @@ export function InstantUpload({
 
   // Tier styling
   const tierGradient = isPremium
-    ? "from-amber-500 to-brand-600"
+    ? "from-amber-500 to-orange-600"
     : isStandard
-    ? "from-brand-500 to-brand-600"
-    : "from-brand-400 to-brand-600";
+    ? "from-purple-500 to-blue-600"
+    : "from-blue-500 to-purple-600";
 
   const tierBg = isPremium
-    ? "bg-gradient-to-br from-amber-50 to-brand-50 border-amber-200"
+    ? "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200"
     : isStandard
-    ? "bg-gradient-to-br from-brand-50 to-warm-50 border-brand-200"
-    : "bg-gradient-to-br from-brand-50 to-warm-50 border-brand-200";
+    ? "bg-gradient-to-br from-purple-50 to-blue-50 border-purple-200"
+    : "bg-gradient-to-br from-blue-50 to-purple-50 border-blue-200";
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* App header — minimal, focused on the workflow */}
-      <nav className="sticky top-0 z-40 bg-white/80 backdrop-blur-lg border-b border-brand-100/50">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
-          {/* Logo — links home */}
-          <a href="/" className="flex items-center gap-2">
-            <img src="/logo/logo-white-on-orange.png" alt="iHeadshot" className="w-7 h-7 rounded-lg" />
-            <span className="font-bold text-gray-900">iHeadshot</span>
-          </a>
+    <div className="space-y-6">
+      {/* Global Header: Tier badge + Step indicator */}
+      <div className="text-center space-y-4">
+        <Badge className={`bg-gradient-to-r ${tierGradient} text-white border-0 px-4 py-1.5 text-sm`}>
+          {isPremium && <Crown className="h-3.5 w-3.5 mr-1.5" />}
+          {tier.charAt(0).toUpperCase() + tier.slice(1)} Package — {totalImages} Headshots
+        </Badge>
 
-          {/* Step progress — centered */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Step 1 */}
-            <div className="flex items-center gap-1.5">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${step === "upload" ? "bg-brand-600 text-white" : "bg-green-500 text-white"}`}>
-                {step === "upload" ? "1" : "✓"}
-              </div>
-              <span className={`hidden sm:inline text-xs font-medium ${step === "upload" ? "text-brand-700" : "text-green-600"}`}>Upload</span>
-            </div>
-
-            <div className={`w-6 sm:w-10 h-0.5 rounded ${(step === "select" || step === "generate") ? "bg-green-400" : "bg-gray-200"}`} />
-
-            {/* Step 2 */}
-            <div className="flex items-center gap-1.5">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${step === "select" ? "bg-brand-600 text-white" : step === "generate" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"}`}>
-                {step === "generate" ? "✓" : "2"}
-              </div>
-              <span className={`hidden sm:inline text-xs font-medium ${step === "select" ? "text-brand-700" : step === "generate" ? "text-green-600" : "text-gray-400"}`}>Styles</span>
-            </div>
-
-            <div className={`w-6 sm:w-10 h-0.5 rounded ${step === "generate" ? "bg-green-400" : "bg-gray-200"}`} />
-
-            {/* Step 3 */}
-            <div className="flex items-center gap-1.5">
-              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold transition-colors ${step === "generate" ? "bg-brand-600 text-white" : "bg-gray-200 text-gray-500"}`}>
-                3
-              </div>
-              <span className={`hidden sm:inline text-xs font-medium ${step === "generate" ? "text-brand-700" : "text-gray-400"}`}>Results</span>
-            </div>
+        {/* Step indicator */}
+        <div className="flex items-center justify-center gap-2 text-sm">
+          <div className={`flex items-center gap-1.5 ${step === "upload" ? "text-blue-600 font-medium" : "text-gray-400"}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${step === "upload" ? "bg-blue-600 text-white" : "bg-green-500 text-white"}`}>
+              {step === "upload" ? "1" : "✓"}
+            </span>
+            Upload
           </div>
-
-          {/* Help link */}
-          <a href="/#faq" className="text-xs text-gray-400 hover:text-brand-600 transition-colors">
-            Need help?
-          </a>
+          <ChevronRight className="h-4 w-4 text-gray-300" />
+          <div className={`flex items-center gap-1.5 ${step === "select" ? "text-blue-600 font-medium" : "text-gray-400"}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${step === "select" ? "bg-blue-600 text-white" : step === "generate" ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"}`}>
+              {step === "generate" ? "✓" : "2"}
+            </span>
+            Choose Styles
+          </div>
+          <ChevronRight className="h-4 w-4 text-gray-300" />
+          <div className={`flex items-center gap-1.5 ${step === "generate" ? "text-blue-600 font-medium" : "text-gray-400"}`}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium ${step === "generate" ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-500"}`}>3</span>
+            Generate
+          </div>
         </div>
-      </nav>
+      </div>
 
-      {/* STEP 1: Upload - Gender selection for demo, file upload for real */}
+      {/* STEP 1: Upload - Narrow card */}
       {step === "upload" && (
-        <div className="max-w-2xl mx-auto px-6 py-12">
-          <div className="space-y-8">
-            {/* Header */}
-            <div className="text-center">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Upload Your Photos</h1>
-              <p className="text-gray-600">Upload 1–5 clear, front-facing photos for best results</p>
-            </div>
-
-            {isDemoMode ? (
-              // Demo mode: Gender selection cards
-              <div className="space-y-6">
-                <p className="text-center text-gray-600 font-medium">Select your gender to view demo styles:</p>
-                <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
-                  <button
-                    onClick={() => setDetectedGender("male")}
-                    className={`p-6 rounded-2xl border-2 transition-all cursor-pointer ${
-                      detectedGender === "male"
-                        ? "border-brand-600 bg-brand-50 shadow-md"
-                        : "border-gray-200 bg-white hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">👨</div>
-                    <p className="font-semibold text-gray-900">Male</p>
-                  </button>
-                  <button
-                    onClick={() => setDetectedGender("female")}
-                    className={`p-6 rounded-2xl border-2 transition-all cursor-pointer ${
-                      detectedGender === "female"
-                        ? "border-brand-600 bg-brand-50 shadow-md"
-                        : "border-gray-200 bg-white hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="text-2xl mb-2">👩</div>
-                    <p className="font-semibold text-gray-900">Female</p>
-                  </button>
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
+            {files.length === 0 ? (
+              <div className="space-y-4">
+                <div
+                  {...getRootProps()}
+                  className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${isDragActive ? "border-blue-500 bg-blue-50 scale-[1.02]" : "border-gray-300 hover:border-blue-400 hover:bg-gray-50"}`}
+                >
+                  <input {...getInputProps()} />
+                  <div className={`w-20 h-20 bg-gradient-to-br ${tierGradient} rounded-full flex items-center justify-center mx-auto mb-6`}>
+                    <Upload className="h-10 w-10 text-white" />
+                  </div>
+                  <p className="text-xl font-semibold text-gray-900 mb-2">
+                    {isDragActive ? "Drop your photos here" : "Upload your photos"}
+                  </p>
+                  <p className="text-gray-500 mb-4">1-5 photos for best results</p>
+                  <p className="text-sm text-gray-400">JPG, PNG, or WebP up to 10MB each</p>
                 </div>
 
-                <Button
-                  onClick={() => {
-                    setStep("select");
-                    setSelectedStyles([]);
-                  }}
-                  size="lg"
-                  className="w-full py-6 text-lg bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl"
-                >
-                  Continue to Styles <ChevronRight className="h-5 w-5 ml-2" />
-                </Button>
+                {/* Demo mode: Skip button */}
+                {isDemoMode && (
+                  <Button onClick={handleUploadComplete} size="lg" className={`w-full py-6 text-lg bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
+                    Skip to Styles (Demo Mode)<ChevronRight className="h-5 w-5 ml-2" />
+                  </Button>
+                )}
               </div>
             ) : (
-              // Real mode: File upload
-              <div className="space-y-6">
-                {files.length === 0 ? (
-                  <div className="space-y-4">
-                    <div
-                      {...getRootProps()}
-                      className={`border-2 border-dashed rounded-2xl p-12 text-center cursor-pointer transition-all ${
-                        isDragActive ? "border-brand-600 bg-brand-50" : "border-gray-300 hover:border-brand-400 hover:bg-gray-50"
-                      }`}
-                    >
-                      <input {...getInputProps()} />
-                      <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-lg font-semibold text-gray-900 mb-2">
-                        {isDragActive ? "Drop your photos here" : "Drag & drop your photos here"}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-4">or click to browse • up to 5 photos</p>
-                    </div>
-
-                    <Button
-                      {...getRootProps()}
-                      asChild
-                      className="w-full py-6 text-base bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl"
-                    >
-                      <label>
-                        <input {...getInputProps()} style={{ display: "none" }} />
-                        Choose Photos
-                      </label>
-                    </Button>
+              <div className="space-y-4">
+                {overLimitWarning && (
+                  <div className="flex items-center gap-2 text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">
+                    <AlertTriangle className="h-5 w-5" />
+                    <p className="text-sm">Maximum 5 photos allowed.</p>
+                    <button onClick={() => setOverLimitWarning(false)} className="ml-auto"><X className="h-4 w-4" /></button>
                   </div>
-                ) : (
-                  <div className="space-y-6">
-                    {/* Photo grid */}
-                    <div className="grid grid-cols-5 gap-3 max-w-md mx-auto">
-                      {files.map((file, index) => (
-                        <div key={file.name} className="relative group">
-                          <div className="aspect-square rounded-xl overflow-hidden bg-gray-100 shadow-md border-2 border-green-400">
-                            <img src={file.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
-                          </div>
-                          <button
-                            onClick={() => removeFile(index)}
-                            className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
-                      ))}
-                      {files.length < 5 && (
-                        <div
-                          {...getRootProps()}
-                          className="aspect-square rounded-xl border-2 border-dashed border-gray-300 hover:border-brand-400 flex flex-col items-center justify-center cursor-pointer transition-colors"
-                        >
-                          <input {...getInputProps()} />
-                          <Upload className="h-5 w-5 text-gray-400 mb-1" />
-                          <span className="text-xs text-gray-400">Add</span>
-                        </div>
+                )}
+
+                <div className="flex flex-wrap gap-3 justify-center">
+                  {files.map((file, index) => (
+                    <div key={index} className="relative group">
+                      <div className="w-24 h-24 rounded-xl overflow-hidden bg-gray-100 shadow-md">
+                        <img src={file.preview} alt={`Photo ${index + 1}`} className="w-full h-full object-cover" />
+                      </div>
+                      {!uploading && (
+                        <button onClick={() => removeFile(index)} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1.5 shadow-lg hover:bg-red-600 opacity-0 group-hover:opacity-100">
+                          <X className="h-3 w-3" />
+                        </button>
                       )}
                     </div>
-                    <p className="text-center text-sm text-green-600 font-medium">
-                      {files.length} photo{files.length !== 1 ? "s" : ""} selected
-                      <span className="text-gray-400 font-normal"> • {5 - files.length} more allowed</span>
-                    </p>
-                  </div>
-                )}
-
-                {/* Photo tips */}
-                <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto">
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">Good lighting</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">Face visible</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <CheckCircle2 className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">Neutral expression</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <X className="h-5 w-5 text-red-500 mt-0.5 flex-shrink-0" />
-                    <span className="text-sm text-gray-700">Avoid heavy filters</span>
-                  </div>
-                </div>
-
-                {/* Sticky bottom bar */}
-                {files.length > 0 && (
-                  <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4">
-                    <div className="max-w-2xl mx-auto flex items-center gap-4">
-                      <div className="flex gap-2">
-                        {files.slice(0, 3).map((file, i) => (
-                          <div key={file.name} className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200">
-                            <img src={file.preview} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
-                          </div>
-                        ))}
-                        {files.length > 3 && (
-                          <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center">
-                            <span className="text-xs font-semibold text-gray-500">+{files.length - 3}</span>
-                          </div>
-                        )}
-                      </div>
-                      <Button
-                        onClick={handleUploadComplete}
-                        disabled={uploading}
-                        className="flex-1 py-6 text-base bg-brand-600 hover:bg-brand-700 text-white cursor-pointer rounded-xl"
-                      >
-                        {uploading ? (
-                          <>
-                            <Loader2 className="h-5 w-5 mr-2 animate-spin" /> Uploading {files.length} photo{files.length !== 1 ? "s" : ""}...
-                          </>
-                        ) : (
-                          <>
-                            Continue with {files.length} photo{files.length !== 1 ? "s" : ""} <ChevronRight className="h-5 w-5 ml-2" />
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* STEP 2: Select Styles - 2/3 + 1/3 grid layout */}
-      {step === "select" && (
-        <div className="px-6 py-12">
-          <div className="max-w-7xl mx-auto grid grid-cols-3 gap-8">
-            {/* Left 2/3: StyleSelector */}
-            <div className="col-span-2">
-              <StyleSelector
-                maxStyles={totalImages}
-                selectedStyles={selectedStyles}
-                onStylesChange={setSelectedStyles}
-                gender={detectedGender}
-              />
-            </div>
-
-            {/* Right 1/3: Sticky sidebar */}
-            <div className="sticky top-20 h-fit space-y-6">
-              {/* Your Photos section */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Your Photos <span className="text-gray-400 font-normal text-sm">{files.length}/5</span></h3>
-                {files.length > 0 ? (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-3 gap-2">
-                      {files.map((file, i) => (
-                        <div key={file.name} className="aspect-square rounded-lg overflow-hidden bg-gray-100 shadow-sm">
-                          <img src={file.preview} alt={`Photo ${i + 1}`} className="w-full h-full object-cover" />
-                        </div>
-                      ))}
-                    </div>
-                    <button
-                      onClick={() => setStep("upload")}
-                      className="text-sm text-brand-700 hover:text-brand-800 font-medium"
-                    >
-                      Change photos
-                    </button>
-                  </div>
-                ) : (
-                  <div className="w-full aspect-square rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-                    <ImageIcon className="h-8 w-8 text-gray-400" />
-                  </div>
-                )}
-              </div>
-
-              {/* Gender toggle */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">Gender</h3>
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setDetectedGender("male")}
-                    className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-                      detectedGender === "male"
-                        ? "bg-brand-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    Male
-                  </button>
-                  <button
-                    onClick={() => setDetectedGender("female")}
-                    className={`flex-1 py-2 px-3 rounded-lg font-medium text-sm transition-colors ${
-                      detectedGender === "female"
-                        ? "bg-brand-600 text-white"
-                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }`}
-                  >
-                    Female
-                  </button>
-                </div>
-              </div>
-
-              {/* Selected Styles */}
-              <div className="bg-white border border-gray-200 rounded-2xl p-6">
-                <h3 className="font-semibold text-gray-900 mb-4">
-                  Selected Styles <span className="text-gray-500 font-normal">{selectedStyles.length} / {totalImages}</span>
-                </h3>
-                <div className="grid grid-cols-5 gap-2">
-                  {selectedStyles.map((style) => (
-                    <div key={style.id} className="aspect-square rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-gray-200 hover:border-brand-400 transition-colors group cursor-pointer">
-                      <img
-                        src={getPreviewImagePath(style.id, detectedGender)}
-                        alt={style.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform"
-                      />
-                    </div>
                   ))}
-                </div>
-              </div>
-
-              {/* Generate button card */}
-              <div className="bg-gray-900 text-white rounded-2xl p-6 space-y-4">
-                <div className="space-y-2">
-                  <p className="text-xs font-semibold text-gray-400">ORDER SUMMARY</p>
-                  <h4 className="text-lg font-bold">{tier.charAt(0).toUpperCase() + tier.slice(1)} Package</h4>
-                  <p className="text-sm text-gray-400">{selectedStyles.length} styles selected</p>
-                </div>
-
-                <Button
-                  onClick={generateHeadshots}
-                  disabled={selectedStyles.length === 0}
-                  className="w-full py-6 bg-white text-gray-900 hover:bg-gray-100 font-semibold rounded-xl cursor-pointer"
-                >
-                  {isDemoMode ? "View Demo Results" : "Generate Headshots"}
-                </Button>
-
-                <div className="flex items-center justify-center gap-2 text-xs text-gray-400 pt-2 border-t border-gray-800">
-                  <Lock className="h-3.5 w-3.5" />
-                  <span>Powered by AI</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: Generation - Results grid */}
-      {step === "generate" && (
-        <div className="px-6 py-12">
-          <div className="max-w-6xl mx-auto space-y-8">
-            {/* Header */}
-            <div className="space-y-2">
-              <h1 className="text-3xl font-bold text-gray-900">Your Headshots</h1>
-              <p className="text-gray-600">{generatedImages.length} professional styles ready to download</p>
-            </div>
-
-            {/* Phase indicator during generation */}
-            {generating && generationPhase !== "idle" && (
-              <div className="bg-brand-50 border border-brand-200 rounded-2xl p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-semibold text-gray-900">
-                    {generationPhase === "character-sheet" ? "🔍 Analyzing your face..." : "✨ Creating headshots..."}
-                  </span>
-                  <span className="text-sm text-gray-600">{generatedImages.length} / {selectedStyles.length}</span>
-                </div>
-                <Progress
-                  value={generationPhase === "character-sheet" ? 5 : (generatedImages.length / selectedStyles.length) * 100}
-                  className="h-2"
-                />
-                {currentGenerating && (
-                  <p className="text-sm text-gray-600 mt-3 flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Creating: {getStyleInfo(currentGenerating).name}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Download All button */}
-            {generatedImages.length > 0 && !generating && (
-              <Button className="bg-gray-900 hover:bg-gray-800 text-white px-6 py-3 rounded-xl cursor-pointer flex items-center gap-2">
-                <Download className="h-5 w-5" />
-                Download All
-              </Button>
-            )}
-
-            {/* Generated images grid */}
-            {generatedImages.length > 0 && (
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                {generatedImages.map((image) => (
-                  <div key={image.id} className="group">
-                    <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-gray-100 shadow-lg mb-3">
-                      <img src={image.imageUrl} alt={image.styleName} className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
-                        <Button className="opacity-0 group-hover:opacity-100 bg-white text-gray-900 hover:bg-gray-100 p-2 rounded-full transition-opacity cursor-pointer">
-                          <Download className="h-5 w-5" />
-                        </Button>
-                      </div>
+                  {files.length < 5 && !uploading && (
+                    <div {...getRootProps()} className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-gray-50">
+                      <input {...getInputProps()} />
+                      <ImageIcon className="h-6 w-6 text-gray-400 mb-1" />
+                      <span className="text-xs text-gray-400">Add more</span>
                     </div>
-                    <p className="font-semibold text-gray-900 text-sm">{image.styleName}</p>
-                    <p className="text-xs text-gray-500">HD Quality</p>
-                  </div>
-                ))}
-                {currentGenerating && (
-                  <div className="aspect-[3/4] rounded-2xl bg-gray-100 flex flex-col items-center justify-center border-2 border-dashed border-gray-300 shadow-lg">
-                    <Loader2 className="h-8 w-8 text-gray-400 animate-spin mb-2" />
-                    <p className="text-xs text-gray-500 text-center px-2">Generating...</p>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
 
-            {/* Initial loading state */}
-            {generating && generatedImages.length === 0 && generationPhase === "character-sheet" && (
-              <div className="text-center py-20">
-                <Loader2 className="h-12 w-12 text-brand-600 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600 font-medium">Analyzing your photo...</p>
-              </div>
-            )}
+                <div className="text-center text-sm text-gray-600">
+                  <span className="font-medium">{files.length}</span> photo{files.length !== 1 ? "s" : ""} selected
+                  {files.length >= 3 && <span className="text-green-600 ml-2 inline-flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> Great!</span>}
+                </div>
 
-            {generating && generatedImages.length === 0 && generationPhase === "generating" && (
-              <div className="text-center py-20">
-                <Loader2 className="h-12 w-12 text-brand-600 animate-spin mx-auto mb-4" />
-                <p className="text-gray-600 font-medium">Creating your headshots...</p>
+                <Button onClick={handleUploadComplete} disabled={uploading} size="lg" className={`w-full py-6 text-lg bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
+                  {uploading ? <><Loader2 className="h-5 w-5 mr-2 animate-spin" />Uploading...</> : <>Continue to Style Selection<ChevronRight className="h-5 w-5 ml-2" /></>}
+                </Button>
               </div>
             )}
+          </div>
+
+          {/* Tips */}
+          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 mt-6">
+            <h3 className="font-semibold text-gray-900 mb-4">For best results:</h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div className="space-y-2">
+                <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Clear, well-lit face</p>
+                <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Front-facing or slight angle</p>
+                <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Multiple photos (2-5 best)</p>
+              </div>
+              <div className="space-y-2">
+                <p className="flex items-center gap-2 text-red-600"><span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>No sunglasses</p>
+                <p className="flex items-center gap-2 text-red-600"><span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>No heavy filters</p>
+                <p className="flex items-center gap-2 text-red-600"><span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>No group photos</p>
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      {/* Error message */}
+      {/* STEP 2: Select Styles - Full width for style cards */}
+      {step === "select" && (
+        <div className="max-w-6xl mx-auto space-y-6">
+          {/* Header */}
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Choose Your Headshot Styles</h2>
+            <p className="text-gray-600">
+              Select styles and customize outfits, locations, and lighting.
+            </p>
+          </div>
+
+          {/* Gender toggle */}
+          {!isDemoMode && (
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-sm text-gray-500">Showing styles for:</span>
+              <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                <button
+                  onClick={() => setDetectedGender("male")}
+                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                    detectedGender === "male"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  Male
+                </button>
+                <button
+                  onClick={() => setDetectedGender("female")}
+                  className={`px-4 py-1.5 text-sm font-medium transition-colors ${
+                    detectedGender === "female"
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-600 hover:bg-gray-50"
+                  }`}
+                >
+                  Female
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* StyleSelector - no scroll container, let it flow */}
+          <StyleSelector
+            totalImages={totalImages}
+            selectedStyles={selectedStyles}
+            onStylesChange={setSelectedStyles}
+            gender={detectedGender}
+          />
+
+          {/* Action buttons */}
+          <div className="flex gap-3 max-w-xl mx-auto">
+            <Button variant="outline" onClick={() => setStep("upload")} className="flex-1 cursor-pointer">
+              <ChevronLeft className="h-4 w-4 mr-1" />Back
+            </Button>
+            <Button
+              onClick={generateHeadshots}
+              disabled={!isDemoMode && (selectedStyles.length === 0 || getAllocatedImages() === 0)}
+              size="lg"
+              className={`flex-[2] py-6 bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}
+            >
+              <Sparkles className="h-5 w-5 mr-2" />
+              {isDemoMode ? "View Demo Results" : `Generate ${getAllocatedImages()} Headshots`}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* STEP 3: Generation - Medium width */}
+      {step === "generate" && (
+        <div className="max-w-4xl mx-auto space-y-6">
+          {/* Phase indicator */}
+          <div className={`p-4 rounded-xl border ${tierBg}`}>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-medium text-gray-900">
+                {generationPhase === "character-sheet" ? "🔍 Analyzing your face..." : generationPhase === "generating" ? "✨ Creating headshots..." : generating ? "Processing..." : "Generation complete!"}
+              </span>
+              <span className="text-sm text-gray-600">{generatedImages.length} / {totalImages}</span>
+            </div>
+            <Progress value={generationPhase === "character-sheet" ? 5 : (generatedImages.length / totalImages) * 100} className="h-2" />
+
+            {generationPhase === "character-sheet" && (
+              <div className="mt-3 p-3 bg-purple-50 rounded-lg border border-purple-200">
+                <p className="text-sm text-purple-800 flex items-center gap-2">
+                  <Wand2 className="h-4 w-4 animate-pulse" />
+                  <strong>Creating identity profile...</strong> This captures your face from multiple angles for perfect consistency.
+                </p>
+              </div>
+            )}
+
+            {currentGenerating && generationPhase === "generating" && (
+              <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Creating: {getStyleInfo(currentGenerating).preview} {getStyleInfo(currentGenerating).name} {currentVariant > 1 ? `#${currentVariant}` : ""}
+              </p>
+            )}
+          </div>
+
+          {/* Character sheet preview */}
+          {characterSheetUrl && (
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-4 rounded-xl border border-purple-200">
+              <p className="text-sm font-medium text-purple-800 mb-2 flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4" /> Identity profile created
+              </p>
+              <div className="w-32 h-32 rounded-lg overflow-hidden bg-white shadow-md mx-auto">
+                <img src={characterSheetUrl} alt="Character sheet" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          )}
+
+          {/* Generated images grid */}
+          {generatedImages.length > 0 && (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {generatedImages.map((image) => (
+                <div key={image.id} className="relative group animate-fade-in">
+                  <div className="aspect-[3/4] rounded-xl overflow-hidden bg-gray-100 shadow-lg">
+                    <img src={image.imageUrl} alt={image.styleName} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-3 rounded-b-xl">
+                    <p className="text-white text-sm font-medium">{image.styleName}</p>
+                  </div>
+                  <div className="absolute top-2 right-2 bg-green-500 text-white rounded-full p-1">
+                    <CheckCircle2 className="h-4 w-4" />
+                  </div>
+                </div>
+              ))}
+              {currentGenerating && (
+                <div className="aspect-[3/4] rounded-xl bg-gray-100 flex flex-col items-center justify-center border-2 border-dashed border-gray-300">
+                  <Loader2 className="h-8 w-8 text-gray-400 animate-spin mb-2" />
+                  <p className="text-2xl mb-1">{getStyleInfo(currentGenerating).preview}</p>
+                  <p className="text-xs text-gray-500 text-center px-2">{getStyleInfo(currentGenerating).name}{currentVariant > 1 ? ` #${currentVariant}` : ""}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {generating && generatedImages.length === 0 && generationPhase !== "character-sheet" && (
+            <div className="text-center py-12">
+              <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Starting generation...</p>
+            </div>
+          )}
+
+          {/* Demo mode loading */}
+          {loadingDemoImages && (
+            <div className="text-center py-12">
+              <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading demo images...</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Error */}
       {error && (
-        <div className="fixed bottom-6 left-6 right-6 max-w-md flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl shadow-lg">
-          <AlertCircle className="h-5 w-5 flex-shrink-0" />
+        <div className="max-w-2xl mx-auto flex items-center gap-2 text-red-600 bg-red-50 p-4 rounded-xl">
+          <AlertCircle className="h-5 w-5" />
           <p className="text-sm">{error}</p>
-          <button onClick={() => setError(null)} className="ml-auto">
-            <X className="h-4 w-4" />
-          </button>
         </div>
       )}
     </div>
