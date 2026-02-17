@@ -315,11 +315,11 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                 </Badge>
               )}
 
-              {/* Quality badge */}
-              {image.quality === "premium" && !isUpscaled && (
+              {/* Tier badge */}
+              {!isUpscaled && (
                 <Badge className="absolute top-2 left-2 bg-brand-600">
                   <Sparkles className="h-3 w-3 mr-1" />
-                  Premium
+                  {tier.charAt(0).toUpperCase() + tier.slice(1)}
                 </Badge>
               )}
 
@@ -697,10 +697,10 @@ export function ResultsGallery({ images, orderId, tier = "basic" }: ResultsGalle
                   4K Enhanced
                 </Badge>
               )}
-              {localImages[selectedIndex].quality === "premium" && !upscaledIds.has(localImages[selectedIndex].id) && (
+              {!upscaledIds.has(localImages[selectedIndex].id) && (
                 <Badge className="absolute top-4 left-4 bg-brand-600">
                   <Sparkles className="h-3 w-3 mr-1" />
-                  Premium Quality
+                  {tier.charAt(0).toUpperCase() + tier.slice(1)}
                 </Badge>
               )}
             </div>

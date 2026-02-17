@@ -296,36 +296,7 @@ export function StyleSelector({ totalImages, selectedStyles, onStylesChange, gen
               );
             })}
 
-            {/* Custom card at the bottom */}
-            <div className="bg-white rounded-lg border-2 border-dashed border-brand-300 p-2 flex items-center gap-3 transition-all hover:border-brand-400 hover:bg-brand-50/50">
-              {/* Custom preview - sparkles on light bg */}
-              <div className="w-14 h-[72px] rounded-lg bg-gradient-to-br from-brand-50 to-brand-100 flex-shrink-0 flex items-center justify-center shadow-sm">
-                <div className="relative">
-                  <Sparkles className="h-6 w-6 text-brand-500" />
-                  <Sparkles className="h-3 w-3 text-brand-300 absolute -top-1 -right-0.5" />
-                  <Sparkles className="h-2 w-2 text-brand-400 absolute -bottom-0.5 -left-1" />
-                </div>
-              </div>
-
-              {/* Name */}
-              <div className="flex-1 min-w-0">
-                <h4 className="font-semibold text-gray-900">Custom</h4>
-                <p className="text-xs text-gray-500 mt-0.5">Create your own</p>
-              </div>
-
-              {/* Add button */}
-              <button
-                onClick={addCustomStyle}
-                disabled={remainingImages <= 0}
-                className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                  remainingImages > 0
-                    ? "bg-brand-500 text-white hover:bg-brand-600 hover:scale-110 shadow-md"
-                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                <Plus className="h-4 w-4" />
-              </button>
-            </div>
+            {/* Custom style option temporarily disabled */}
           </div>
         </div>
 
