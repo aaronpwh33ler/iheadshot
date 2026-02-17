@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 import { LayoutShell } from "@/components/LayoutShell";
 
@@ -62,6 +63,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
         <LayoutShell>{children}</LayoutShell>
+        <Analytics />
       </body>
     </html>
   );
