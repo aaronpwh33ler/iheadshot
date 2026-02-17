@@ -35,7 +35,7 @@ interface FileWithPreview extends File {
 // Note: Style categories are now defined in StyleSelector component
 
 type Step = "upload" | "select" | "generate";
-type GenerationPhase = "idle" | "uploading" | "character-sheet" | "generating";
+type GenerationPhase = "idle" | "uploading" | "generating";
 
 // Always compress/resize images client-side before upload.
 // AI headshot generation only needs ~1024px; this keeps uploads well under Vercel's 4.5MB limit.
@@ -149,15 +149,15 @@ export function InstantUpload({
   const onDrop = useCallback((acceptedFiles: File[]) => {
     setError(null);
     const totalFiles = files.length + acceptedFiles.length;
-    if (totalFiles > 5) {
+    if (totalFiles > 10) {
       setOverLimitWarning(true);
-      const remaining = 5 - files.length;
+      const remaining = 10 - files.length;
       acceptedFiles = acceptedFiles.slice(0, remaining);
     }
     const newFiles = acceptedFiles.map((file) =>
       Object.assign(file, { preview: URL.createObjectURL(file) })
     );
-    setFiles((prev) => [...prev, ...newFiles].slice(0, 5));
+    setFiles((prev) => [...prev, ...newFiles].slice(0, 10));
   }, [files.length]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -253,7 +253,7 @@ export function InstantUpload({
     }
   };
 
-  // Main generation workflow with character sheet
+  // Main generation workflow — sends all uploaded images directly (no character sheet)
   const generateHeadshots = async () => {
     // Demo mode: skip generation, load existing images
     if (isDemoMode) {
@@ -271,29 +271,9 @@ export function InstantUpload({
     setGeneratedImages([]);
 
     try {
-      // PHASE 1: Generate character sheet
-      setGenerationPhase("character-sheet");
-      setCurrentGenerating(null);
-
-      const sheetResponse = await fetch("/api/generate-character-sheet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          orderId,
-          imageUrls: uploadedUrls, // Send ALL images for cross-referencing eye color, features, etc.
-        }),
-      });
-
-      if (!sheetResponse.ok) {
-        throw new Error("Failed to generate character sheet");
-      }
-
-      const sheetData = await sheetResponse.json();
-      setCharacterSheetUrl(sheetData.characterSheetUrl);
-      setCharacterSheetBase64(sheetData.characterSheetBase64);
-
-      // PHASE 2: Generate headshots with identity lock
+      // Generate headshots directly from uploaded reference images
       setGenerationPhase("generating");
+      setCurrentGenerating(null);
 
       // Build generation queue from SelectedStyles (with custom outfit/location/lighting)
       const queue: { style: SelectedStyle; variant: number }[] = [];
@@ -317,9 +297,7 @@ export function InstantUpload({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               orderId,
-              imageUrl: uploadedUrls[0],
-              characterSheetUrl: sheetData.characterSheetUrl,
-              characterSheetBase64: sheetData.characterSheetBase64,
+              imageUrls: uploadedUrls, // Send ALL uploaded images for cross-referencing
               styleId: style.id,
               variant,
               gender: detectedGender,
@@ -449,7 +427,7 @@ export function InstantUpload({
                   <p className="text-xl font-semibold text-gray-900 mb-2">
                     {isDragActive ? "Drop your photos here" : "Upload your photos"}
                   </p>
-                  <p className="text-gray-500 mb-4">1-5 photos for best results</p>
+                  <p className="text-gray-500 mb-4">5-10 photos required for best results</p>
                   <p className="text-sm text-gray-400">JPG, PNG, or WebP up to 10MB each</p>
                 </div>
 
@@ -465,7 +443,7 @@ export function InstantUpload({
                 {overLimitWarning && (
                   <div className="flex items-center gap-2 text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200">
                     <AlertTriangle className="h-5 w-5" />
-                    <p className="text-sm">Maximum 5 photos allowed.</p>
+                    <p className="text-sm">Maximum 10 photos allowed.</p>
                     <button onClick={() => setOverLimitWarning(false)} className="ml-auto"><X className="h-4 w-4" /></button>
                   </div>
                 )}
@@ -483,7 +461,7 @@ export function InstantUpload({
                       )}
                     </div>
                   ))}
-                  {files.length < 5 && !uploading && (
+                  {files.length < 10 && !uploading && (
                     <div {...getRootProps()} className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-300 flex flex-col items-center justify-center cursor-pointer hover:border-brand-400 hover:bg-gray-50">
                       <input {...getInputProps()} />
                       <ImageIcon className="h-6 w-6 text-gray-400 mb-1" />
@@ -494,10 +472,11 @@ export function InstantUpload({
 
                 <div className="text-center text-sm text-gray-600">
                   <span className="font-medium">{files.length}</span> photo{files.length !== 1 ? "s" : ""} selected
-                  {files.length >= 3 && <span className="text-green-600 ml-2 inline-flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> Great!</span>}
+                  {files.length < 5 && <span className="text-amber-600 ml-2 inline-flex items-center gap-1"><AlertTriangle className="h-4 w-4" /> Minimum 5 required</span>}
+                  {files.length >= 5 && <span className="text-green-600 ml-2 inline-flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> Great!</span>}
                 </div>
 
-                <Button onClick={handleUploadComplete} disabled={uploading} size="lg" className={`w-full py-6 text-lg bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
+                <Button onClick={handleUploadComplete} disabled={uploading || files.length < 5} size="lg" className={`w-full py-6 text-lg bg-gradient-to-r ${tierGradient} hover:opacity-90 cursor-pointer`}>
                   {uploading ? <><Loader2 className="h-5 w-5 mr-2 animate-spin" />Uploading...</> : <>Continue to Style Selection<ChevronRight className="h-5 w-5 ml-2" /></>}
                 </Button>
               </div>
@@ -511,7 +490,7 @@ export function InstantUpload({
               <div className="space-y-2">
                 <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Clear, well-lit face</p>
                 <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Front-facing or slight angle</p>
-                <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>Multiple photos (2-5 best)</p>
+                <p className="flex items-center gap-2 text-green-700"><span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>5-10 photos (more is better!)</p>
               </div>
               <div className="space-y-2">
                 <p className="flex items-center gap-2 text-red-600"><span className="w-1.5 h-1.5 bg-red-400 rounded-full"></span>No sunglasses</p>
@@ -596,20 +575,11 @@ export function InstantUpload({
           <div className={`p-4 rounded-xl border ${tierBg}`}>
             <div className="flex items-center justify-between mb-2">
               <span className="font-medium text-gray-900">
-                {generationPhase === "character-sheet" ? "🔍 Analyzing your face..." : generationPhase === "generating" ? "✨ Creating headshots..." : generating ? "Processing..." : "Generation complete!"}
+                {generationPhase === "generating" ? "✨ Creating headshots..." : generating ? "Processing..." : "Generation complete!"}
               </span>
               <span className="text-sm text-gray-600">{generatedImages.length} / {totalImages}</span>
             </div>
-            <Progress value={generationPhase === "character-sheet" ? 5 : (generatedImages.length / totalImages) * 100} className="h-2" />
-
-            {generationPhase === "character-sheet" && (
-              <div className="mt-3 p-3 bg-brand-50 rounded-lg border border-brand-200">
-                <p className="text-sm text-brand-800 flex items-center gap-2">
-                  <Wand2 className="h-4 w-4 animate-pulse" />
-                  <strong>Creating identity profile...</strong> This captures your face from multiple angles for perfect consistency.
-                </p>
-              </div>
-            )}
+            <Progress value={(generatedImages.length / totalImages) * 100} className="h-2" />
 
             {currentGenerating && generationPhase === "generating" && (
               <p className="text-sm text-gray-500 mt-2 flex items-center gap-2">
@@ -618,24 +588,6 @@ export function InstantUpload({
               </p>
             )}
           </div>
-
-          {/* Character sheet preview — visible for test/debug sessions only */}
-          {characterSheetUrl && isTestMode && (
-            <div className="bg-gradient-to-r from-brand-50 to-brand-100 p-4 rounded-xl border border-brand-200">
-              <p className="text-sm font-medium text-brand-800 mb-2 flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4" /> Identity profile created (test mode)
-              </p>
-              <div className="w-64 h-64 rounded-lg overflow-hidden bg-white shadow-md mx-auto">
-                <img src={characterSheetUrl} alt="Character sheet" className="w-full h-full object-cover" />
-              </div>
-            </div>
-          )}
-          {/* For real customers, just show a subtle confirmation */}
-          {characterSheetUrl && !isTestMode && (
-            <p className="text-sm text-brand-600 flex items-center gap-2">
-              <CheckCircle2 className="h-4 w-4" /> Identity profile created — generating your headshots...
-            </p>
-          )}
 
           {/* Generated images grid */}
           {generatedImages.length > 0 && (
@@ -663,7 +615,7 @@ export function InstantUpload({
             </div>
           )}
 
-          {generating && generatedImages.length === 0 && generationPhase !== "character-sheet" && (
+          {generating && generatedImages.length === 0 && (
             <div className="text-center py-12">
               <Loader2 className="h-12 w-12 text-brand-500 animate-spin mx-auto mb-4" />
               <p className="text-gray-600">Starting generation...</p>

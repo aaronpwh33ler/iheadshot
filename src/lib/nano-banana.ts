@@ -16,6 +16,9 @@ export interface HeadshotStyle {
   lighting: string;
   pose: string;
   expression: string;
+  // Condensed prompt sentence used in generation (matches revised text files)
+  promptSentence: string;
+  promptSentenceFemale?: string;
 }
 
 /**
@@ -26,245 +29,255 @@ export function getOutfitForGender(style: HeadshotStyle, gender?: string): strin
   return style.outfit;
 }
 
+/**
+ * Get the gender-appropriate prompt sentence for a style
+ */
+export function getPromptSentenceForGender(style: HeadshotStyle, gender?: string): string {
+  if (gender === "female" && style.promptSentenceFemale) return style.promptSentenceFemale;
+  return style.promptSentence;
+}
+
 // Predefined styles with variables (20 total for Premium tier)
+// promptSentence values match the revised text files exactly
 export const HEADSHOT_STYLES: HeadshotStyle[] = [
   // === OUTDOOR (3) ===
   {
     id: "outdoor-natural",
     name: "Natural Light",
     outfit: "a casual but professional light jacket",
-    location: "outdoors in a lush green park with soft bokeh background",
+    location: "outdoors in a green park",
     lighting: "golden hour warm sunlight",
     pose: "standing naturally",
     expression: "approachable and genuine",
+    promptSentence: "Wearing a casual but professional light jacket, standing outdoors in a green park with at golden hour warm sunlight, standing naturally, approachable and genuine",
   },
   {
     id: "outdoor-urban",
     name: "Urban Professional",
-    outfit: "a modern blazer with a casual t-shirt underneath",
-    location: "on a city rooftop with blurred skyline",
-    lighting: "beautiful sunset golden hour light",
-    pose: "relaxed confident stance",
-    expression: "professional yet personable",
+    outfit: "a blazer with T-shirt",
+    location: "on a city rooftop",
+    lighting: "golden hour warm sunlight",
+    pose: "standing naturally",
+    expression: "professional and personable",
+    promptSentence: "Wearing a blazer with T-shirt, standing on a city rooftop at golden hour warm sunlight, standing naturally, professional and personable",
   },
   {
     id: "outdoor-sunset",
     name: "Golden Hour",
-    outfit: "a smart casual button-up shirt",
-    location: "outdoors with warm sunset colors in the background",
-    lighting: "beautiful golden sunset backlighting",
-    pose: "natural standing pose",
-    expression: "warm and inviting smile",
+    outfit: "a button-up shirt",
+    location: "outdoors with warm sunset backlighting",
+    lighting: "warm sunset backlighting",
+    pose: "natural pose",
+    expression: "warm and inviting",
+    promptSentence: "Wearing a button-up shirt, outdoors with warm sunset backlighting, natural pose, warm and inviting",
   },
   // === CORPORATE (3) ===
   {
     id: "corporate-navy",
     name: "Corporate Navy",
-    outfit: "a tailored navy blue suit with a crisp white dress shirt",
-    outfitFemale: "a tailored navy blue blazer with a crisp white blouse",
-    location: "in a modern corporate office with floor-to-ceiling windows",
-    lighting: "soft natural daylight",
-    pose: "standing confidently with shoulders back",
-    expression: "confident and approachable with a subtle smile",
+    outfit: "a navy suit with white shirt",
+    location: "in a corporate office",
+    lighting: "soft daylight",
+    pose: "standing confidently",
+    expression: "approachable with a subtle smile",
+    promptSentence: "Wearing a navy suit with white shirt, in a corporate office, soft daylight, standing confidently, approachable with a subtle smile",
   },
   {
     id: "corporate-gray",
     name: "Corporate Gray",
-    outfit: "a charcoal gray business suit with a light blue tie",
-    outfitFemale: "a tailored charcoal gray blazer with a silk blouse",
-    location: "in front of a clean white studio backdrop",
-    lighting: "professional studio lighting with soft shadows",
-    pose: "seated professionally",
+    outfit: "a gray suit and light blue tie",
+    outfitFemale: "a charcoal gray blazer with silk blouse",
+    location: "white studio backdrop",
+    lighting: "dramatic studio lighting",
+    pose: "standing professionally",
     expression: "warm and professional",
+    promptSentence: "Wearing a gray suit and light blue tie, white studio backdrop, dramatic studio lighting, standing professionally, warm and professional",
+    promptSentenceFemale: "Wearing a charcoal gray blazer with silk blouse, white studio backdrop, dramatic studio lighting, standing professionally, warm and professional",
   },
   {
     id: "executive-black",
     name: "Executive Black",
-    outfit: "a sharp black suit with a white pocket square",
-    outfitFemale: "a sharp black suit with a structured white top",
-    location: "in an elegant executive office with dark wood furnishings",
+    outfit: "a black suit with white pocket square",
+    outfitFemale: "a black suit with a structured white top",
+    location: "in an executive office with dark wood",
     lighting: "dramatic side lighting",
-    pose: "standing with arms crossed confidently",
+    pose: "arms crossed confidently",
     expression: "authoritative yet approachable",
+    promptSentence: "Wearing a black suit with white pocket square, in an executive office with dark wood at dramatic side lighting, arms crossed confidently, authoritative yet approachable",
+    promptSentenceFemale: "Wearing a black suit with a structured white top, in an executive office with dark wood at dramatic side lighting, arms crossed confidently, authoritative yet approachable",
   },
   // === CASUAL (3) ===
   {
     id: "casual-blue-shirt",
     name: "Blue Oxford",
-    outfit: "a light blue oxford button-up shirt with rolled sleeves",
-    location: "in a modern startup office with plants",
-    lighting: "bright natural window light",
-    pose: "leaning casually against a desk",
+    outfit: "a blue oxford shirt with rolled sleeves",
+    location: "in a modern office with plants",
+    lighting: "natural window light",
+    pose: "leaning against a desk",
     expression: "friendly and relaxed",
+    promptSentence: "Wearing a blue oxford shirt with rolled sleeves, in a modern office with plants at natural window light, leaning against a desk, friendly and relaxed",
   },
   {
     id: "casual-white-shirt",
     name: "Business Casual White",
-    outfit: "a crisp white linen shirt, open collar",
-    location: "in a bright minimalist studio",
-    lighting: "soft diffused natural light",
+    outfit: "a white linen shirt open collar",
+    location: "in minimalist studio",
+    lighting: "natural window light",
     pose: "standing relaxed",
-    expression: "warm and genuine smile",
+    expression: "warm and genuine",
+    promptSentence: "Wearing a white linen shirt open collar, in minimalist studio natural window light, standing relaxed, warm and genuine",
   },
   {
     id: "smart-casual-sweater",
     name: "Smart Casual",
-    outfit: "a navy blue crewneck sweater over a white collared shirt",
-    location: "in a cozy modern office space",
+    outfit: "a navy sweater over white collared shirt",
+    location: "cozy office",
     lighting: "warm ambient lighting",
     pose: "sitting comfortably",
-    expression: "thoughtful and engaged",
+    expression: "thoughtful and engaged with camera",
+    promptSentence: "Wearing a navy sweater over white collared shirt, cozy office, warm ambient lighting, sitting comfortably, thoughtful and engaged with camera",
   },
   // === CREATIVE (3) ===
   {
     id: "creative-turtleneck",
     name: "Creative Turtleneck",
-    outfit: "a sleek black turtleneck",
-    location: "against a clean minimalist white wall",
-    lighting: "dramatic studio lighting with strong contrast",
-    pose: "standing with a slight head tilt",
+    outfit: "a black turtleneck",
+    location: "against a white wall",
+    lighting: "dramatic studio lighting",
+    pose: "slight head tilt",
     expression: "confident and creative",
+    promptSentence: "Wearing a black turtleneck, against a white wall with dramatic studio lighting, slight head tilt, confident and creative",
   },
   {
     id: "tech-startup",
     name: "Tech Startup",
-    outfit: "a comfortable gray hoodie",
-    location: "in a modern tech office with exposed brick",
-    lighting: "natural daylight mixed with cool LED",
-    pose: "casual standing pose",
+    outfit: "a gray hoodie",
+    location: "in a tech office with exposed brick",
+    lighting: "natural daylight",
+    pose: "casual pose",
     expression: "innovative and friendly",
+    promptSentence: "Wearing a gray hoodie, in a tech office with exposed brick at natural daylight, casual pose, innovative and friendly",
   },
   {
     id: "creative-neon",
     name: "Creative Neon",
-    outfit: "a fitted black crew-neck t-shirt",
-    location: "in a dark studio with colorful neon light projections and geometric patterns cast across the face and background",
-    lighting: "dramatic low-key lighting with vibrant neon pink, blue, and purple color gels creating cinematic color contrast",
-    pose: "slight three-quarter angle with a relaxed confident stance",
-    expression: "cool and self-assured with a subtle knowing look",
+    outfit: "a black t-shirt",
+    location: "in a dark studio with neon light projections",
+    lighting: "low-key lighting with pink, blue, and purple gels",
+    pose: "three-quarter angle",
+    expression: "cool and self-assured",
+    promptSentence: "Wearing a black t-shirt, in a dark studio with neon light projections at low-key lighting with pink, blue, and purple gels, three-quarter angle, cool and self-assured",
   },
-  // === STUDIO (2) ===
+  // === STUDIO (3 - includes dark-dramatic) ===
   {
     id: "classic-studio",
     name: "Classic Studio",
-    outfit: "a classic dark blazer over a clean white shirt",
-    location: "in front of a seamless pure white studio backdrop",
-    lighting: "soft even studio lighting with subtle fill light",
-    pose: "standing straight with shoulders slightly angled",
-    expression: "polished and confident with a natural smile",
+    outfit: "a dark blazer over white shirt",
+    location: "seamless white studio backdrop",
+    lighting: "dramatic studio lighting",
+    pose: "standing straight with shoulders angled",
+    expression: "polished and confident",
+    promptSentence: "Wearing a dark blazer over white shirt, seamless white studio backdrop, dramatic studio lighting, standing straight with shoulders angled, polished and confident",
   },
   {
     id: "warm-studio",
     name: "Warm Studio",
-    outfit: "a soft earth-tone cashmere sweater with a collared shirt underneath",
-    location: "in front of a warm cream and soft beige textured backdrop",
-    lighting: "warm golden studio lighting with gentle fill",
-    pose: "relaxed natural pose with shoulders at ease",
-    expression: "genuinely warm and approachable with a kind smile",
+    outfit: "a brown suit jacket",
+    location: "warm cream backdrop",
+    lighting: "warm studio lighting",
+    pose: "standing relaxed natural pose",
+    expression: "friendly and relaxed",
+    promptSentence: "Wearing a brown suit jacket, warm cream backdrop, warm studio lighting, standing relaxed natural pose, friendly and relaxed",
   },
-  // === ARTISTIC (1) ===
   {
     id: "dark-dramatic",
     name: "Dark & Dramatic",
-    outfit: "a dark tailored suit jacket over a black shirt",
-    location: "against a deep charcoal gradient background fading to black",
-    lighting: "dramatic Rembrandt lighting with a single key light from the side",
-    pose: "three-quarter face angle with chin slightly raised",
-    expression: "intense and commanding with quiet confidence",
+    outfit: "a dark suit jacket over black shirt",
+    location: "charcoal gradient background",
+    lighting: "Rembrandt side lighting",
+    pose: "three-quarter angle with chin raised",
+    expression: "intense and commanding",
+    promptSentence: "Wearing a dark suit jacket over black shirt, charcoal gradient background at Rembrandt side lighting, three-quarter angle with chin raised, intense and commanding",
   },
   // === INDUSTRY (5) ===
   {
     id: "finance-exec",
     name: "Finance Executive",
-    outfit: "a premium pinstripe suit with silk tie",
-    outfitFemale: "a premium pinstripe suit with a silk camisole",
-    location: "in an upscale financial office",
-    lighting: "professional office lighting",
-    pose: "seated at an executive desk",
+    outfit: "a pinstripe suit with silk tie",
+    outfitFemale: "a pinstripe suit with silk camisole",
+    location: "in a financial office",
+    lighting: "professional lighting",
+    pose: "seated at a desk",
     expression: "confident and trustworthy",
+    promptSentence: "Wearing a pinstripe suit with silk tie, in a financial office at professional lighting, seated at a desk, confident and trustworthy",
+    promptSentenceFemale: "Wearing a pinstripe suit with silk camisole, in a financial office at professional lighting, seated at a desk, confident and trustworthy",
   },
   {
     id: "healthcare-pro",
     name: "Healthcare Professional",
-    outfit: "a clean white medical coat over professional attire",
-    location: "in a modern medical facility",
-    lighting: "bright, clean clinical lighting",
+    outfit: "a white medical coat over professional attire",
+    location: "in a medical facility",
+    lighting: "bright clean lighting",
     pose: "standing professionally",
     expression: "trustworthy and caring",
+    promptSentence: "Wearing a white medical coat over professional attire, in a medical facility at bright clean lighting, standing professionally, trustworthy and caring",
   },
   {
     id: "academic-scholar",
     name: "Academic",
     outfit: "a tweed blazer with elbow patches over a button-up",
-    location: "in a distinguished library with bookshelves",
-    lighting: "warm ambient library lighting",
+    location: "in a library",
+    lighting: "warm lighting",
     pose: "seated thoughtfully",
     expression: "scholarly and approachable",
+    promptSentence: "Wearing a tweed blazer with elbow patches over a button-up, in a library at warm lighting, seated thoughtfully, scholarly and approachable",
   },
   {
     id: "legal-pro",
     name: "Legal Professional",
-    outfit: "a traditional dark suit with conservative tie",
-    outfitFemale: "a traditional dark suit with a tailored blouse",
-    location: "in a distinguished law office with leather chairs",
-    lighting: "classic office lighting",
+    outfit: "a dark suit with conservative tie",
+    outfitFemale: "a dark suit with tailored blouse",
+    location: "in a law office",
+    lighting: "classic lighting",
     pose: "standing authoritatively",
     expression: "professional and composed",
+    promptSentence: "Wearing a dark suit with conservative tie, in a law office at classic lighting, standing authoritatively, professional and composed",
+    promptSentenceFemale: "Wearing a dark suit with tailored blouse, in a law office at classic lighting, standing authoritatively, professional and composed",
   },
   {
     id: "real-estate",
     name: "Real Estate Agent",
-    outfit: "a sharp fitted blazer over a professional button-up shirt",
-    location: "in front of a bright modern home exterior with soft bokeh landscaping",
-    lighting: "warm natural daylight",
-    pose: "standing with open welcoming body language",
-    expression: "big trustworthy smile radiating warmth and confidence",
+    outfit: "a blazer over button-up shirt",
+    location: "outside modern home",
+    lighting: "warm daylight",
+    pose: "open welcoming body language",
+    expression: "trustworthy and confident",
+    promptSentence: "Wearing a blazer over button-up shirt, outside modern home, warm daylight, trustworthy and confident",
   },
 ];
 
 /**
- * Step 1: Generate a character reference sheet from uploaded images
- * This creates multi-angle views to lock in the person's identity.
- * Multiple images help cross-reference details like eye color, skin tone, features.
+ * Generate a headshot directly from uploaded reference images (no character sheet needed).
+ * Uses all uploaded images for cross-referencing identity, with the revised prompt structure.
  */
-export async function generateCharacterSheet(
-  referenceImagesBase64: string | string[],
-  mimeType: string = "image/jpeg"
+export async function generateHeadshotFromReferences(
+  referenceImagesBase64: string[],
+  style: HeadshotStyle,
+  mimeType: string = "image/jpeg",
+  gender?: string
 ): Promise<string> {
   const model = genAI.models;
 
-  // Normalize to array
-  const images = Array.isArray(referenceImagesBase64)
-    ? referenceImagesBase64
-    : [referenceImagesBase64];
+  // Get the condensed prompt sentence for the style (gender-aware)
+  const styleSentence = getPromptSentenceForGender(style, gender);
 
-  // Multi-image prompt emphasizes CROSS-REFERENCING and PHOTOREALISM
-  const prompt = images.length > 1
-    ? `IMPORTANT: The attached ${images.length} photos are ALL of the SAME PERSON from different angles/lighting.
+  // Revised prompt structure — matches the text files exactly
+  const prompt = `Average out the submitted images of the individual into a consistent character for the following prompt. (If you notice consistency across the submitted images in the individual's hair, then keep that hair style EXACTLY the same! Assume that is the style of hair the individual would like preserved.) Keep faces looking young and flattering, not leaning towards fat, old, wrinkles, deep crows feet wrinkles near eyes, pale, ache or facial blemishes, yellow teeth, or any negatively associated descriptors that could cause users frustration. The goal is to generate an image of the individual that is beautiful, handsome, and flattering, that they would be happy paying a hefty dollar for.
 
-Cross-reference ALL photos to identify the TRUE, CONSISTENT features:
-- Eye color: Look at ALL photos to determine the ACTUAL eye color (lighting can distort this)
-- Face shape: Identify the consistent bone structure across all angles
-- Skin tone and texture: Find the true skin color accounting for different lighting
-- Hair: Texture, color, hairline consistency
-- Unique features: Freckles, marks, wrinkles that appear in MULTIPLE photos
+Professional headshot, for business profiles, profile pictures, and respectable contact images. To be used solely in the business sphere. ${styleSentence}. Professional post processing and image editing, smoothing skin imperfections and flattering photography angle, to minimize large individuals or any unflattering angles. thoughtful and flattering image capture. Output image must be 3:4 portrait orientation (1536x2048 pixels).`;
 
-Create a PHOTOREALISTIC character reference sheet showing this SAME person: front view, left profile, right profile, 3/4 view. Plain white background, neutral expression.
-
-CRITICAL STYLE REQUIREMENTS:
-- PHOTOREALISTIC only - like a real photograph, NOT a cartoon, illustration, drawing, or digital art
-- Real skin texture with pores, natural lighting on skin
-- Photo-quality detail matching the input photos
-- NO cartoon style, NO illustration style, NO artistic rendering
-- Output must look like actual photographs of the person
-
-The reference sheet must be 100% consistent with ALL provided photos - this is the SAME individual.`
-    : `Create a PHOTOREALISTIC character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image.
-
-CRITICAL: Output must be PHOTOREALISTIC - like real photographs, NOT cartoon, NOT illustration, NOT digital art. Real skin texture, photo-quality detail, natural lighting. Must look like actual photos of this person.`;
-
-  // Build image parts for all reference images
-  const imageParts = images.map((imgBase64) => ({
+  // Build image parts for ALL reference images
+  const imageParts = referenceImagesBase64.map((imgBase64) => ({
     inlineData: {
       mimeType,
       data: imgBase64,
@@ -293,95 +306,6 @@ CRITICAL: Output must be PHOTOREALISTIC - like real photographs, NOT cartoon, NO
     throw new Error(`Google GenAI API failed: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
   }
 
-  console.log("Response structure:", JSON.stringify(response, null, 2).substring(0, 1000));
-
-  // Extract the generated image from response
-  const parts = response.candidates?.[0]?.content?.parts || [];
-  const imagePart = parts.find((part) =>
-    part && typeof part === 'object' && 'inlineData' in part
-  ) as { inlineData?: { data: string } } | undefined;
-
-  if (!imagePart?.inlineData?.data) {
-    console.error("No image data found in response. Parts:", JSON.stringify(parts, null, 2).substring(0, 500));
-    throw new Error("Failed to generate character sheet - no image in response");
-  }
-
-  return imagePart.inlineData.data; // Returns base64
-}
-
-/**
- * Step 2: Generate a headshot with strict identity lock
- * Uses the character sheet + original reference for maximum consistency
- */
-export async function generateHeadshotWithIdentityLock(
-  referenceImageBase64: string,
-  characterSheetBase64: string,
-  style: HeadshotStyle,
-  mimeType: string = "image/jpeg",
-  gender?: string
-): Promise<string> {
-  const model = genAI.models;
-
-  // Use gender-appropriate outfit
-  const outfit = getOutfitForGender(style, gender);
-
-  const identityLockPrompt = `STRICT IDENTITY LOCK USING REFERENCE IMAGES:
-
-Use ALL attached reference images as the absolute ground truth for this character's identity.
-- Main reference: exact face, skin tone/texture/details, eye shape/color, nose, mouth, jawline, hairline, freckles/marks, age appearance.
-- Character sheet: full multi-angle confirmation of proportions, head shape from side/profile/3/4 views, expressions range, no alterations allowed.
-
-Preserve 100% identical facial features, bone structure, exact face shape, exact eye placement & color, nose shape, lip shape, skin texture/details, hair texture/density/parting, age/youth appearance — NO changes, NO morphing, NO aging, NO plastic look, NO blending with other faces.
-
-CRITICAL - DO NOT AGE THE SUBJECT:
-- Do NOT add crow's feet, wrinkles, or lines that aren't clearly visible in the reference photos
-- Do NOT make skin look more weathered or aged than in the references
-- Do NOT deepen existing wrinkles or make them more pronounced
-- Preserve the EXACT skin smoothness and texture from the reference images
-- If the person looks youthful in the references, they must look equally youthful in the output
-- Match the exact level of skin detail - no more, no less
-
-OUTPUT FORMAT: Portrait orientation (2:3 aspect ratio), professional headshot crop showing head and shoulders.
-
-Scene: Professional headshot for business profiles. Wearing ${outfit}, ${style.location}, ${style.lighting}, ${style.pose}, ${style.expression}.
-
-Ultra-photorealistic, high-fidelity identity preservation, sharp facial details, natural skin texture matching references exactly.`;
-
-  let response;
-  try {
-    response = await model.generateContent({
-      model: IMAGE_MODEL,
-      contents: [
-        {
-          role: "user",
-          parts: [
-            // Main reference image first
-            {
-              inlineData: {
-                mimeType,
-                data: referenceImageBase64,
-              },
-            },
-            // Character sheet second
-            {
-              inlineData: {
-                mimeType,
-                data: characterSheetBase64,
-              },
-            },
-            { text: identityLockPrompt },
-          ],
-        },
-      ],
-      config: {
-        responseModalities: ["image", "text"],
-      },
-    });
-  } catch (apiError) {
-    console.error("Google GenAI API error:", apiError);
-    throw new Error(`Google GenAI API failed: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
-  }
-
   // Extract the generated image
   const parts = response.candidates?.[0]?.content?.parts || [];
   const imagePart = parts.find((part) =>
@@ -394,6 +318,91 @@ Ultra-photorealistic, high-fidelity identity preservation, sharp facial details,
   }
 
   return imagePart.inlineData.data; // Returns base64
+}
+
+/**
+ * @deprecated Character sheet generation is no longer used in the pipeline.
+ * Kept for reference. Users now upload 5-10 images directly.
+ */
+export async function generateCharacterSheet(
+  referenceImagesBase64: string | string[],
+  mimeType: string = "image/jpeg"
+): Promise<string> {
+  const model = genAI.models;
+  const images = Array.isArray(referenceImagesBase64)
+    ? referenceImagesBase64
+    : [referenceImagesBase64];
+
+  const prompt = images.length > 1
+    ? `IMPORTANT: The attached ${images.length} photos are ALL of the SAME PERSON from different angles/lighting.
+
+Cross-reference ALL photos to identify the TRUE, CONSISTENT features:
+- Eye color: Look at ALL photos to determine the ACTUAL eye color (lighting can distort this)
+- Face shape: Identify the consistent bone structure across all angles
+- Skin tone and texture: Find the true skin color accounting for different lighting
+- Hair: Texture, color, hairline consistency
+- Unique features: Freckles, marks, wrinkles that appear in MULTIPLE photos
+
+Create a PHOTOREALISTIC character reference sheet showing this SAME person: front view, left profile, right profile, 3/4 view. Plain white background, neutral expression.
+
+CRITICAL STYLE REQUIREMENTS:
+- PHOTOREALISTIC only - like a real photograph, NOT a cartoon, illustration, drawing, or digital art
+- Real skin texture with pores, natural lighting on skin
+- Photo-quality detail matching the input photos
+- NO cartoon style, NO illustration style, NO artistic rendering
+- Output must look like actual photographs of the person
+
+The reference sheet must be 100% consistent with ALL provided photos - this is the SAME individual.`
+    : `Create a PHOTOREALISTIC character reference sheet: front view, left profile, right profile, 3/4 view, neutral expression, plain white background, same person as in the attached reference image.
+
+CRITICAL: Output must be PHOTOREALISTIC - like real photographs, NOT cartoon, NOT illustration, NOT digital art. Real skin texture, photo-quality detail, natural lighting. Must look like actual photos of this person.`;
+
+  const imageParts = images.map((imgBase64) => ({
+    inlineData: { mimeType, data: imgBase64 },
+  }));
+
+  let response;
+  try {
+    response = await model.generateContent({
+      model: IMAGE_MODEL,
+      contents: [{ role: "user", parts: [...imageParts, { text: prompt }] }],
+      config: { responseModalities: ["image", "text"] },
+    });
+  } catch (apiError) {
+    console.error("Google GenAI API error:", apiError);
+    throw new Error(`Google GenAI API failed: ${apiError instanceof Error ? apiError.message : 'Unknown error'}`);
+  }
+
+  const parts = response.candidates?.[0]?.content?.parts || [];
+  const imagePart = parts.find((part) =>
+    part && typeof part === 'object' && 'inlineData' in part
+  ) as { inlineData?: { data: string } } | undefined;
+
+  if (!imagePart?.inlineData?.data) {
+    throw new Error("Failed to generate character sheet - no image in response");
+  }
+
+  return imagePart.inlineData.data;
+}
+
+/**
+ * @deprecated Use generateHeadshotFromReferences instead.
+ * Kept for backward compatibility.
+ */
+export async function generateHeadshotWithIdentityLock(
+  referenceImageBase64: string,
+  characterSheetBase64: string,
+  style: HeadshotStyle,
+  mimeType: string = "image/jpeg",
+  gender?: string
+): Promise<string> {
+  // Redirect to new function, passing both images as references
+  return generateHeadshotFromReferences(
+    [referenceImageBase64, characterSheetBase64],
+    style,
+    mimeType,
+    gender
+  );
 }
 
 /**

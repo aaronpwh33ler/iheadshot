@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
-  generateHeadshotWithIdentityLock,
+  generateHeadshotFromReferences,
   imageUrlToBase64,
   HEADSHOT_STYLES,
 } from "@/lib/nano-banana";
@@ -8,16 +8,15 @@ import { createAdminSupabaseClient, getOrderByStripeSession } from "@/lib/supaba
 import { v4 as uuidv4 } from "uuid";
 
 /**
- * Generate a single headshot using the identity lock method
- * Requires both the reference image and character sheet for maximum consistency
+ * Generate a single headshot using all uploaded reference images directly.
+ * No character sheet needed — uses revised prompt structure.
  */
 export async function POST(request: NextRequest) {
   try {
     const {
       orderId,
-      imageUrl,
-      characterSheetUrl,
-      characterSheetBase64: providedCharacterSheetBase64,
+      imageUrl,        // Legacy: single image URL (backward compat)
+      imageUrls,       // New: array of all uploaded image URLs
       styleId,
       variant = 1,
       gender,
@@ -29,9 +28,12 @@ export async function POST(request: NextRequest) {
       customPrompt,
     } = await request.json();
 
-    if (!orderId || !imageUrl || !styleId) {
+    // Support both imageUrls array and legacy single imageUrl
+    const urls: string[] = imageUrls || (imageUrl ? [imageUrl] : []);
+
+    if (!orderId || urls.length === 0 || !styleId) {
       return NextResponse.json(
-        { error: "Missing orderId, imageUrl, or styleId" },
+        { error: "Missing orderId, imageUrl(s), or styleId" },
         { status: 400 }
       );
     }
@@ -56,14 +58,19 @@ export async function POST(request: NextRequest) {
         lighting: customLighting || "soft natural light",
         pose: "standing naturally",
         expression: "confident and approachable",
+        promptSentence: customPrompt || `Wearing ${customOutfit || "professional business attire"}, ${customLocation || "in a professional studio"}, ${customLighting || "soft natural light"}, standing naturally, confident and approachable`,
       };
     } else if (customOutfit || customLocation || customLighting) {
-      // Preset style with user overrides
+      // Preset style with user overrides — rebuild prompt sentence
+      const effectiveOutfit = customOutfit || style.outfit;
+      const effectiveLocation = customLocation || style.location;
+      const effectiveLighting = customLighting || style.lighting;
       style = {
         ...style,
-        outfit: customOutfit || style.outfit,
-        location: customLocation || style.location,
-        lighting: customLighting || style.lighting,
+        outfit: effectiveOutfit,
+        location: effectiveLocation,
+        lighting: effectiveLighting,
+        promptSentence: `Wearing ${effectiveOutfit}, ${effectiveLocation}, ${effectiveLighting}, ${style.pose}, ${style.expression}`,
       };
     }
 
@@ -72,29 +79,16 @@ export async function POST(request: NextRequest) {
     const realOrderId = order?.id || orderId;
 
     const styleName = isCustomStyle ? "Custom Style" : style.name;
-    console.log(`Generating ${styleName} (variant ${variant}) for order ${realOrderId}...`);
+    console.log(`Generating ${styleName} (variant ${variant}) for order ${realOrderId} with ${urls.length} reference image(s)...`);
 
-    // Convert reference image to base64
-    const { base64: referenceBase64, mimeType } = await imageUrlToBase64(imageUrl);
+    // Convert ALL reference images to base64
+    const imageResults = await Promise.all(urls.map((url: string) => imageUrlToBase64(url)));
+    const base64Images = imageResults.map((r) => r.base64);
+    const mimeType = imageResults[0].mimeType;
 
-    // Get character sheet base64 (either provided or fetch from URL)
-    let characterSheetBase64 = providedCharacterSheetBase64;
-    if (!characterSheetBase64 && characterSheetUrl) {
-      const result = await imageUrlToBase64(characterSheetUrl);
-      characterSheetBase64 = result.base64;
-    }
-
-    if (!characterSheetBase64) {
-      return NextResponse.json(
-        { error: "Character sheet required for identity lock" },
-        { status: 400 }
-      );
-    }
-
-    // Generate the headshot with identity lock (gender-aware outfit)
-    const headshotBase64 = await generateHeadshotWithIdentityLock(
-      referenceBase64,
-      characterSheetBase64,
+    // Generate the headshot using all reference images (no character sheet)
+    const headshotBase64 = await generateHeadshotFromReferences(
+      base64Images,
       style,
       mimeType,
       gender
