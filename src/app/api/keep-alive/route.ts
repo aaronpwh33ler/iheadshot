@@ -2,7 +2,19 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 // This endpoint is called by Vercel Cron to prevent Supabase free tier from pausing
-// Runs weekly — a simple DB query is enough to register activity
+// Runs weekly — a simple DB query / REST ping is enough to register activity
+// Pings ALL Supabase projects across accounts to keep them alive
+
+const EXTERNAL_SUPABASE_PROJECTS = [
+  {
+    name: "trailancer",
+    url: "https://eiaaeeizodlrvasjrzpg.supabase.co",
+  },
+  {
+    name: "ideamrr",
+    url: "https://lcumqypysqcmkxottxuy.supabase.co",
+  },
+];
 
 export async function GET(request: Request) {
   // Verify the request is from Vercel Cron (optional security)
@@ -14,37 +26,50 @@ export async function GET(request: Request) {
     }
   }
 
+  const results: Record<string, string> = {};
+
+  // 1. Ping iHeadshot (this project) via Supabase client
   try {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Simple query to keep the database active
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("orders")
       .select("id")
       .limit(1);
 
-    if (error) {
-      console.error("Keep-alive query failed:", error);
-      return NextResponse.json(
-        { status: "error", message: error.message, timestamp: new Date().toISOString() },
-        { status: 500 }
-      );
-    }
-
-    console.log("Keep-alive ping successful at", new Date().toISOString());
-    return NextResponse.json({
-      status: "ok",
-      message: "Supabase keep-alive ping successful",
-      timestamp: new Date().toISOString(),
-    });
+    results["iheadshot"] = error ? `error: ${error.message}` : "ok";
   } catch (err) {
-    console.error("Keep-alive error:", err);
-    return NextResponse.json(
-      { status: "error", message: "Internal error", timestamp: new Date().toISOString() },
-      { status: 500 }
-    );
+    results["iheadshot"] = `error: ${err}`;
   }
+
+  // 2. Ping external Supabase projects via REST health check
+  for (const project of EXTERNAL_SUPABASE_PROJECTS) {
+    try {
+      const response = await fetch(`${project.url}/rest/v1/`, {
+        method: "HEAD",
+        headers: {
+          "apikey": "placeholder",
+        },
+      });
+      // Any response (even 401) means the project is alive
+      results[project.name] = response.status < 500 ? "ok" : `error: ${response.status}`;
+    } catch (err) {
+      results[project.name] = `error: ${err}`;
+    }
+  }
+
+  const allOk = Object.values(results).every((r) => r === "ok");
+  const timestamp = new Date().toISOString();
+
+  console.log("Keep-alive ping results:", JSON.stringify(results), "at", timestamp);
+
+  return NextResponse.json({
+    status: allOk ? "ok" : "partial",
+    message: "Supabase keep-alive ping completed",
+    projects: results,
+    timestamp,
+  });
 }
