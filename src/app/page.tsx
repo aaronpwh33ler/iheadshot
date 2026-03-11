@@ -445,9 +445,9 @@ export default function HomePage() {
             <div>
               <h4 className="font-semibold text-gray-900 mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-gray-500">
-                <li><a href="#" className="hover:text-brand-600 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-brand-600 transition-colors">Terms of Service</a></li>
-                <li><a href="#" className="hover:text-brand-600 transition-colors">Refund Policy</a></li>
+                <li><a href="/privacy" className="hover:text-brand-600 transition-colors">Privacy Policy</a></li>
+                <li><a href="/terms" className="hover:text-brand-600 transition-colors">Terms of Service</a></li>
+                <li><a href="/refund" className="hover:text-brand-600 transition-colors">Refund Policy</a></li>
               </ul>
             </div>
           </div>

@@ -34,6 +34,12 @@ export function Header() {
 
         <div className="flex items-center gap-3">
           <Link
+            href="/orders"
+            className="text-sm font-medium text-gray-600 hover:text-brand-600 transition-colors"
+          >
+            My Orders
+          </Link>
+          <Link
             href="/pricing"
             className="bg-brand-600 text-white px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200"
           >

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 // This endpoint is called by Vercel Cron to prevent Supabase free tier from pausing
-// Runs weekly — a simple DB query / REST ping is enough to register activity
+// Runs Mon & Thu at 9am UTC — a simple DB query / REST ping is enough to register activity
 // Pings ALL Supabase projects across accounts to keep them alive
 
 const EXTERNAL_SUPABASE_PROJECTS = [
